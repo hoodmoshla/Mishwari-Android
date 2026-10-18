@@ -34,46 +34,25 @@ jobs:
         run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
       - name: Set up Gradle with dependency cache
         uses: gradle/actions/setup-gradle@v4
-      - name: Verify and build
+      - name: Verify Release refuses missing signing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          if ./gradlew --no-daemon :app:assembleRelease --dry-run > "$RUNNER_TEMP/missing-signing.log" 2>&1; then
+            echo 'Release unexpectedly accepted missing signing credentials'
+            exit 1
+          fi
+          if ! grep -q 'Permanent Mishwari signing credentials missing:' "$RUNNER_TEMP/missing-signing.log"; then
+            cat "$RUNNER_TEMP/missing-signing.log"
+            exit 1
+          fi
+      - name: Verify and build test APKs (not for distribution)
         shell: bash
         run: |
           set -o pipefail
           chmod +x gradlew
           ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace 2>&1 | tee ci-build.log
-      - name: Verify debug APK and write checksum
-        shell: bash
-        run: |
-          mkdir -p ci-artifacts
-          cp app/build/outputs/apk/debug/app-debug.apk ci-artifacts/Mishwari-0.1.0-debug.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.0-debug.apk | tee ci-artifacts/apk-signature.txt
-          python3 - <<'PY'
-          import hashlib, json, os, pathlib
-          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.0-debug.apk')
-          provenance = {
-              'repository': os.environ['GITHUB_REPOSITORY'],
-              'commit': os.environ['GITHUB_SHA'],
-              'ref': os.environ['GITHUB_REF'],
-              'run_id': os.environ['GITHUB_RUN_ID'],
-              'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
-              'run_url': f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
-              'apk': apk.name,
-              'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
-              'bytes': apk.stat().st_size,
-              'variant': 'debug',
-              'physical_device_tested': False,
-          }
-          pathlib.Path('ci-artifacts/build-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
-          PY
-          cd ci-artifacts
-          sha256sum Mishwari-0.1.0-debug.apk > SHA256SUMS.txt
-      - name: Upload verified debug APK
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: Mishwari-debug-${{ github.run_number }}
-          path: ci-artifacts/
-          retention-days: 30
-          if-no-files-found: error
       - name: Preserve build logs and test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -86,3 +65,94 @@ jobs:
             app/build/reports/lint-results-debug.*
           retention-days: 30
           if-no-files-found: warn
+
+  signed-apk:
+    needs: verify-and-build
+    if: >-
+      github.repository == 'hoodmoshla/Mishwari-Android' &&
+      github.ref == 'refs/heads/codex/initial-implementation' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
+      - name: Install Android platform and tools
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Set up Gradle with dependency cache
+        uses: gradle/actions/setup-gradle@v4
+      - name: Restore permanent Mishwari signing key
+        shell: bash
+        env:
+          MISHWARI_KEYSTORE_BASE64: ${{ secrets.MISHWARI_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          test -n "$MISHWARI_KEYSTORE_BASE64" || { echo 'Permanent keystore secret missing'; exit 1; }
+          umask 077
+          printf '%s' "$MISHWARI_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/mishwari-permanent.p12"
+      - name: Build with permanent signing key (no fallback)
+        shell: bash
+        env:
+          MISHWARI_KEYSTORE_PATH: ${{ runner.temp }}/mishwari-permanent.p12
+          MISHWARI_STORE_PASSWORD: ${{ secrets.MISHWARI_STORE_PASSWORD }}
+          MISHWARI_KEY_ALIAS: ${{ secrets.MISHWARI_KEY_ALIAS }}
+          MISHWARI_KEY_PASSWORD: ${{ secrets.MISHWARI_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assembleRelease
+      - name: Verify permanent certificate and write provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ci-artifacts
+          cp app/build/outputs/apk/release/app-release.apk ci-artifacts/Mishwari-0.1.0-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.0-release.apk > ci-artifacts/apk-signature.txt
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, re
+          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.0-release.apk')
+          expected = pathlib.Path('signing/certificate-sha256.txt').read_text().strip().lower()
+          report = pathlib.Path('ci-artifacts/apk-signature.txt').read_text()
+          certs = re.findall(r'^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)$', report, re.MULTILINE)
+          if not re.fullmatch(r'[0-9a-f]{64}', expected) or [c.lower() for c in certs] != [expected]:
+              raise SystemExit('Permanent Mishwari certificate mismatch; refusing APK upload')
+          provenance = {
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'commit': os.environ['GITHUB_SHA'],
+              'ref': os.environ['GITHUB_REF'],
+              'run_id': os.environ['GITHUB_RUN_ID'],
+              'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'run_url': f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+              'apk': apk.name,
+              'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
+              'bytes': apk.stat().st_size,
+              'variant': 'release',
+              'certificate_sha256': expected,
+              'physical_device_tested': False,
+          }
+          pathlib.Path('ci-artifacts/build-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
+          PY
+          cd ci-artifacts
+          sha256sum Mishwari-0.1.0-release.apk > SHA256SUMS.txt
+      - name: Upload verified permanently signed APK (not a GitHub Release)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Mishwari-signed-${{ github.run_number }}
+          path: ci-artifacts/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Remove temporary signing key
+        if: always()
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/mishwari-permanent.p12"

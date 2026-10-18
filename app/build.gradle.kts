@@ -4,6 +4,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.kapt")
 }
+
+val permanentSigning = listOf(
+    "MISHWARI_KEYSTORE_PATH", "MISHWARI_STORE_PASSWORD",
+    "MISHWARI_KEY_ALIAS", "MISHWARI_KEY_PASSWORD"
+).associateWith { providers.environmentVariable(it).orNull }
+
 android {
     namespace = "ye.mishwari"
     compileSdk = 35
@@ -17,6 +23,20 @@ android {
         vectorDrawables.useSupportLibrary = true
         kapt { arguments { arg("room.schemaLocation", "$projectDir/schemas") } }
     }
+    signingConfigs {
+        create("mishwariPermanent") {
+            storeFile = permanentSigning["MISHWARI_KEYSTORE_PATH"]?.let { file(it) }
+            storePassword = permanentSigning["MISHWARI_STORE_PASSWORD"]
+            keyAlias = permanentSigning["MISHWARI_KEY_ALIAS"]
+            keyPassword = permanentSigning["MISHWARI_KEY_PASSWORD"]
+            storeType = "PKCS12"
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("mishwariPermanent")
+        }
+    }
     buildFeatures { compose = true; buildConfig = true }
     bundle { language { enableSplit = false } }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
@@ -24,6 +44,22 @@ android {
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
     testOptions { unitTests.isIncludeAndroidResources = true }
 }
+
+// Never produce an unsigned/fallback Release when permanent credentials are absent.
+gradle.taskGraph.whenReady {
+    val packagesRelease = allTasks.any { task ->
+        task.project == project && task.name.contains("Release") &&
+            listOf("assemble", "bundle", "package", "install").any { prefix -> task.name.startsWith(prefix) }
+    }
+    if (packagesRelease) {
+        val missing = permanentSigning.filterValues { it.isNullOrBlank() }.keys
+        check(missing.isEmpty()) { "Permanent Mishwari signing credentials missing: ${missing.joinToString()}" }
+        check(file(permanentSigning.getValue("MISHWARI_KEYSTORE_PATH")!!).isFile) {
+            "Permanent Mishwari keystore file is missing; refusing Release build"
+        }
+    }
+}
+
 dependencies {
     val bom = platform("androidx.compose:compose-bom:2024.12.01")
     implementation(bom)
