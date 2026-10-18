@@ -1,0 +1,3561 @@
+{
+  "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+  "updated": "2024-12-23",
+  "places": [
+    {
+      "id": "YE",
+      "name": "اليمن",
+      "kind": "country",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE11",
+      "name": "اب",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "اب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1101",
+      "name": "القفر",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "القفر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1102",
+      "name": "يريم",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "يريم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1103",
+      "name": "الرضمه",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "الرضمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1104",
+      "name": "النادره",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "النادره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1105",
+      "name": "الشعر",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "الشعر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1106",
+      "name": "السده",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "السده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1107",
+      "name": "المخادر",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "المخادر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1108",
+      "name": "حبيش",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "حبيش",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1109",
+      "name": "حزم العدين",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "حزم العدين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1110",
+      "name": "فرع العدين",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "فرع العدين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1111",
+      "name": "العدين",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "العدين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1112",
+      "name": "جبله",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "جبله",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1113",
+      "name": "بعدان",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "بعدان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1114",
+      "name": "السبره",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "السبره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1115",
+      "name": "السياني",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "السياني",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1116",
+      "name": "ذي السفال",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "ذي السفال",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1117",
+      "name": "مذيخره",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "مذيخره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1118",
+      "name": "المشنه",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "المشنه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1119",
+      "name": "الظهار",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "الظهار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1120",
+      "name": "اب",
+      "parentId": "YE11",
+      "kind": "district",
+      "governorate": "اب",
+      "district": "اب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE12",
+      "name": "ابين",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "ابين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1201",
+      "name": "المحفد",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "المحفد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1202",
+      "name": "موديه",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "موديه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1203",
+      "name": "جيشان",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "جيشان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1204",
+      "name": "لودر",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "لودر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1205",
+      "name": "سباح",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "سباح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1206",
+      "name": "رصد",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "رصد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1207",
+      "name": "سرار",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "سرار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1208",
+      "name": "الوضيع",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "الوضيع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1209",
+      "name": "احور",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "احور",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1210",
+      "name": "زنجبار",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "زنجبار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1211",
+      "name": "خنفر",
+      "parentId": "YE12",
+      "kind": "district",
+      "governorate": "ابين",
+      "district": "خنفر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE13",
+      "name": "امانة العاصمه",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "امانة العاصمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1301",
+      "name": "صنعاء القديمه",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "صنعاء القديمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1302",
+      "name": "شعوب",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "شعوب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1303",
+      "name": "ازال",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "ازال",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1304",
+      "name": "الصافيه",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "الصافيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1305",
+      "name": "السبعين",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "السبعين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1306",
+      "name": "الوحده",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "الوحده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1307",
+      "name": "التحرير",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "التحرير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1308",
+      "name": "معين",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "معين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1309",
+      "name": "الثوره",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "الثوره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1310",
+      "name": "بني الحارث",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "بني الحارث",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1319",
+      "name": "ضواحي الامانة همدان",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "ضواحي الامانة همدان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1324",
+      "name": "ضواحي الامانة سنحان وبني بهلول",
+      "parentId": "YE13",
+      "kind": "district",
+      "governorate": "امانة العاصمه",
+      "district": "ضواحي الامانة سنحان وبني بهلول",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE14",
+      "name": "البيضاء",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "البيضاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1401",
+      "name": "نعمان",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "نعمان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1402",
+      "name": "ناطع",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "ناطع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1403",
+      "name": "مسوره",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "مسوره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1404",
+      "name": "الصومعه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الصومعه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1405",
+      "name": "الزاهر",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الزاهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1406",
+      "name": "ذي ناعم",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "ذي ناعم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1407",
+      "name": "الطفه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الطفه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1408",
+      "name": "مكيراس",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "مكيراس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1409",
+      "name": "مدينة البيضاء",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "مدينة البيضاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1410",
+      "name": "البيضاء",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "البيضاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1411",
+      "name": "السواديه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "السواديه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1412",
+      "name": "ردمان",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "ردمان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1413",
+      "name": "رداع",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "رداع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1414",
+      "name": "القريشيه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "القريشيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1415",
+      "name": "ولدربيع",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "ولدربيع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1416",
+      "name": "العرش",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "العرش",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1417",
+      "name": "صباح",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "صباح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1418",
+      "name": "الرياشيه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الرياشيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1419",
+      "name": "الشريه",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الشريه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1420",
+      "name": "الملاجم",
+      "parentId": "YE14",
+      "kind": "district",
+      "governorate": "البيضاء",
+      "district": "الملاجم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE15",
+      "name": "تعز",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "تعز",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1501",
+      "name": "ماويه",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "ماويه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1502",
+      "name": "شرعب السلام",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "شرعب السلام",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1503",
+      "name": "شرعب الرونه",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "شرعب الرونه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1504",
+      "name": "مقبنه",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "مقبنه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1505",
+      "name": "المخاء",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "المخاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1506",
+      "name": "باب المندب",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "باب المندب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1507",
+      "name": "موزع",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "موزع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1508",
+      "name": "جبل حبشي",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "جبل حبشي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1509",
+      "name": "مشرعة وحدنان",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "مشرعة وحدنان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1510",
+      "name": "صبر الموادم",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "صبر الموادم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1511",
+      "name": "المسراخ",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "المسراخ",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1512",
+      "name": "خدير",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "خدير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1513",
+      "name": "الصلو",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "الصلو",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1514",
+      "name": "الشمايتين",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "الشمايتين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1515",
+      "name": "الوازعيه",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "الوازعيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1516",
+      "name": "حيفان",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "حيفان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1517",
+      "name": "المظفر",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "المظفر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1518",
+      "name": "القاهره",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "القاهره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1519",
+      "name": "صاله",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "صاله",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1520",
+      "name": "التعزيه",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "التعزيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1521",
+      "name": "المعافر",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "المعافر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1522",
+      "name": "المواسط",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "المواسط",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1523",
+      "name": "سامع",
+      "parentId": "YE15",
+      "kind": "district",
+      "governorate": "تعز",
+      "district": "سامع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE16",
+      "name": "الجوف",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "الجوف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1601",
+      "name": "خب و الشعف",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "خب و الشعف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1602",
+      "name": "الحميدات",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "الحميدات",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1603",
+      "name": "المطمه",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "المطمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1604",
+      "name": "الزاهر",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "الزاهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1605",
+      "name": "الحزم",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "الحزم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1606",
+      "name": "المتون",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "المتون",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1607",
+      "name": "المصلوب",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "المصلوب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1608",
+      "name": "الغيل",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "الغيل",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1609",
+      "name": "الخلق",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "الخلق",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1610",
+      "name": "برط العنان",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "برط العنان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1611",
+      "name": "رجوزه",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "رجوزه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1612",
+      "name": "خراب المراشى",
+      "parentId": "YE16",
+      "kind": "district",
+      "governorate": "الجوف",
+      "district": "خراب المراشى",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE17",
+      "name": "حجه",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "حجه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1701",
+      "name": "بكيل المير",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "بكيل المير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1702",
+      "name": "حرض",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "حرض",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1703",
+      "name": "ميدي",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "ميدي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1704",
+      "name": "عبس",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "عبس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1705",
+      "name": "حيران",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "حيران",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1706",
+      "name": "مستباء",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "مستباء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1707",
+      "name": "كشر",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "كشر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1708",
+      "name": "الجميمه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "الجميمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1709",
+      "name": "كحلان الشرف",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "كحلان الشرف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1710",
+      "name": "افلح الشام",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "افلح الشام",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1711",
+      "name": "خيران المحرق",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "خيران المحرق",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1712",
+      "name": "اسلم",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "اسلم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1713",
+      "name": "قفل شمر",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "قفل شمر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1714",
+      "name": "افلح اليمن",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "افلح اليمن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1715",
+      "name": "المحابشه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "المحابشه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1716",
+      "name": "المفتاح",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "المفتاح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1717",
+      "name": "المغربه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "المغربه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1718",
+      "name": "كحلان عفار",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "كحلان عفار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1719",
+      "name": "شرس",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "شرس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1720",
+      "name": "مبين",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "مبين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1721",
+      "name": "الشاهل",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "الشاهل",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1722",
+      "name": "كعيدنه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "كعيدنه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1723",
+      "name": "وضره",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "وضره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1724",
+      "name": "بني قيس الطور",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "بني قيس الطور",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1725",
+      "name": "الشغادره",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "الشغادره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1726",
+      "name": "نجره",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "نجره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1727",
+      "name": "بني العوام",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "بني العوام",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1728",
+      "name": "مدينة حجه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "مدينة حجه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1729",
+      "name": "حجه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "حجه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1730",
+      "name": "وشحه",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "وشحه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1731",
+      "name": "قاره",
+      "parentId": "YE17",
+      "kind": "district",
+      "governorate": "حجه",
+      "district": "قاره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE18",
+      "name": "الحديده",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "الحديده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1801",
+      "name": "الزهره",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الزهره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1802",
+      "name": "اللحيه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "اللحيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1803",
+      "name": "كمران",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "كمران",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1804",
+      "name": "الصليف",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الصليف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1805",
+      "name": "المنيره",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "المنيره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1806",
+      "name": "القناوص",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "القناوص",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1807",
+      "name": "الزيديه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الزيديه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1808",
+      "name": "المغلاف",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "المغلاف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1809",
+      "name": "الضحى",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الضحى",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1810",
+      "name": "باجل",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "باجل",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1811",
+      "name": "الحجيله",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الحجيله",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1812",
+      "name": "برع",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "برع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1813",
+      "name": "المراوعه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "المراوعه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1814",
+      "name": "الدريهمي",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الدريهمي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1815",
+      "name": "السخنه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "السخنه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1816",
+      "name": "المنصوريه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "المنصوريه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1817",
+      "name": "بيت الفقيه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "بيت الفقيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1818",
+      "name": "جبل راس",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "جبل راس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1819",
+      "name": "حيس",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "حيس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1820",
+      "name": "الخوخه",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الخوخه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1821",
+      "name": "الحوك",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الحوك",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1822",
+      "name": "الميناء",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الميناء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1823",
+      "name": "الحالي",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الحالي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1824",
+      "name": "زبيد",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "زبيد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1825",
+      "name": "الجراحي",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "الجراحي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1826",
+      "name": "التحيتا",
+      "parentId": "YE18",
+      "kind": "district",
+      "governorate": "الحديده",
+      "district": "التحيتا",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE19",
+      "name": "حضرموت",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "حضرموت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1901",
+      "name": "رماه",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "رماه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1902",
+      "name": "ثمود",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "ثمود",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1903",
+      "name": "القف",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "القف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1904",
+      "name": "زمخ ومنوخ",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "زمخ ومنوخ",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1905",
+      "name": "حجر الصيعر",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "حجر الصيعر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1906",
+      "name": "العبر",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "العبر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1907",
+      "name": "القطن",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "القطن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1908",
+      "name": "شبام",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "شبام",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1909",
+      "name": "ساه",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "ساه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1910",
+      "name": "سيئون",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "سيئون",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1911",
+      "name": "تريم",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "تريم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1912",
+      "name": "السوم",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "السوم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1913",
+      "name": "الريدة وقصيعر",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "الريدة وقصيعر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1914",
+      "name": "الديس",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "الديس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1915",
+      "name": "الشحر",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "الشحر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1916",
+      "name": "غيل بن يمين",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "غيل بن يمين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1917",
+      "name": "غيل باوزير",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "غيل باوزير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1918",
+      "name": "دوعن",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "دوعن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1919",
+      "name": "وادي العين",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "وادي العين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1920",
+      "name": "رخيه",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "رخيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1921",
+      "name": "عمد",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "عمد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1922",
+      "name": "الضليعه",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "الضليعه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1923",
+      "name": "يبعث",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "يبعث",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1924",
+      "name": "حجر",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "حجر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1925",
+      "name": "بروم ميفع",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "بروم ميفع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1926",
+      "name": "المكلا",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "المكلا",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1927",
+      "name": "مدينة المكلا",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "مدينة المكلا",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE1928",
+      "name": "حريضه",
+      "parentId": "YE19",
+      "kind": "district",
+      "governorate": "حضرموت",
+      "district": "حريضه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE20",
+      "name": "ذمار",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "ذمار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2001",
+      "name": "الحداء",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "الحداء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2002",
+      "name": "جهران",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "جهران",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2003",
+      "name": "جبل الشرق",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "جبل الشرق",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2004",
+      "name": "مغرب عنس",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "مغرب عنس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2005",
+      "name": "عتمه",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "عتمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2006",
+      "name": "وصاب العالي",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "وصاب العالي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2007",
+      "name": "وصاب السافل",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "وصاب السافل",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2008",
+      "name": "مدينة ذمار",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "مدينة ذمار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2009",
+      "name": "ميفعة عنس",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "ميفعة عنس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2010",
+      "name": "عنس",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "عنس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2011",
+      "name": "ضوران انس",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "ضوران انس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2012",
+      "name": "المنار",
+      "parentId": "YE20",
+      "kind": "district",
+      "governorate": "ذمار",
+      "district": "المنار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE21",
+      "name": "شبوه",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "شبوه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2101",
+      "name": "دهر",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "دهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2102",
+      "name": "الطلح",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "الطلح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2103",
+      "name": "جردان",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "جردان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2104",
+      "name": "عرماء",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "عرماء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2105",
+      "name": "عسيلان",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "عسيلان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2106",
+      "name": "عين",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "عين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2107",
+      "name": "بيحان",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "بيحان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2108",
+      "name": "مرخة العليا",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "مرخة العليا",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2109",
+      "name": "مرخة السفلى",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "مرخة السفلى",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2110",
+      "name": "نصاب",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "نصاب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2111",
+      "name": "حطيب",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "حطيب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2112",
+      "name": "الصعيد",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "الصعيد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2113",
+      "name": "عتق",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "عتق",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2114",
+      "name": "حبان",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "حبان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2115",
+      "name": "الروضه",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "الروضه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2116",
+      "name": "ميفعه",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "ميفعه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2117",
+      "name": "رضوم",
+      "parentId": "YE21",
+      "kind": "district",
+      "governorate": "شبوه",
+      "district": "رضوم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE22",
+      "name": "صعده",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "صعده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2201",
+      "name": "باقم",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "باقم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2202",
+      "name": "قطابر",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "قطابر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2203",
+      "name": "منبه",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "منبه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2204",
+      "name": "غمر",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "غمر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2205",
+      "name": "رازح",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "رازح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2206",
+      "name": "شداء",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "شداء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2207",
+      "name": "الظاهر",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "الظاهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2208",
+      "name": "حيدان",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "حيدان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2209",
+      "name": "ساقين",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "ساقين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2210",
+      "name": "مجز",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "مجز",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2211",
+      "name": "سحار",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "سحار",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2212",
+      "name": "الصفراء",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "الصفراء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2213",
+      "name": "الحشوه",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "الحشوه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2214",
+      "name": "كتاف والبقع",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "كتاف والبقع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2215",
+      "name": "صعده",
+      "parentId": "YE22",
+      "kind": "district",
+      "governorate": "صعده",
+      "district": "صعده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE23",
+      "name": "صنعاء",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "صنعاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2301",
+      "name": "همدان",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "همدان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2302",
+      "name": "ارحب",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "ارحب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2303",
+      "name": "نهم",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "نهم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2304",
+      "name": "بني حشيش",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "بني حشيش",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2305",
+      "name": "سنحان وبني بهلول",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "سنحان وبني بهلول",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2306",
+      "name": "بلاد الروس",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "بلاد الروس",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2307",
+      "name": "بني مطر",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "بني مطر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2308",
+      "name": "الحيمة الداخليه",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "الحيمة الداخليه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2309",
+      "name": "الحيمة الخارجيه",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "الحيمة الخارجيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2310",
+      "name": "مناخه",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "مناخه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2311",
+      "name": "صعفان",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "صعفان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2312",
+      "name": "خولان",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "خولان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2313",
+      "name": "الطيال",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "الطيال",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2314",
+      "name": "بني ضبيان",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "بني ضبيان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2315",
+      "name": "الحصن",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "الحصن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2316",
+      "name": "جحانه",
+      "parentId": "YE23",
+      "kind": "district",
+      "governorate": "صنعاء",
+      "district": "جحانه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE24",
+      "name": "عدن",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "عدن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2401",
+      "name": "دار سعد",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "دار سعد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2402",
+      "name": "الشيخ عثمان",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "الشيخ عثمان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2403",
+      "name": "المنصوره",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "المنصوره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2404",
+      "name": "البريقه",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "البريقه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2405",
+      "name": "التواهي",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "التواهي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2406",
+      "name": "المعلا",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "المعلا",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2407",
+      "name": "صيره",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "صيره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2408",
+      "name": "خور مكسر",
+      "parentId": "YE24",
+      "kind": "district",
+      "governorate": "عدن",
+      "district": "خور مكسر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE25",
+      "name": "لحج",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "لحج",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2501",
+      "name": "الحد",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "الحد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2502",
+      "name": "يافع",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "يافع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2503",
+      "name": "المفلحي",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "المفلحي",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2504",
+      "name": "يهر",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "يهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2505",
+      "name": "حبيل جبر",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "حبيل جبر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2506",
+      "name": "حالمين",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "حالمين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2507",
+      "name": "ردفان",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "ردفان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2508",
+      "name": "الملاح",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "الملاح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2509",
+      "name": "المسيمير",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "المسيمير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2510",
+      "name": "القبيطه",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "القبيطه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2511",
+      "name": "طور الباحه",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "طور الباحه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2512",
+      "name": "المقاطره",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "المقاطره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2513",
+      "name": "المضاربة و العاره",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "المضاربة و العاره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2514",
+      "name": "الحوطه",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "الحوطه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2515",
+      "name": "تبن",
+      "parentId": "YE25",
+      "kind": "district",
+      "governorate": "لحج",
+      "district": "تبن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE26",
+      "name": "مارب",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "مارب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2601",
+      "name": "مجزر",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "مجزر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2602",
+      "name": "رغوان",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "رغوان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2603",
+      "name": "مدغل الجدعان",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "مدغل الجدعان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2604",
+      "name": "حريب القرامش",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "حريب القرامش",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2605",
+      "name": "بدبده",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "بدبده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2606",
+      "name": "صرواح",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "صرواح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2607",
+      "name": "الجوبه",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "الجوبه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2608",
+      "name": "رحبه",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "رحبه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2609",
+      "name": "حريب",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "حريب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2610",
+      "name": "ماهليه",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "ماهليه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2611",
+      "name": "العبديه",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "العبديه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2612",
+      "name": "مدينة مارب",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "مدينة مارب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2613",
+      "name": "مارب",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "مارب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2614",
+      "name": "جبل مراد",
+      "parentId": "YE26",
+      "kind": "district",
+      "governorate": "مارب",
+      "district": "جبل مراد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE27",
+      "name": "المحويت",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "المحويت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2701",
+      "name": "شبام كوكبان",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "شبام كوكبان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2702",
+      "name": "الطويله",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "الطويله",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2703",
+      "name": "الرجم",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "الرجم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2704",
+      "name": "الخبت",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "الخبت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2705",
+      "name": "ملحان",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "ملحان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2706",
+      "name": "حفاش",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "حفاش",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2707",
+      "name": "بني سعد",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "بني سعد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2708",
+      "name": "مدينة المحويت",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "مدينة المحويت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2709",
+      "name": "المحويت",
+      "parentId": "YE27",
+      "kind": "district",
+      "governorate": "المحويت",
+      "district": "المحويت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE28",
+      "name": "المهره",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "المهره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2801",
+      "name": "شحن",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "شحن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2802",
+      "name": "حات",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "حات",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2803",
+      "name": "حوف",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "حوف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2804",
+      "name": "الغيظه",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "الغيظه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2805",
+      "name": "منعر",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "منعر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2806",
+      "name": "المسيله",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "المسيله",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2807",
+      "name": "سيحوت",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "سيحوت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2808",
+      "name": "قشن",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "قشن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2809",
+      "name": "حصوين",
+      "parentId": "YE28",
+      "kind": "district",
+      "governorate": "المهره",
+      "district": "حصوين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE29",
+      "name": "عمران",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "عمران",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2901",
+      "name": "حرف سفيان",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "حرف سفيان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2902",
+      "name": "حوث",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "حوث",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2903",
+      "name": "العشه",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "العشه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2904",
+      "name": "قفلة عذر",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "قفلة عذر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2905",
+      "name": "شهاره",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "شهاره",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2906",
+      "name": "المدان",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "المدان",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2907",
+      "name": "صوير",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "صوير",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2908",
+      "name": "ظليمة حبور",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "ظليمة حبور",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2909",
+      "name": "ذيبين",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "ذيبين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2910",
+      "name": "خارف",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "خارف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2911",
+      "name": "ريده",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "ريده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2912",
+      "name": "جبل عيال يزيد",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "جبل عيال يزيد",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2913",
+      "name": "السوده",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "السوده",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2914",
+      "name": "السود",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "السود",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2915",
+      "name": "عمران",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "عمران",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2916",
+      "name": "مسور",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "مسور",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2917",
+      "name": "ثلاء",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "ثلاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2918",
+      "name": "عيال سريح",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "عيال سريح",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2919",
+      "name": "خمر",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "خمر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE2920",
+      "name": "بني صريم",
+      "parentId": "YE29",
+      "kind": "district",
+      "governorate": "عمران",
+      "district": "بني صريم",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE30",
+      "name": "الضالع",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "الضالع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3001",
+      "name": "جبن",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "جبن",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3002",
+      "name": "دمت",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "دمت",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3003",
+      "name": "قعطبه",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "قعطبه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3004",
+      "name": "الشعيب",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "الشعيب",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3005",
+      "name": "الحصين",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "الحصين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3006",
+      "name": "الضالع",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "الضالع",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3007",
+      "name": "جحاف",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "جحاف",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3008",
+      "name": "الازارق",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "الازارق",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3009",
+      "name": "الحشاء",
+      "parentId": "YE30",
+      "kind": "district",
+      "governorate": "الضالع",
+      "district": "الحشاء",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE31",
+      "name": "ريمه",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "ريمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3101",
+      "name": "بلاد الطعام",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "بلاد الطعام",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3102",
+      "name": "السلفيه",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "السلفيه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3103",
+      "name": "الجبين",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "الجبين",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3104",
+      "name": "مزهر",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "مزهر",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3105",
+      "name": "كسمه",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "كسمه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3106",
+      "name": "الجعفريه",
+      "parentId": "YE31",
+      "kind": "district",
+      "governorate": "ريمه",
+      "district": "الجعفريه",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE32",
+      "name": "سقطرى",
+      "parentId": "YE",
+      "kind": "governorate",
+      "governorate": "سقطرى",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3201",
+      "name": "حديبو",
+      "parentId": "YE32",
+      "kind": "district",
+      "governorate": "سقطرى",
+      "district": "حديبو",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    },
+    {
+      "id": "YE3202",
+      "name": "قلنسية وعبد الكوري",
+      "parentId": "YE32",
+      "kind": "district",
+      "governorate": "سقطرى",
+      "district": "قلنسية وعبد الكوري",
+      "source": "OCHA Yemen / HDX COD-AB • CSO • CC BY-IGO 3.0 • https://data.humdata.org/dataset/cod-ab-yem",
+      "sourceUpdated": "2024-12-23"
+    }
+  ]
+}

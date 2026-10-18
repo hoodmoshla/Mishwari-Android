@@ -1,0 +1,1853 @@
+{
+  "schema_version": 1,
+  "country": {
+    "iso2": "YE",
+    "iso3": "YEM",
+    "name_en": "Yemen",
+    "name_ar": "اليمن"
+  },
+  "source": {
+    "title": "Yemen - Subnational Administrative Boundaries (COD-AB)",
+    "publisher": "OCHA Yemen / OCHA Field Information Services (FIS) via HDX",
+    "dataset_url": "https://data.humdata.org/dataset/cod-ab-yem",
+    "resource_url": "https://data.humdata.org/dataset/6b2656e2-b915-4671-bfed-468d5edcd80a/resource/c79a3728-44cd-4d20-8ea4-ecfab88c1450/download/yem_admin_boundaries.geojson.zip",
+    "agency_source": "Central Statistical Organization (CSO)",
+    "license": "CC BY-IGO 3.0",
+    "license_url": "https://creativecommons.org/licenses/by/3.0/igo/legalcode",
+    "source_version": "v01",
+    "source_valid_on": "2019-11-22",
+    "last_reviewed_by_HDX": "2024-12-23",
+    "retrieved_on": "2026-10-18"
+  },
+  "governorates": [
+    {
+      "pcode": "YE11",
+      "name_en": "Ibb",
+      "name_ar": "اب",
+      "districts": [
+        {
+          "pcode": "YE1101",
+          "name_en": "Al Qafr",
+          "name_ar": "القفر"
+        },
+        {
+          "pcode": "YE1102",
+          "name_en": "Yarim",
+          "name_ar": "يريم"
+        },
+        {
+          "pcode": "YE1103",
+          "name_en": "Ar Radmah",
+          "name_ar": "الرضمه"
+        },
+        {
+          "pcode": "YE1104",
+          "name_en": "An Nadirah",
+          "name_ar": "النادره"
+        },
+        {
+          "pcode": "YE1105",
+          "name_en": "Ash Sha'ir",
+          "name_ar": "الشعر"
+        },
+        {
+          "pcode": "YE1106",
+          "name_en": "As Saddah",
+          "name_ar": "السده"
+        },
+        {
+          "pcode": "YE1107",
+          "name_en": "Al Makhadir",
+          "name_ar": "المخادر"
+        },
+        {
+          "pcode": "YE1108",
+          "name_en": "Hobeish",
+          "name_ar": "حبيش"
+        },
+        {
+          "pcode": "YE1109",
+          "name_en": "Hazm Al Odayn",
+          "name_ar": "حزم العدين"
+        },
+        {
+          "pcode": "YE1110",
+          "name_en": "Far' Al Odayn",
+          "name_ar": "فرع العدين"
+        },
+        {
+          "pcode": "YE1111",
+          "name_en": "Al Odayn",
+          "name_ar": "العدين"
+        },
+        {
+          "pcode": "YE1112",
+          "name_en": "Jiblah",
+          "name_ar": "جبله"
+        },
+        {
+          "pcode": "YE1113",
+          "name_en": "Ba'dan",
+          "name_ar": "بعدان"
+        },
+        {
+          "pcode": "YE1114",
+          "name_en": "As Sabrah",
+          "name_ar": "السبره"
+        },
+        {
+          "pcode": "YE1115",
+          "name_en": "As Saiyani",
+          "name_ar": "السياني"
+        },
+        {
+          "pcode": "YE1116",
+          "name_en": "Dhi As Sufal",
+          "name_ar": "ذي السفال"
+        },
+        {
+          "pcode": "YE1117",
+          "name_en": "Mudhaykhirah",
+          "name_ar": "مذيخره"
+        },
+        {
+          "pcode": "YE1118",
+          "name_en": "Al Mashannah",
+          "name_ar": "المشنه"
+        },
+        {
+          "pcode": "YE1119",
+          "name_en": "Adh Dhihar",
+          "name_ar": "الظهار"
+        },
+        {
+          "pcode": "YE1120",
+          "name_en": "Ibb",
+          "name_ar": "اب"
+        }
+      ]
+    },
+    {
+      "pcode": "YE12",
+      "name_en": "Abyan",
+      "name_ar": "ابين",
+      "districts": [
+        {
+          "pcode": "YE1201",
+          "name_en": "Al Mahfad",
+          "name_ar": "المحفد"
+        },
+        {
+          "pcode": "YE1202",
+          "name_en": "Mudiyah",
+          "name_ar": "موديه"
+        },
+        {
+          "pcode": "YE1203",
+          "name_en": "Jayshan",
+          "name_ar": "جيشان"
+        },
+        {
+          "pcode": "YE1204",
+          "name_en": "Lawdar",
+          "name_ar": "لودر"
+        },
+        {
+          "pcode": "YE1205",
+          "name_en": "Sibah",
+          "name_ar": "سباح"
+        },
+        {
+          "pcode": "YE1206",
+          "name_en": "Rassd",
+          "name_ar": "رصد"
+        },
+        {
+          "pcode": "YE1207",
+          "name_en": "Sarar",
+          "name_ar": "سرار"
+        },
+        {
+          "pcode": "YE1208",
+          "name_en": "Al Wadi'",
+          "name_ar": "الوضيع"
+        },
+        {
+          "pcode": "YE1209",
+          "name_en": "Ahwar",
+          "name_ar": "احور"
+        },
+        {
+          "pcode": "YE1210",
+          "name_en": "Zinjibar",
+          "name_ar": "زنجبار"
+        },
+        {
+          "pcode": "YE1211",
+          "name_en": "Khanfar",
+          "name_ar": "خنفر"
+        }
+      ]
+    },
+    {
+      "pcode": "YE13",
+      "name_en": "Sana'a City",
+      "name_ar": "امانة العاصمه",
+      "districts": [
+        {
+          "pcode": "YE1301",
+          "name_en": "Old City",
+          "name_ar": "صنعاء القديمه"
+        },
+        {
+          "pcode": "YE1302",
+          "name_en": "Shu'ub",
+          "name_ar": "شعوب"
+        },
+        {
+          "pcode": "YE1303",
+          "name_en": "Azaal",
+          "name_ar": "ازال"
+        },
+        {
+          "pcode": "YE1304",
+          "name_en": "As Safiyah",
+          "name_ar": "الصافيه"
+        },
+        {
+          "pcode": "YE1305",
+          "name_en": "As Sab'in",
+          "name_ar": "السبعين"
+        },
+        {
+          "pcode": "YE1306",
+          "name_en": "Al Wehdah",
+          "name_ar": "الوحده"
+        },
+        {
+          "pcode": "YE1307",
+          "name_en": "At Tahrir",
+          "name_ar": "التحرير"
+        },
+        {
+          "pcode": "YE1308",
+          "name_en": "Ma'in",
+          "name_ar": "معين"
+        },
+        {
+          "pcode": "YE1309",
+          "name_en": "Ath Thawrah",
+          "name_ar": "الثوره"
+        },
+        {
+          "pcode": "YE1310",
+          "name_en": "Bani Al Harith",
+          "name_ar": "بني الحارث"
+        },
+        {
+          "pcode": "YE1319",
+          "name_en": "Sana'a City Outskirts - Hamdan",
+          "name_ar": "ضواحي الامانة همدان"
+        },
+        {
+          "pcode": "YE1324",
+          "name_en": "Sana'a City Outskirts -Sanhan wa Bani Bahlul",
+          "name_ar": "ضواحي الامانة سنحان وبني بهلول"
+        }
+      ]
+    },
+    {
+      "pcode": "YE14",
+      "name_en": "Al Bayda",
+      "name_ar": "البيضاء",
+      "districts": [
+        {
+          "pcode": "YE1401",
+          "name_en": "Nu'man",
+          "name_ar": "نعمان"
+        },
+        {
+          "pcode": "YE1402",
+          "name_en": "Nati'",
+          "name_ar": "ناطع"
+        },
+        {
+          "pcode": "YE1403",
+          "name_en": "Maswarah",
+          "name_ar": "مسوره"
+        },
+        {
+          "pcode": "YE1404",
+          "name_en": "As Sawma'ah",
+          "name_ar": "الصومعه"
+        },
+        {
+          "pcode": "YE1405",
+          "name_en": "Az Zahir",
+          "name_ar": "الزاهر"
+        },
+        {
+          "pcode": "YE1406",
+          "name_en": "Dhi Na'im",
+          "name_ar": "ذي ناعم"
+        },
+        {
+          "pcode": "YE1407",
+          "name_en": "At Taffah",
+          "name_ar": "الطفه"
+        },
+        {
+          "pcode": "YE1408",
+          "name_en": "Mukayras",
+          "name_ar": "مكيراس"
+        },
+        {
+          "pcode": "YE1409",
+          "name_en": "Al Bayda City",
+          "name_ar": "مدينة البيضاء"
+        },
+        {
+          "pcode": "YE1410",
+          "name_en": "Al Bayda",
+          "name_ar": "البيضاء"
+        },
+        {
+          "pcode": "YE1411",
+          "name_en": "As Sawadiyah",
+          "name_ar": "السواديه"
+        },
+        {
+          "pcode": "YE1412",
+          "name_en": "Radman",
+          "name_ar": "ردمان"
+        },
+        {
+          "pcode": "YE1413",
+          "name_en": "Rada'",
+          "name_ar": "رداع"
+        },
+        {
+          "pcode": "YE1414",
+          "name_en": "Al Quraishyah",
+          "name_ar": "القريشيه"
+        },
+        {
+          "pcode": "YE1415",
+          "name_en": "Wald Rabi'",
+          "name_ar": "ولدربيع"
+        },
+        {
+          "pcode": "YE1416",
+          "name_en": "Al Arsh",
+          "name_ar": "العرش"
+        },
+        {
+          "pcode": "YE1417",
+          "name_en": "Sabah",
+          "name_ar": "صباح"
+        },
+        {
+          "pcode": "YE1418",
+          "name_en": "Ar Ryashyyah",
+          "name_ar": "الرياشيه"
+        },
+        {
+          "pcode": "YE1419",
+          "name_en": "Ash Sharyah",
+          "name_ar": "الشريه"
+        },
+        {
+          "pcode": "YE1420",
+          "name_en": "Al Malajim",
+          "name_ar": "الملاجم"
+        }
+      ]
+    },
+    {
+      "pcode": "YE15",
+      "name_en": "Ta'iz",
+      "name_ar": "تعز",
+      "districts": [
+        {
+          "pcode": "YE1501",
+          "name_en": "Mawiyah",
+          "name_ar": "ماويه"
+        },
+        {
+          "pcode": "YE1502",
+          "name_en": "Shar'ab As Salam",
+          "name_ar": "شرعب السلام"
+        },
+        {
+          "pcode": "YE1503",
+          "name_en": "Shar'ab Ar Rawnah",
+          "name_ar": "شرعب الرونه"
+        },
+        {
+          "pcode": "YE1504",
+          "name_en": "Maqbanah",
+          "name_ar": "مقبنه"
+        },
+        {
+          "pcode": "YE1505",
+          "name_en": "Al Makha",
+          "name_ar": "المخاء"
+        },
+        {
+          "pcode": "YE1506",
+          "name_en": "Dhubab",
+          "name_ar": "باب المندب"
+        },
+        {
+          "pcode": "YE1507",
+          "name_en": "Mawza'",
+          "name_ar": "موزع"
+        },
+        {
+          "pcode": "YE1508",
+          "name_en": "Jabal Habashi",
+          "name_ar": "جبل حبشي"
+        },
+        {
+          "pcode": "YE1509",
+          "name_en": "Mashr'ah Wa Hadnan",
+          "name_ar": "مشرعة وحدنان"
+        },
+        {
+          "pcode": "YE1510",
+          "name_en": "Sabir Al Mawadim",
+          "name_ar": "صبر الموادم"
+        },
+        {
+          "pcode": "YE1511",
+          "name_en": "Al Misrakh",
+          "name_ar": "المسراخ"
+        },
+        {
+          "pcode": "YE1512",
+          "name_en": "Dimnat Khadir",
+          "name_ar": "خدير"
+        },
+        {
+          "pcode": "YE1513",
+          "name_en": "As Silw",
+          "name_ar": "الصلو"
+        },
+        {
+          "pcode": "YE1514",
+          "name_en": "Ash Shamayatayn",
+          "name_ar": "الشمايتين"
+        },
+        {
+          "pcode": "YE1515",
+          "name_en": "Al Wazi'yah",
+          "name_ar": "الوازعيه"
+        },
+        {
+          "pcode": "YE1516",
+          "name_en": "Hayfan",
+          "name_ar": "حيفان"
+        },
+        {
+          "pcode": "YE1517",
+          "name_en": "Al Mudhaffar",
+          "name_ar": "المظفر"
+        },
+        {
+          "pcode": "YE1518",
+          "name_en": "Al Qahirah",
+          "name_ar": "القاهره"
+        },
+        {
+          "pcode": "YE1519",
+          "name_en": "Salah",
+          "name_ar": "صاله"
+        },
+        {
+          "pcode": "YE1520",
+          "name_en": "At Ta'iziyah",
+          "name_ar": "التعزيه"
+        },
+        {
+          "pcode": "YE1521",
+          "name_en": "Al Ma'afer",
+          "name_ar": "المعافر"
+        },
+        {
+          "pcode": "YE1522",
+          "name_en": "Al Mawasit",
+          "name_ar": "المواسط"
+        },
+        {
+          "pcode": "YE1523",
+          "name_en": "Sami'",
+          "name_ar": "سامع"
+        }
+      ]
+    },
+    {
+      "pcode": "YE16",
+      "name_en": "Al Jawf",
+      "name_ar": "الجوف",
+      "districts": [
+        {
+          "pcode": "YE1601",
+          "name_en": "Khab wa Ash Sha'f",
+          "name_ar": "خب و الشعف"
+        },
+        {
+          "pcode": "YE1602",
+          "name_en": "Al Humaydat",
+          "name_ar": "الحميدات"
+        },
+        {
+          "pcode": "YE1603",
+          "name_en": "Al Matammah",
+          "name_ar": "المطمه"
+        },
+        {
+          "pcode": "YE1604",
+          "name_en": "Az Zahir",
+          "name_ar": "الزاهر"
+        },
+        {
+          "pcode": "YE1605",
+          "name_en": "Al Hazm",
+          "name_ar": "الحزم"
+        },
+        {
+          "pcode": "YE1606",
+          "name_en": "Al Mutun",
+          "name_ar": "المتون"
+        },
+        {
+          "pcode": "YE1607",
+          "name_en": "Al Maslub",
+          "name_ar": "المصلوب"
+        },
+        {
+          "pcode": "YE1608",
+          "name_en": "Al Ghayl",
+          "name_ar": "الغيل"
+        },
+        {
+          "pcode": "YE1609",
+          "name_en": "Al Khalaq",
+          "name_ar": "الخلق"
+        },
+        {
+          "pcode": "YE1610",
+          "name_en": "Barat Al Anan",
+          "name_ar": "برط العنان"
+        },
+        {
+          "pcode": "YE1611",
+          "name_en": "Rajuzah",
+          "name_ar": "رجوزه"
+        },
+        {
+          "pcode": "YE1612",
+          "name_en": "Kharab Al Marashi",
+          "name_ar": "خراب المراشى"
+        }
+      ]
+    },
+    {
+      "pcode": "YE17",
+      "name_en": "Hajjah",
+      "name_ar": "حجه",
+      "districts": [
+        {
+          "pcode": "YE1701",
+          "name_en": "Bakil Al Mir",
+          "name_ar": "بكيل المير"
+        },
+        {
+          "pcode": "YE1702",
+          "name_en": "Harad",
+          "name_ar": "حرض"
+        },
+        {
+          "pcode": "YE1703",
+          "name_en": "Midi",
+          "name_ar": "ميدي"
+        },
+        {
+          "pcode": "YE1704",
+          "name_en": "Abs",
+          "name_ar": "عبس"
+        },
+        {
+          "pcode": "YE1705",
+          "name_en": "Hayran",
+          "name_ar": "حيران"
+        },
+        {
+          "pcode": "YE1706",
+          "name_en": "Mustaba",
+          "name_ar": "مستباء"
+        },
+        {
+          "pcode": "YE1707",
+          "name_en": "Kushar",
+          "name_ar": "كشر"
+        },
+        {
+          "pcode": "YE1708",
+          "name_en": "Al Jamimah",
+          "name_ar": "الجميمه"
+        },
+        {
+          "pcode": "YE1709",
+          "name_en": "Kuhlan Ash Sharaf",
+          "name_ar": "كحلان الشرف"
+        },
+        {
+          "pcode": "YE1710",
+          "name_en": "Aflah Ash Sham",
+          "name_ar": "افلح الشام"
+        },
+        {
+          "pcode": "YE1711",
+          "name_en": "Khayran Al Muharraq",
+          "name_ar": "خيران المحرق"
+        },
+        {
+          "pcode": "YE1712",
+          "name_en": "Aslam",
+          "name_ar": "اسلم"
+        },
+        {
+          "pcode": "YE1713",
+          "name_en": "Qafl Shammar",
+          "name_ar": "قفل شمر"
+        },
+        {
+          "pcode": "YE1714",
+          "name_en": "Aflah Al Yaman",
+          "name_ar": "افلح اليمن"
+        },
+        {
+          "pcode": "YE1715",
+          "name_en": "Al Mahabishah",
+          "name_ar": "المحابشه"
+        },
+        {
+          "pcode": "YE1716",
+          "name_en": "Al Miftah",
+          "name_ar": "المفتاح"
+        },
+        {
+          "pcode": "YE1717",
+          "name_en": "Al Maghrabah",
+          "name_ar": "المغربه"
+        },
+        {
+          "pcode": "YE1718",
+          "name_en": "Kuhlan Afar",
+          "name_ar": "كحلان عفار"
+        },
+        {
+          "pcode": "YE1719",
+          "name_en": "Sharas",
+          "name_ar": "شرس"
+        },
+        {
+          "pcode": "YE1720",
+          "name_en": "Mabyan",
+          "name_ar": "مبين"
+        },
+        {
+          "pcode": "YE1721",
+          "name_en": "Ash Shahil",
+          "name_ar": "الشاهل"
+        },
+        {
+          "pcode": "YE1722",
+          "name_en": "Ku'aydinah",
+          "name_ar": "كعيدنه"
+        },
+        {
+          "pcode": "YE1723",
+          "name_en": "Wadrah",
+          "name_ar": "وضره"
+        },
+        {
+          "pcode": "YE1724",
+          "name_en": "Bani Qays",
+          "name_ar": "بني قيس الطور"
+        },
+        {
+          "pcode": "YE1725",
+          "name_en": "Ash Shaghadirah",
+          "name_ar": "الشغادره"
+        },
+        {
+          "pcode": "YE1726",
+          "name_en": "Najrah",
+          "name_ar": "نجره"
+        },
+        {
+          "pcode": "YE1727",
+          "name_en": "Bani Al Awam",
+          "name_ar": "بني العوام"
+        },
+        {
+          "pcode": "YE1728",
+          "name_en": "Hajjah City",
+          "name_ar": "مدينة حجه"
+        },
+        {
+          "pcode": "YE1729",
+          "name_en": "Hajjah",
+          "name_ar": "حجه"
+        },
+        {
+          "pcode": "YE1730",
+          "name_en": "Washhah",
+          "name_ar": "وشحه"
+        },
+        {
+          "pcode": "YE1731",
+          "name_en": "Qarah",
+          "name_ar": "قاره"
+        }
+      ]
+    },
+    {
+      "pcode": "YE18",
+      "name_en": "Al Hodeidah",
+      "name_ar": "الحديده",
+      "districts": [
+        {
+          "pcode": "YE1801",
+          "name_en": "Az Zuhrah",
+          "name_ar": "الزهره"
+        },
+        {
+          "pcode": "YE1802",
+          "name_en": "Alluhayah",
+          "name_ar": "اللحيه"
+        },
+        {
+          "pcode": "YE1803",
+          "name_en": "Kamaran",
+          "name_ar": "كمران"
+        },
+        {
+          "pcode": "YE1804",
+          "name_en": "As Salif",
+          "name_ar": "الصليف"
+        },
+        {
+          "pcode": "YE1805",
+          "name_en": "Al Munirah",
+          "name_ar": "المنيره"
+        },
+        {
+          "pcode": "YE1806",
+          "name_en": "Al Qanawis",
+          "name_ar": "القناوص"
+        },
+        {
+          "pcode": "YE1807",
+          "name_en": "Az Zaydiah",
+          "name_ar": "الزيديه"
+        },
+        {
+          "pcode": "YE1808",
+          "name_en": "Al Mighlaf",
+          "name_ar": "المغلاف"
+        },
+        {
+          "pcode": "YE1809",
+          "name_en": "Ad Dohi",
+          "name_ar": "الضحى"
+        },
+        {
+          "pcode": "YE1810",
+          "name_en": "Bajil",
+          "name_ar": "باجل"
+        },
+        {
+          "pcode": "YE1811",
+          "name_en": "Al Hujjaylah",
+          "name_ar": "الحجيله"
+        },
+        {
+          "pcode": "YE1812",
+          "name_en": "Bura'",
+          "name_ar": "برع"
+        },
+        {
+          "pcode": "YE1813",
+          "name_en": "Al Marawi'ah",
+          "name_ar": "المراوعه"
+        },
+        {
+          "pcode": "YE1814",
+          "name_en": "Ad Durayhimi",
+          "name_ar": "الدريهمي"
+        },
+        {
+          "pcode": "YE1815",
+          "name_en": "As Sukhnah",
+          "name_ar": "السخنه"
+        },
+        {
+          "pcode": "YE1816",
+          "name_en": "Al Mansuriyah",
+          "name_ar": "المنصوريه"
+        },
+        {
+          "pcode": "YE1817",
+          "name_en": "Bayt Al Faqih",
+          "name_ar": "بيت الفقيه"
+        },
+        {
+          "pcode": "YE1818",
+          "name_en": "Jabal Ras",
+          "name_ar": "جبل راس"
+        },
+        {
+          "pcode": "YE1819",
+          "name_en": "Hays",
+          "name_ar": "حيس"
+        },
+        {
+          "pcode": "YE1820",
+          "name_en": "Al Khukhah",
+          "name_ar": "الخوخه"
+        },
+        {
+          "pcode": "YE1821",
+          "name_en": "Al Hawak",
+          "name_ar": "الحوك"
+        },
+        {
+          "pcode": "YE1822",
+          "name_en": "Al Mina",
+          "name_ar": "الميناء"
+        },
+        {
+          "pcode": "YE1823",
+          "name_en": "Al Hali",
+          "name_ar": "الحالي"
+        },
+        {
+          "pcode": "YE1824",
+          "name_en": "Zabid",
+          "name_ar": "زبيد"
+        },
+        {
+          "pcode": "YE1825",
+          "name_en": "Al Jarrahi",
+          "name_ar": "الجراحي"
+        },
+        {
+          "pcode": "YE1826",
+          "name_en": "At Tuhayta",
+          "name_ar": "التحيتا"
+        }
+      ]
+    },
+    {
+      "pcode": "YE19",
+      "name_en": "Hadramawt",
+      "name_ar": "حضرموت",
+      "districts": [
+        {
+          "pcode": "YE1901",
+          "name_en": "Rumah",
+          "name_ar": "رماه"
+        },
+        {
+          "pcode": "YE1902",
+          "name_en": "Thamud",
+          "name_ar": "ثمود"
+        },
+        {
+          "pcode": "YE1903",
+          "name_en": "Al Qaff",
+          "name_ar": "القف"
+        },
+        {
+          "pcode": "YE1904",
+          "name_en": "Zamakh wa Manwokh",
+          "name_ar": "زمخ ومنوخ"
+        },
+        {
+          "pcode": "YE1905",
+          "name_en": "Hajar As Say'ar",
+          "name_ar": "حجر الصيعر"
+        },
+        {
+          "pcode": "YE1906",
+          "name_en": "Al Abr",
+          "name_ar": "العبر"
+        },
+        {
+          "pcode": "YE1907",
+          "name_en": "Al Qatn",
+          "name_ar": "القطن"
+        },
+        {
+          "pcode": "YE1908",
+          "name_en": "Shibam",
+          "name_ar": "شبام"
+        },
+        {
+          "pcode": "YE1909",
+          "name_en": "Sah",
+          "name_ar": "ساه"
+        },
+        {
+          "pcode": "YE1910",
+          "name_en": "Sayun",
+          "name_ar": "سيئون"
+        },
+        {
+          "pcode": "YE1911",
+          "name_en": "Tarim",
+          "name_ar": "تريم"
+        },
+        {
+          "pcode": "YE1912",
+          "name_en": "As Sawm",
+          "name_ar": "السوم"
+        },
+        {
+          "pcode": "YE1913",
+          "name_en": "Ar Raydah wa Qussay'ar",
+          "name_ar": "الريدة وقصيعر"
+        },
+        {
+          "pcode": "YE1914",
+          "name_en": "Ad Dis",
+          "name_ar": "الديس"
+        },
+        {
+          "pcode": "YE1915",
+          "name_en": "Ash Shihr",
+          "name_ar": "الشحر"
+        },
+        {
+          "pcode": "YE1916",
+          "name_en": "Ghayl bin Yamin",
+          "name_ar": "غيل بن يمين"
+        },
+        {
+          "pcode": "YE1917",
+          "name_en": "Ghayl Bawazir",
+          "name_ar": "غيل باوزير"
+        },
+        {
+          "pcode": "YE1918",
+          "name_en": "Daw'an",
+          "name_ar": "دوعن"
+        },
+        {
+          "pcode": "YE1919",
+          "name_en": "Wadi Al Ayn",
+          "name_ar": "وادي العين"
+        },
+        {
+          "pcode": "YE1920",
+          "name_en": "Rakhyah",
+          "name_ar": "رخيه"
+        },
+        {
+          "pcode": "YE1921",
+          "name_en": "Amd",
+          "name_ar": "عمد"
+        },
+        {
+          "pcode": "YE1922",
+          "name_en": "Ad Dulay'ah",
+          "name_ar": "الضليعه"
+        },
+        {
+          "pcode": "YE1923",
+          "name_en": "Yab'uth",
+          "name_ar": "يبعث"
+        },
+        {
+          "pcode": "YE1924",
+          "name_en": "Hajar",
+          "name_ar": "حجر"
+        },
+        {
+          "pcode": "YE1925",
+          "name_en": "Brum Mayf'ah",
+          "name_ar": "بروم ميفع"
+        },
+        {
+          "pcode": "YE1926",
+          "name_en": "Al Mukalla",
+          "name_ar": "المكلا"
+        },
+        {
+          "pcode": "YE1927",
+          "name_en": "Al Mukalla City",
+          "name_ar": "مدينة المكلا"
+        },
+        {
+          "pcode": "YE1928",
+          "name_en": "Haridah",
+          "name_ar": "حريضه"
+        }
+      ]
+    },
+    {
+      "pcode": "YE20",
+      "name_en": "Dhamar",
+      "name_ar": "ذمار",
+      "districts": [
+        {
+          "pcode": "YE2001",
+          "name_en": "Al Hada",
+          "name_ar": "الحداء"
+        },
+        {
+          "pcode": "YE2002",
+          "name_en": "Jahran",
+          "name_ar": "جهران"
+        },
+        {
+          "pcode": "YE2003",
+          "name_en": "Jabal Ash sharq",
+          "name_ar": "جبل الشرق"
+        },
+        {
+          "pcode": "YE2004",
+          "name_en": "Maghrib Ans",
+          "name_ar": "مغرب عنس"
+        },
+        {
+          "pcode": "YE2005",
+          "name_en": "Otmah",
+          "name_ar": "عتمه"
+        },
+        {
+          "pcode": "YE2006",
+          "name_en": "Wusab Al Aali",
+          "name_ar": "وصاب العالي"
+        },
+        {
+          "pcode": "YE2007",
+          "name_en": "Wusab As Safil",
+          "name_ar": "وصاب السافل"
+        },
+        {
+          "pcode": "YE2008",
+          "name_en": "Dhamar City",
+          "name_ar": "مدينة ذمار"
+        },
+        {
+          "pcode": "YE2009",
+          "name_en": "Mayfa'at Ans",
+          "name_ar": "ميفعة عنس"
+        },
+        {
+          "pcode": "YE2010",
+          "name_en": "Ans",
+          "name_ar": "عنس"
+        },
+        {
+          "pcode": "YE2011",
+          "name_en": "Dawran Anis",
+          "name_ar": "ضوران انس"
+        },
+        {
+          "pcode": "YE2012",
+          "name_en": "Al Manar",
+          "name_ar": "المنار"
+        }
+      ]
+    },
+    {
+      "pcode": "YE21",
+      "name_en": "Shabwah",
+      "name_ar": "شبوه",
+      "districts": [
+        {
+          "pcode": "YE2101",
+          "name_en": "Dahr",
+          "name_ar": "دهر"
+        },
+        {
+          "pcode": "YE2102",
+          "name_en": "At Talh",
+          "name_ar": "الطلح"
+        },
+        {
+          "pcode": "YE2103",
+          "name_en": "Jardan",
+          "name_ar": "جردان"
+        },
+        {
+          "pcode": "YE2104",
+          "name_en": "Arma'a",
+          "name_ar": "عرماء"
+        },
+        {
+          "pcode": "YE2105",
+          "name_en": "Osaylan",
+          "name_ar": "عسيلان"
+        },
+        {
+          "pcode": "YE2106",
+          "name_en": "Ayn",
+          "name_ar": "عين"
+        },
+        {
+          "pcode": "YE2107",
+          "name_en": "Bayhan",
+          "name_ar": "بيحان"
+        },
+        {
+          "pcode": "YE2108",
+          "name_en": "Markhah Al Olya",
+          "name_ar": "مرخة العليا"
+        },
+        {
+          "pcode": "YE2109",
+          "name_en": "Markhah As Sufla",
+          "name_ar": "مرخة السفلى"
+        },
+        {
+          "pcode": "YE2110",
+          "name_en": "Nisab",
+          "name_ar": "نصاب"
+        },
+        {
+          "pcode": "YE2111",
+          "name_en": "Hatib",
+          "name_ar": "حطيب"
+        },
+        {
+          "pcode": "YE2112",
+          "name_en": "As Sa'id",
+          "name_ar": "الصعيد"
+        },
+        {
+          "pcode": "YE2113",
+          "name_en": "Ataq",
+          "name_ar": "عتق"
+        },
+        {
+          "pcode": "YE2114",
+          "name_en": "Habban",
+          "name_ar": "حبان"
+        },
+        {
+          "pcode": "YE2115",
+          "name_en": "Ar Rawdah",
+          "name_ar": "الروضه"
+        },
+        {
+          "pcode": "YE2116",
+          "name_en": "Mayfa'ah",
+          "name_ar": "ميفعه"
+        },
+        {
+          "pcode": "YE2117",
+          "name_en": "Radum",
+          "name_ar": "رضوم"
+        }
+      ]
+    },
+    {
+      "pcode": "YE22",
+      "name_en": "Sa'dah",
+      "name_ar": "صعده",
+      "districts": [
+        {
+          "pcode": "YE2201",
+          "name_en": "Baqim",
+          "name_ar": "باقم"
+        },
+        {
+          "pcode": "YE2202",
+          "name_en": "Qatabir",
+          "name_ar": "قطابر"
+        },
+        {
+          "pcode": "YE2203",
+          "name_en": "Monabbih",
+          "name_ar": "منبه"
+        },
+        {
+          "pcode": "YE2204",
+          "name_en": "Ghamr",
+          "name_ar": "غمر"
+        },
+        {
+          "pcode": "YE2205",
+          "name_en": "Razih",
+          "name_ar": "رازح"
+        },
+        {
+          "pcode": "YE2206",
+          "name_en": "Shada'a",
+          "name_ar": "شداء"
+        },
+        {
+          "pcode": "YE2207",
+          "name_en": "Adh Dhahir",
+          "name_ar": "الظاهر"
+        },
+        {
+          "pcode": "YE2208",
+          "name_en": "Haydan",
+          "name_ar": "حيدان"
+        },
+        {
+          "pcode": "YE2209",
+          "name_en": "Saqin",
+          "name_ar": "ساقين"
+        },
+        {
+          "pcode": "YE2210",
+          "name_en": "Majz",
+          "name_ar": "مجز"
+        },
+        {
+          "pcode": "YE2211",
+          "name_en": "Sahar",
+          "name_ar": "سحار"
+        },
+        {
+          "pcode": "YE2212",
+          "name_en": "As Safra",
+          "name_ar": "الصفراء"
+        },
+        {
+          "pcode": "YE2213",
+          "name_en": "Al Hashwah",
+          "name_ar": "الحشوه"
+        },
+        {
+          "pcode": "YE2214",
+          "name_en": "Kitaf wa Al Boqa'",
+          "name_ar": "كتاف والبقع"
+        },
+        {
+          "pcode": "YE2215",
+          "name_en": "Sa'dah",
+          "name_ar": "صعده"
+        }
+      ]
+    },
+    {
+      "pcode": "YE23",
+      "name_en": "Sana'a",
+      "name_ar": "صنعاء",
+      "districts": [
+        {
+          "pcode": "YE2301",
+          "name_en": "Hamdan",
+          "name_ar": "همدان"
+        },
+        {
+          "pcode": "YE2302",
+          "name_en": "Arhab",
+          "name_ar": "ارحب"
+        },
+        {
+          "pcode": "YE2303",
+          "name_en": "Nihm",
+          "name_ar": "نهم"
+        },
+        {
+          "pcode": "YE2304",
+          "name_en": "Bani Hushaysh",
+          "name_ar": "بني حشيش"
+        },
+        {
+          "pcode": "YE2305",
+          "name_en": "Sanhan wa Bani Bahlul",
+          "name_ar": "سنحان وبني بهلول"
+        },
+        {
+          "pcode": "YE2306",
+          "name_en": "Bilad Ar Rus",
+          "name_ar": "بلاد الروس"
+        },
+        {
+          "pcode": "YE2307",
+          "name_en": "Bani Matar",
+          "name_ar": "بني مطر"
+        },
+        {
+          "pcode": "YE2308",
+          "name_en": "Al Haymah Ad Dakhiliyah",
+          "name_ar": "الحيمة الداخليه"
+        },
+        {
+          "pcode": "YE2309",
+          "name_en": "Al Haymah Al Kharijiyah",
+          "name_ar": "الحيمة الخارجيه"
+        },
+        {
+          "pcode": "YE2310",
+          "name_en": "Manakhah",
+          "name_ar": "مناخه"
+        },
+        {
+          "pcode": "YE2311",
+          "name_en": "Sa'fan",
+          "name_ar": "صعفان"
+        },
+        {
+          "pcode": "YE2312",
+          "name_en": "Khawlan",
+          "name_ar": "خولان"
+        },
+        {
+          "pcode": "YE2313",
+          "name_en": "At Tyal",
+          "name_ar": "الطيال"
+        },
+        {
+          "pcode": "YE2314",
+          "name_en": "Bani Dabyan",
+          "name_ar": "بني ضبيان"
+        },
+        {
+          "pcode": "YE2315",
+          "name_en": "Al Hissn",
+          "name_ar": "الحصن"
+        },
+        {
+          "pcode": "YE2316",
+          "name_en": "Jihanah",
+          "name_ar": "جحانه"
+        }
+      ]
+    },
+    {
+      "pcode": "YE24",
+      "name_en": "Aden",
+      "name_ar": "عدن",
+      "districts": [
+        {
+          "pcode": "YE2401",
+          "name_en": "Dar Sa'd",
+          "name_ar": "دار سعد"
+        },
+        {
+          "pcode": "YE2402",
+          "name_en": "Ash Shaykh Othman",
+          "name_ar": "الشيخ عثمان"
+        },
+        {
+          "pcode": "YE2403",
+          "name_en": "Al Mansurah",
+          "name_ar": "المنصوره"
+        },
+        {
+          "pcode": "YE2404",
+          "name_en": "Al Burayqah",
+          "name_ar": "البريقه"
+        },
+        {
+          "pcode": "YE2405",
+          "name_en": "At Tawahi",
+          "name_ar": "التواهي"
+        },
+        {
+          "pcode": "YE2406",
+          "name_en": "Al Mu'alla",
+          "name_ar": "المعلا"
+        },
+        {
+          "pcode": "YE2407",
+          "name_en": "Kritar - Sirah",
+          "name_ar": "صيره"
+        },
+        {
+          "pcode": "YE2408",
+          "name_en": "Khur Maksar",
+          "name_ar": "خور مكسر"
+        }
+      ]
+    },
+    {
+      "pcode": "YE25",
+      "name_en": "Lahj",
+      "name_ar": "لحج",
+      "districts": [
+        {
+          "pcode": "YE2501",
+          "name_en": "Al Had",
+          "name_ar": "الحد"
+        },
+        {
+          "pcode": "YE2502",
+          "name_en": "Yafi'",
+          "name_ar": "يافع"
+        },
+        {
+          "pcode": "YE2503",
+          "name_en": "Al Maflahi",
+          "name_ar": "المفلحي"
+        },
+        {
+          "pcode": "YE2504",
+          "name_en": "Yahr",
+          "name_ar": "يهر"
+        },
+        {
+          "pcode": "YE2505",
+          "name_en": "Habil Jabr",
+          "name_ar": "حبيل جبر"
+        },
+        {
+          "pcode": "YE2506",
+          "name_en": "Halmin",
+          "name_ar": "حالمين"
+        },
+        {
+          "pcode": "YE2507",
+          "name_en": "Radfan",
+          "name_ar": "ردفان"
+        },
+        {
+          "pcode": "YE2508",
+          "name_en": "Al Malah",
+          "name_ar": "الملاح"
+        },
+        {
+          "pcode": "YE2509",
+          "name_en": "Al Musaymir",
+          "name_ar": "المسيمير"
+        },
+        {
+          "pcode": "YE2510",
+          "name_en": "Al Qubaytah",
+          "name_ar": "القبيطه"
+        },
+        {
+          "pcode": "YE2511",
+          "name_en": "Tur Al Bahah",
+          "name_ar": "طور الباحه"
+        },
+        {
+          "pcode": "YE2512",
+          "name_en": "Al Maqatirah",
+          "name_ar": "المقاطره"
+        },
+        {
+          "pcode": "YE2513",
+          "name_en": "Al Madaribah Wa Al Aarah",
+          "name_ar": "المضاربة و العاره"
+        },
+        {
+          "pcode": "YE2514",
+          "name_en": "Al Hawtah",
+          "name_ar": "الحوطه"
+        },
+        {
+          "pcode": "YE2515",
+          "name_en": "Tuban",
+          "name_ar": "تبن"
+        }
+      ]
+    },
+    {
+      "pcode": "YE26",
+      "name_en": "Ma'rib",
+      "name_ar": "مارب",
+      "districts": [
+        {
+          "pcode": "YE2601",
+          "name_en": "Majzar",
+          "name_ar": "مجزر"
+        },
+        {
+          "pcode": "YE2602",
+          "name_en": "Raghwan",
+          "name_ar": "رغوان"
+        },
+        {
+          "pcode": "YE2603",
+          "name_en": "Madghal Al Jid'an",
+          "name_ar": "مدغل الجدعان"
+        },
+        {
+          "pcode": "YE2604",
+          "name_en": "Harib Al Qaramish",
+          "name_ar": "حريب القرامش"
+        },
+        {
+          "pcode": "YE2605",
+          "name_en": "Bidbadah",
+          "name_ar": "بدبده"
+        },
+        {
+          "pcode": "YE2606",
+          "name_en": "Sirwah",
+          "name_ar": "صرواح"
+        },
+        {
+          "pcode": "YE2607",
+          "name_en": "Al Jubah",
+          "name_ar": "الجوبه"
+        },
+        {
+          "pcode": "YE2608",
+          "name_en": "Rahabah",
+          "name_ar": "رحبه"
+        },
+        {
+          "pcode": "YE2609",
+          "name_en": "Harib",
+          "name_ar": "حريب"
+        },
+        {
+          "pcode": "YE2610",
+          "name_en": "Mahliyah",
+          "name_ar": "ماهليه"
+        },
+        {
+          "pcode": "YE2611",
+          "name_en": "Al Abdiyah",
+          "name_ar": "العبديه"
+        },
+        {
+          "pcode": "YE2612",
+          "name_en": "Ma'rib City",
+          "name_ar": "مدينة مارب"
+        },
+        {
+          "pcode": "YE2613",
+          "name_en": "Ma'rib",
+          "name_ar": "مارب"
+        },
+        {
+          "pcode": "YE2614",
+          "name_en": "Jabal Murad",
+          "name_ar": "جبل مراد"
+        }
+      ]
+    },
+    {
+      "pcode": "YE27",
+      "name_en": "Al Mahwit",
+      "name_ar": "المحويت",
+      "districts": [
+        {
+          "pcode": "YE2701",
+          "name_en": "Shibam Kawkaban",
+          "name_ar": "شبام كوكبان"
+        },
+        {
+          "pcode": "YE2702",
+          "name_en": "At Tawilah",
+          "name_ar": "الطويله"
+        },
+        {
+          "pcode": "YE2703",
+          "name_en": "Ar Rujum",
+          "name_ar": "الرجم"
+        },
+        {
+          "pcode": "YE2704",
+          "name_en": "Al Khabt",
+          "name_ar": "الخبت"
+        },
+        {
+          "pcode": "YE2705",
+          "name_en": "Melhan",
+          "name_ar": "ملحان"
+        },
+        {
+          "pcode": "YE2706",
+          "name_en": "Hufash",
+          "name_ar": "حفاش"
+        },
+        {
+          "pcode": "YE2707",
+          "name_en": "Bani Sa'd",
+          "name_ar": "بني سعد"
+        },
+        {
+          "pcode": "YE2708",
+          "name_en": "Al Mahwit City",
+          "name_ar": "مدينة المحويت"
+        },
+        {
+          "pcode": "YE2709",
+          "name_en": "Al Mahwit",
+          "name_ar": "المحويت"
+        }
+      ]
+    },
+    {
+      "pcode": "YE28",
+      "name_en": "Al Maharah",
+      "name_ar": "المهره",
+      "districts": [
+        {
+          "pcode": "YE2801",
+          "name_en": "Shahin",
+          "name_ar": "شحن"
+        },
+        {
+          "pcode": "YE2802",
+          "name_en": "Hat",
+          "name_ar": "حات"
+        },
+        {
+          "pcode": "YE2803",
+          "name_en": "Hawf",
+          "name_ar": "حوف"
+        },
+        {
+          "pcode": "YE2804",
+          "name_en": "Al Ghaydhah",
+          "name_ar": "الغيظه"
+        },
+        {
+          "pcode": "YE2805",
+          "name_en": "Man'ar",
+          "name_ar": "منعر"
+        },
+        {
+          "pcode": "YE2806",
+          "name_en": "Al Masilah",
+          "name_ar": "المسيله"
+        },
+        {
+          "pcode": "YE2807",
+          "name_en": "Sayhut",
+          "name_ar": "سيحوت"
+        },
+        {
+          "pcode": "YE2808",
+          "name_en": "Qishn",
+          "name_ar": "قشن"
+        },
+        {
+          "pcode": "YE2809",
+          "name_en": "Haswin",
+          "name_ar": "حصوين"
+        }
+      ]
+    },
+    {
+      "pcode": "YE29",
+      "name_en": "Amran",
+      "name_ar": "عمران",
+      "districts": [
+        {
+          "pcode": "YE2901",
+          "name_en": "Harf Sufyan",
+          "name_ar": "حرف سفيان"
+        },
+        {
+          "pcode": "YE2902",
+          "name_en": "Huth",
+          "name_ar": "حوث"
+        },
+        {
+          "pcode": "YE2903",
+          "name_en": "Al Ashah",
+          "name_ar": "العشه"
+        },
+        {
+          "pcode": "YE2904",
+          "name_en": "Qaflat Odhar",
+          "name_ar": "قفلة عذر"
+        },
+        {
+          "pcode": "YE2905",
+          "name_en": "Shaharah",
+          "name_ar": "شهاره"
+        },
+        {
+          "pcode": "YE2906",
+          "name_en": "Al Madan",
+          "name_ar": "المدان"
+        },
+        {
+          "pcode": "YE2907",
+          "name_en": "Suwayr",
+          "name_ar": "صوير"
+        },
+        {
+          "pcode": "YE2908",
+          "name_en": "Dhulaymat Habur",
+          "name_ar": "ظليمة حبور"
+        },
+        {
+          "pcode": "YE2909",
+          "name_en": "Dhibain",
+          "name_ar": "ذيبين"
+        },
+        {
+          "pcode": "YE2910",
+          "name_en": "Kharif",
+          "name_ar": "خارف"
+        },
+        {
+          "pcode": "YE2911",
+          "name_en": "Raydah",
+          "name_ar": "ريده"
+        },
+        {
+          "pcode": "YE2912",
+          "name_en": "Jabal Eyal Yazid",
+          "name_ar": "جبل عيال يزيد"
+        },
+        {
+          "pcode": "YE2913",
+          "name_en": "As Sudah",
+          "name_ar": "السوده"
+        },
+        {
+          "pcode": "YE2914",
+          "name_en": "As Sawd",
+          "name_ar": "السود"
+        },
+        {
+          "pcode": "YE2915",
+          "name_en": "Amran",
+          "name_ar": "عمران"
+        },
+        {
+          "pcode": "YE2916",
+          "name_en": "Maswar",
+          "name_ar": "مسور"
+        },
+        {
+          "pcode": "YE2917",
+          "name_en": "Thula",
+          "name_ar": "ثلاء"
+        },
+        {
+          "pcode": "YE2918",
+          "name_en": "Eyal Surayh",
+          "name_ar": "عيال سريح"
+        },
+        {
+          "pcode": "YE2919",
+          "name_en": "Khamir",
+          "name_ar": "خمر"
+        },
+        {
+          "pcode": "YE2920",
+          "name_en": "Bani Surim",
+          "name_ar": "بني صريم"
+        }
+      ]
+    },
+    {
+      "pcode": "YE30",
+      "name_en": "Ad Dali'",
+      "name_ar": "الضالع",
+      "districts": [
+        {
+          "pcode": "YE3001",
+          "name_en": "Juban",
+          "name_ar": "جبن"
+        },
+        {
+          "pcode": "YE3002",
+          "name_en": "Damt",
+          "name_ar": "دمت"
+        },
+        {
+          "pcode": "YE3003",
+          "name_en": "Qa'tabah",
+          "name_ar": "قعطبه"
+        },
+        {
+          "pcode": "YE3004",
+          "name_en": "Ash Shu'ayb",
+          "name_ar": "الشعيب"
+        },
+        {
+          "pcode": "YE3005",
+          "name_en": "Al Hasayn",
+          "name_ar": "الحصين"
+        },
+        {
+          "pcode": "YE3006",
+          "name_en": "Ad Dali'",
+          "name_ar": "الضالع"
+        },
+        {
+          "pcode": "YE3007",
+          "name_en": "Jahaf",
+          "name_ar": "جحاف"
+        },
+        {
+          "pcode": "YE3008",
+          "name_en": "Al Azariq",
+          "name_ar": "الازارق"
+        },
+        {
+          "pcode": "YE3009",
+          "name_en": "Al Husha",
+          "name_ar": "الحشاء"
+        }
+      ]
+    },
+    {
+      "pcode": "YE31",
+      "name_en": "Raymah",
+      "name_ar": "ريمه",
+      "districts": [
+        {
+          "pcode": "YE3101",
+          "name_en": "Bilad Atta'am",
+          "name_ar": "بلاد الطعام"
+        },
+        {
+          "pcode": "YE3102",
+          "name_en": "As Salafiyyah",
+          "name_ar": "السلفيه"
+        },
+        {
+          "pcode": "YE3103",
+          "name_en": "Al Jabin",
+          "name_ar": "الجبين"
+        },
+        {
+          "pcode": "YE3104",
+          "name_en": "Mazhar",
+          "name_ar": "مزهر"
+        },
+        {
+          "pcode": "YE3105",
+          "name_en": "Kusmah",
+          "name_ar": "كسمه"
+        },
+        {
+          "pcode": "YE3106",
+          "name_en": "Al Ja'fariyyah",
+          "name_ar": "الجعفريه"
+        }
+      ]
+    },
+    {
+      "pcode": "YE32",
+      "name_en": "Socotra",
+      "name_ar": "سقطرى",
+      "districts": [
+        {
+          "pcode": "YE3201",
+          "name_en": "Hadibu",
+          "name_ar": "حديبو"
+        },
+        {
+          "pcode": "YE3202",
+          "name_en": "Qalansiyah wa Abd Al Kuri",
+          "name_ar": "قلنسية وعبد الكوري"
+        }
+      ]
+    }
+  ]
+}
