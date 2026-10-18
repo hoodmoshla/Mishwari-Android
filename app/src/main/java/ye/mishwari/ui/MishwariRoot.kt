@@ -256,7 +256,8 @@ fun MishwariRoot(
         val manager = context.getSystemService(LocationManager::class.java)
         val location = if (Build.VERSION.SDK_INT >= 28) manager.isLocationEnabled else manager.isProviderEnabled(LocationManager.GPS_PROVIDER) || manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
         val channel = context.getSystemService(android.app.NotificationManager::class.java).getNotificationChannel("mishwari_geo_alerts")
-        val notifications = NotificationManagerCompat.from(context).areNotificationsEnabled() && channel?.importance != android.app.NotificationManager.IMPORTANCE_NONE
+        val notificationPermission = Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
+        val notifications = notificationPermission && NotificationManagerCompat.from(context).areNotificationsEnabled() && channel?.importance != android.app.NotificationManager.IMPORTANCE_NONE
         listOf(if (fine && background && location) "الموقع جاهز" else "الموقع يحتاج إعدادًا", if (notifications) "الإشعارات متاحة" else "الإشعارات مغلقة")
     }
     Surface(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
