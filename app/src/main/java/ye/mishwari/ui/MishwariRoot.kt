@@ -13,6 +13,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.Saver
+import android.os.Bundle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -42,12 +44,29 @@ private fun subtree(root: String, places: List<Place>): Set<String> {
 }
 private fun placeLabel(p: Place) = listOf(p.governorate, p.district, p.area, p.name).filter { it.isNotBlank() }.distinct().joinToString(" / ")
 
+// Keep the editor identity across Activity recreation; its individual fields use rememberSaveable.
+private val errandEditorSaver = Saver<Errand?, Bundle>(
+    save = { e -> Bundle().apply { if (e != null) {
+        putString("id", e.id); putString("title", e.title); putString("description", e.description)
+        putString("place", e.placeId); putString("category", e.category); putString("quantity", e.quantity)
+        putString("price", e.expectedPrice); putString("notes", e.notes); putInt("priority", e.priority)
+        putString("due", e.dueDate); putString("photo", e.photoPath); putString("status", e.status); putLong("created", e.createdAt)
+    } } },
+    restore = { b -> if (!b.containsKey("id")) null else Errand(
+        id = b.getString("id")!!, title = b.getString("title").orEmpty(), description = b.getString("description").orEmpty(),
+        placeId = b.getString("place"), category = b.getString("category")!!, quantity = b.getString("quantity").orEmpty(),
+        expectedPrice = b.getString("price").orEmpty(), notes = b.getString("notes").orEmpty(), priority = b.getInt("priority"),
+        dueDate = b.getString("due").orEmpty(), photoPath = b.getString("photo"), status = b.getString("status")!!, createdAt = b.getLong("created")
+    ) }
+)
+
 @Composable
 fun MishwariRoot(
     model: MishwariViewModel, permissionRevision: Int, deepLinkPlace: String?, consumeDeepLink: () -> Unit,
     requestLocation: () -> Unit, requestNotifications: () -> Unit, openAppSettings: () -> Unit,
     openLocationSettings: () -> Unit, exportBackup: () -> Unit, importBackup: () -> Unit,
-    importDirectory: () -> Unit, selectPhoto: ((String) -> Unit) -> Unit
+    importDirectory: () -> Unit, selectPhoto: ((String) -> Unit) -> Unit,
+    incomingDraft: String? = null, consumeIncomingDraft: () -> Unit = {}, requestVoice: () -> Unit = {}
 ) {
     val errands by model.errands.collectAsStateWithLifecycle()
     val places by model.places.collectAsStateWithLifecycle()
@@ -65,12 +84,24 @@ fun MishwariRoot(
             var query by rememberSaveable { mutableStateOf("") }
             var filter by rememberSaveable { mutableStateOf("غير المنجزة") }
             var placeFilter by rememberSaveable { mutableStateOf<String?>(null) }
-            var editingErrand by remember { mutableStateOf<Errand?>(null) }
+            var editingErrand by rememberSaveable(stateSaver = errandEditorSaver) { mutableStateOf<Errand?>(null) }
             var editingPlace by remember { mutableStateOf<Place?>(null) }
             var deletingErrand by remember { mutableStateOf<Errand?>(null) }
             var deletingPlace by remember { mutableStateOf<Place?>(null) }
             var backgroundExplanation by remember { mutableStateOf(false) }
             var importing by remember { mutableStateOf(false) }
+            var voiceExplanation by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(incomingDraft, editingErrand, editingPlace) {
+                if (incomingDraft != null && editingErrand == null && editingPlace == null) {
+                    val text = incomingDraft.trim()
+                    if (text.isNotBlank()) {
+                        editingErrand = Errand(title = text.lineSequence().first().take(200),
+                            description = if (text.length > 200 || '\n' in text) text else "")
+                        tab = 0
+                    }
+                    consumeIncomingDraft()
+                }
+            }
             LaunchedEffect(deepLinkPlace) { if (deepLinkPlace != null) { placeFilter = deepLinkPlace; tab = 0; filter = "غير المنجزة"; consumeDeepLink() } }
             Scaffold(
                 topBar = { TopAppBar(title = { Column { Text("مشواري", fontWeight = FontWeight.Bold); Text("طلباتك معك… في المكان المناسب", style = MaterialTheme.typography.labelMedium) } }) },
@@ -106,6 +137,7 @@ fun MishwariRoot(
                                     }
                                 }
                                 item { CompactStatus(permissionRevision, settings["travel_place"]?.let { id -> places.find { it.id == id }?.name }, { tab = 3 }) }
+                                item { OutlinedButton(onClick = { voiceExplanation = true }, modifier = Modifier.fillMaxWidth()) { Text("إضافة بالصوت") } }
                                 item { OutlinedTextField(query, { query = it }, label = { Text("ابحث عن طلب أو وجهة") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
                                 item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { (listOf("غير المنجزة", "الكل") + statuses).forEach { value -> FilterChip(selected = filter == value, onClick = { filter = value }, label = { Text(value) }) } } }
                                 if (placeFilter != null) item { AssistChip(onClick = { placeFilter = null }, label = { Text("الوجهة: ${places.find { it.id == placeFilter }?.name ?: "غير متاحة"} — عرض الجميع ×") }) }
@@ -201,6 +233,11 @@ fun MishwariRoot(
             deletingPlace?.let { p -> Confirm("حذف المكان؟", "تبقى طلباته محفوظة دون وجهة. إذا كانت له أماكن تابعة، انقلها أو احذفها أولًا.", { deletingPlace = null }, { model.remove(p); deletingPlace = null }) }
             if (backgroundExplanation) AlertDialog(onDismissRequest = { backgroundExplanation = false }, title = { Text("التذكير حتى والتطبيق مغلق") }, text = { Text("لتلقي تنبيه الوصول إلى أماكنك المختارة، اسمح لمشواري بالوصول إلى الموقع دائمًا من إعدادات الأذونات، بعد السماح بالموقع الدقيق أثناء الاستخدام. تُرسل نقاط التنبيه المختارة إلى خدمة السياجات على الجهاز؛ لا نخزن سجل تنقلاتك ولا نستخدم خادمًا خاصًا. يمكنك رفض هذا الإذن والاستمرار باستخدام قوائمك.") }, confirmButton = { TextButton(onClick = { backgroundExplanation = false; openAppSettings() }) { Text("أوافق، افتح الإعدادات") } }, dismissButton = { TextButton(onClick = { backgroundExplanation = false }) { Text("ليس الآن") } })
             if (importing) Confirm("استيراد نسخة محلية", "تُدمج البيانات ويُحدّث السجل ذو المعرّف نفسه. لا تُحذف السجلات غير الموجودة في الملف. يُنصح بتصدير نسخة حالية أولًا. لن تُعاد تفعيل مراقبة الخلفية دون مراجعتك.", { importing = false }, { importing = false; importBackup() })
+            if (voiceExplanation) AlertDialog(onDismissRequest = { voiceExplanation = false },
+                title = { Text("إملاء طلب بالعربية") },
+                text = { Text("سيُفتح تطبيق التعرف على الكلام في هاتفك. نطلب التعرّف دون اتصال، لكن الخدمة قد تستخدم الإنترنت وترسل الصوت إلى مزودها حسب إعداداتها. مشواري لا يسجل الصوت ولا يحتفظ به. راجع النص واختر الوجهة قبل الحفظ؛ الكتابة متاحة دائمًا.") },
+                confirmButton = { TextButton(onClick = { voiceExplanation = false; requestVoice() }) { Text("متابعة إلى الإملاء") } },
+                dismissButton = { TextButton(onClick = { voiceExplanation = false }) { Text("إلغاء") } })
             operationError?.let { message -> AlertDialog(onDismissRequest = { model.error.value = null }, title = { Text("لم تُكتمل العملية") }, text = { Text(message) }, confirmButton = { TextButton(onClick = { model.error.value = null }) { Text("حسنًا") } }) }
         }
     }
@@ -287,6 +324,7 @@ fun MishwariRoot(
     val normalizedDue = westernDigits(due).trim()
     val validDate = due.isBlank() || runCatching { java.time.LocalDate.parse(normalizedDue); true }.getOrDefault(false)
     Editor(if (original.title.isBlank()) "إضافة طلب" else "تعديل الطلب", dismiss, { save(original.copy(title = title.trim(), description = description.trim(), placeId = place, category = category, quantity = quantity, expectedPrice = price, notes = notes, priority = priority, dueDate = normalizedDue, photoPath = photo, status = status)) }, title.isNotBlank() && validDate) {
+        Text("راجع البيانات واختر الوجهة قبل الحفظ. لا تُحفظ المسودة تلقائيًا.", style = MaterialTheme.typography.bodySmall)
         Field("اسم الغرض أو المهمة *", title, { title = it })
         PlaceSelector("المحافظة / المديرية / المكان", place, places, { place = it })
         TextButton(onClick = addPlace) { Text("إضافة مكان غير موجود في الدليل") }

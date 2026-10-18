@@ -2,6 +2,8 @@ package ye.mishwari
 
 import android.app.Application
 import androidx.activity.compose.setContent
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
@@ -93,6 +95,70 @@ class UiRobolectricTest {
             compose.onAllNodesWithText("لا توجد طلبات هنا").fetchSemanticsNodes().isNotEmpty()
         }
         compose.onNodeWithText("لا توجد طلبات هنا").performScrollTo().assertIsDisplayed()
+        assertTrueDatabaseIsEmpty()
+    }
+
+    @Test
+    fun sharedTextRequiresReviewAndExplicitSave() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        val model = MishwariViewModel(application)
+        val incoming = mutableStateOf<String?>("شراء دواء\nمن صيدلية موثوقة")
+        compose.activity.setContent {
+            MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                incomingDraft = incoming.value, consumeIncomingDraft = { incoming.value = null })
+        }
+        compose.onNodeWithText("اسم الغرض أو المهمة *").assertIsDisplayed()
+        assertTrueDatabaseIsEmpty()
+        compose.onNodeWithText("حفظ").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("حفظ").fetchSemanticsNodes().isEmpty() }
+        runBlocking {
+            val saved = MishwariDatabase.get(application).dao().allErrands().single()
+            assertEquals("شراء دواء", saved.title)
+            assertEquals("شراء دواء\nمن صيدلية موثوقة", saved.description)
+            assertEquals(null, saved.placeId)
+        }
+    }
+
+    @Test
+    fun pendingIncomingTextDoesNotOverwriteEditorAndDraftSurvivesRecreation() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        val model = MishwariViewModel(application)
+        val incoming = mutableStateOf<String?>(null)
+        val restoration = StateRestorationTester(compose)
+        restoration.setContent {
+            MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {},
+                incomingDraft = incoming.value, consumeIncomingDraft = { incoming.value = null })
+        }
+        compose.onNodeWithText("+ إضافة طلب", useUnmergedTree = true).performClick()
+        compose.onNodeWithText("اسم الغرض أو المهمة *").performTextInput("مسودة حالية")
+        compose.runOnIdle { incoming.value = "نص وارد جديد" }
+        compose.onNodeWithText("مسودة حالية").assertIsDisplayed()
+        restoration.emulateSavedInstanceStateRestore()
+        compose.onNodeWithText("مسودة حالية").assertIsDisplayed()
+        assertTrueDatabaseIsEmpty()
+        compose.onNodeWithText("إلغاء").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("نص وارد جديد").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("نص وارد جديد").assertIsDisplayed()
+        compose.onNodeWithText("إلغاء").performClick()
+        assertTrueDatabaseIsEmpty()
+    }
+
+    @Test
+    fun voiceExplainsExternalProviderBeforeLaunching() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        var launches = 0
+        val model = MishwariViewModel(application)
+        compose.activity.setContent {
+            MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {}, requestVoice = { launches++ })
+        }
+        compose.onNodeWithText("إضافة بالصوت").performScrollTo().performClick()
+        compose.onNodeWithText("إملاء طلب بالعربية").assertIsDisplayed()
+        assertEquals(0, launches)
+        compose.onNodeWithText("متابعة إلى الإملاء").performClick()
+        assertEquals(1, launches)
         assertTrueDatabaseIsEmpty()
     }
 
