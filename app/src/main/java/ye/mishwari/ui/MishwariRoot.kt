@@ -307,8 +307,9 @@ fun MishwariRoot(
     }
 }
 @Composable private fun PhotoPreview(path: String) {
-    val bitmap by produceState<android.graphics.Bitmap?>(null, path) {
-        value = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+    var bitmap by remember(path) { mutableStateOf<android.graphics.Bitmap?>(null) }
+    LaunchedEffect(path) {
+        bitmap = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
             val options = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
             android.graphics.BitmapFactory.decodeFile(path, options)
             var sample = 1
