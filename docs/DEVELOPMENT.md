@@ -18,7 +18,7 @@ APK في `app/build/outputs/apk/debug/app-debug.apk`. اختبارات الجه�
 
 ## تنزيل APK والنتائج
 
-افتح Actions في المستودع، ثم Android CI، ثم التشغيل الأخضر. تحت Artifacts تجد `Mishwari-debug-<run_number>` وفيه APK واحد و`SHA256SUMS.txt` و`apk-signature.txt`. يلزم فك ضغط Artifact. التقرير الآخر `verification-reports-<run_number>` يضم سجل Gradle وتقارير HTML/XML وLint. مدة الحفظ 30 يومًا، ويمكنك تنزيلها قبل انتهائها. يحتفظ التشغيل الفاشل بالتقارير دون إعلان APK صالح.
+افتح Actions في المستودع، ثم Android CI، ثم التشغيل الأخضر. تحت Artifacts تجد `Mishwari-debug-<run_number>` وفيه APK واحد و`SHA256SUMS.txt` و`apk-signature.txt`. يلزم فك ضغط Artifact. التقرير الآخر `verification-reports-<run_number>` يضم سجل Gradle وتقارير HTML/XML وLint. مدة الحفظ 30 يومًا، ويمكنك تنزيلها قبل انتهائها. يحتفظ التشغيل الفاشل بالتقارير التي أُنتجت فعلًا دون إعلان APK صالح. إذا فشل إعداد JDK أو SDK قبل بدء Gradle، فلا يوجد سجل Gradle؛ سبب الإخفاق في سجل خطوة الإعداد داخل Actions نفسه.
 
 ## التوقيع والأسرار
 

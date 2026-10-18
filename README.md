@@ -6,7 +6,7 @@
 
 المصدر الدائم هو [hoodmoshla/Mishwari-Android](https://github.com/hoodmoshla/Mishwari-Android)، وهو **خاص**. التطوير على فرع [`codex/initial-implementation`](https://github.com/hoodmoshla/Mishwari-Android/tree/codex/initial-implementation) إلى أن تنتهي المراجعة والاختبارات المطلوبة؛ لا تُدفع نسخة غير مكتملة إلى `main`.
 
-من [Actions](https://github.com/hoodmoshla/Mishwari-Android/actions) افتح تشغيل **Android CI** الناجح، ثم حمّل Artifact باسم `Mishwari-debug-رقم_التشغيل` وافك ضغطه للحصول على APK واحد وملف بصمته وتقرير توقيعه. سجلات البناء وتقارير الاختبارات وLint في Artifact مستقل `verification-reports-رقم_التشغيل` حتى عند الفشل. مدة حفظ الملفات 30 يومًا. لا يُرفع APK عند فشل خطوة التحقق.
+من [Actions](https://github.com/hoodmoshla/Mishwari-Android/actions) افتح تشغيل **Android CI** الناجح، ثم حمّل Artifact باسم `Mishwari-debug-رقم_التشغيل` وافك ضغطه للحصول على APK واحد وملف بصمته وتقرير توقيعه. السجلات والتقارير التي أُنتجت فعلًا بعد بدء Gradle في Artifact مستقل `verification-reports-رقم_التشغيل` حتى عند الفشل. مدة حفظ الملفات 30 يومًا. لا يُرفع APK عند فشل خطوة التحقق.
 
 راجع [دليل التطوير وCI والأسرار](docs/DEVELOPMENT.md). لا تحتاج النسخة الاختبارية أسرارًا أو مفاتيح API، ولا يوجد نشر Release آلي.
 
