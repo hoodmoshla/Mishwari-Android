@@ -46,6 +46,24 @@ jobs:
           mkdir -p ci-artifacts
           cp app/build/outputs/apk/debug/app-debug.apk ci-artifacts/Mishwari-0.1.0-debug.apk
           "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.0-debug.apk | tee ci-artifacts/apk-signature.txt
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib
+          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.0-debug.apk')
+          provenance = {
+              'repository': os.environ['GITHUB_REPOSITORY'],
+              'commit': os.environ['GITHUB_SHA'],
+              'ref': os.environ['GITHUB_REF'],
+              'run_id': os.environ['GITHUB_RUN_ID'],
+              'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'run_url': f"{os.environ['GITHUB_SERVER_URL']}/{os.environ['GITHUB_REPOSITORY']}/actions/runs/{os.environ['GITHUB_RUN_ID']}",
+              'apk': apk.name,
+              'sha256': hashlib.sha256(apk.read_bytes()).hexdigest(),
+              'bytes': apk.stat().st_size,
+              'variant': 'debug',
+              'physical_device_tested': False,
+          }
+          pathlib.Path('ci-artifacts/build-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
+          PY
           cd ci-artifacts
           sha256sum Mishwari-0.1.0-debug.apk > SHA256SUMS.txt
       - name: Upload verified debug APK
