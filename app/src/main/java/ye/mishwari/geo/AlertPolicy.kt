@@ -20,8 +20,14 @@ object AlertPolicy {
     ): Decision {
         if (!hasActiveTasks || !notificationsAllowed) return Decision(state, false, false)
         if (state.inside) return Decision(state, false, false)
+        // Wall-clock adjustments can make a persisted alert timestamp appear to be
+        // in the future. Rebase it on this suppressed entry so the place is not
+        // blocked until the clock eventually catches up to the old value.
+        if (state.lastAlertAtMillis > 0L && nowMillis < state.lastAlertAtMillis) {
+            return Decision(state.copy(inside = true, lastAlertAtMillis = nowMillis), false, true)
+        }
         val cooldownPassed = state.lastAlertAtMillis <= 0L ||
-            (nowMillis >= state.lastAlertAtMillis && nowMillis - state.lastAlertAtMillis >= MIN_COOLDOWN_MILLIS)
+            nowMillis - state.lastAlertAtMillis >= MIN_COOLDOWN_MILLIS
         return if (cooldownPassed) {
             Decision(State(inside = true, lastAlertAtMillis = nowMillis), true, true)
         } else {

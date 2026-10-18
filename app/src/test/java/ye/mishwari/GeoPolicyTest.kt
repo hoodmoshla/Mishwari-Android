@@ -88,4 +88,29 @@ class GeoPolicyTest {
         val afterCooldown = AlertPolicy.onEnter(rearmed.state, now + AlertPolicy.MIN_COOLDOWN_MILLIS, true, true)
         assertTrue(afterCooldown.shouldNotify)
     }
+
+    @Test fun clockRollbackRebasesFutureTimestampAndLargeForwardJumpDoesNotOverflow() {
+        val futureAlert = AlertPolicy.State(inside = false, lastAlertAtMillis = 5_000_000L)
+        val rolledBack = AlertPolicy.onEnter(futureAlert, 1_000_000L, true, true)
+        assertFalse(rolledBack.shouldNotify)
+        assertTrue(rolledBack.shouldPersist)
+        assertTrue(rolledBack.state.inside)
+        assertEquals(1_000_000L, rolledBack.state.lastAlertAtMillis)
+
+        val rearmed = AlertPolicy.onExit(rolledBack.state).state
+        assertFalse(AlertPolicy.onEnter(
+            rearmed, 1_000_000L + AlertPolicy.MIN_COOLDOWN_MILLIS - 1, true, true,
+        ).shouldNotify)
+        val afterRebasedCooldown = AlertPolicy.onExit(rearmed).state
+        assertTrue(AlertPolicy.onEnter(
+            afterRebasedCooldown, 1_000_000L + AlertPolicy.MIN_COOLDOWN_MILLIS, true, true,
+        ).shouldNotify)
+
+        assertTrue(AlertPolicy.onEnter(
+            AlertPolicy.State(lastAlertAtMillis = 1L), Long.MAX_VALUE, true, true,
+        ).shouldNotify)
+        assertTrue(AlertPolicy.onEnter(
+            AlertPolicy.State(lastAlertAtMillis = -1L), 2L, true, true,
+        ).shouldNotify)
+    }
 }
