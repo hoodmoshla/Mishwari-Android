@@ -162,6 +162,59 @@ class UiRobolectricTest {
         assertTrueDatabaseIsEmpty()
     }
 
+    @Test
+    fun notificationDeepLinkFiltersToItsDestinationPendingErrands() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        runBlocking {
+            val dao = MishwariDatabase.get(application).dao()
+            dao.upsertPlaces(listOf(ye.mishwari.data.Place(id = "linked", name = "سوق التنبيه"), ye.mishwari.data.Place(id = "other", name = "سوق آخر")))
+            dao.upsertErrands(listOf(
+                ye.mishwari.data.Errand(id = "linked-task", title = "طلب الوجهة المقصودة", placeId = "linked"),
+                ye.mishwari.data.Errand(id = "other-task", title = "طلب وجهة أخرى", placeId = "other"),
+                ye.mishwari.data.Errand(id = "done-task", title = "طلب مكتمل مخفي", placeId = "linked", status = "مكتمل"),
+            ))
+        }
+        val model = MishwariViewModel(application)
+        compose.activity.setContent {
+            MishwariRoot(model, 0, "linked", {}, {}, {}, {}, {}, {}, {}, {}, {})
+        }
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("الوجهة: سوق التنبيه — عرض الجميع ×").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("طلب الوجهة المقصودة").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("طلب وجهة أخرى").assertDoesNotExist()
+        compose.onNodeWithText("طلب مكتمل مخفي").assertDoesNotExist()
+    }
+
+    @Test
+    fun endingTravelFromUiClearsTripWithoutDeletingErrandsOrMonitoredPlaces() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        runBlocking {
+            val dao = MishwariDatabase.get(application).dao()
+            dao.upsertPlace(ye.mishwari.data.Place(id = "trip-place", name = "وجهة الرحلة", monitored = true, latitude = 15.0, longitude = 44.0))
+            dao.upsertErrand(ye.mishwari.data.Errand(id = "trip-task", title = "طلب الرحلة", placeId = "trip-place"))
+            dao.putSetting(ye.mishwari.data.AppSetting("travel_place", "trip-place"))
+        }
+        val model = MishwariViewModel(application)
+        compose.activity.setContent { MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+        compose.onNodeWithText("السفر").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("إنهاء وضع السفر").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("إنهاء وضع السفر").performScrollTo().performClick()
+        compose.waitUntil(10_000) { runBlocking { MishwariDatabase.get(application).dao().getSetting("travel_place") == "" } }
+        runBlocking {
+            val dao = MishwariDatabase.get(application).dao()
+            assertEquals("طلب الرحلة", dao.allErrands().single().title)
+            assertEquals(true, dao.allPlaces().single().monitored)
+        }
+        // Persisting the setting happens on IO before the ViewModel resumes on main to enqueue work.
+        compose.waitUntil(10_000) {
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
+            org.junit.Assert.assertNull(model.error.value)
+            androidx.work.WorkManager.getInstance(application)
+                .getWorkInfosForUniqueWork("mishwari-geo-reconcile").get().isNotEmpty()
+        }
+    }
+
     private fun assertTrueDatabaseIsEmpty() = runBlocking {
         val dao = MishwariDatabase.get(application).dao()
         assertEquals(emptyList<ye.mishwari.data.Errand>(), dao.allErrands())
