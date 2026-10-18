@@ -2,8 +2,9 @@
     <style name="Theme.Mishwari" parent="android:style/Theme.Material.Light.NoActionBar">
         <item name="android:fontFamily">sans</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="android:statusBarColor">#F5F8F7</item>
-        <item name="android:navigationBarColor">#F5F8F7</item>
+        <item name="android:windowBackground">#F7F8F5</item>
+        <item name="android:statusBarColor">#F7F8F5</item>
+        <item name="android:navigationBarColor">#F7F8F5</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
     <string name="app_name">مشواري</string>

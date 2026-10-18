@@ -154,7 +154,7 @@ class UiRobolectricTest {
         compose.activity.setContent {
             MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {}, requestVoice = { launches++ })
         }
-        compose.onNodeWithText("إضافة بالصوت").performScrollTo().performClick()
+        compose.onNodeWithText("إضافة بالصوت").performClick()
         compose.onNodeWithText("إملاء طلب بالعربية").assertIsDisplayed()
         assertEquals(0, launches)
         compose.onNodeWithText("متابعة إلى الإملاء").performClick()

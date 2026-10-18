@@ -18,6 +18,9 @@ class MishwariViewModel(app: Application) : AndroidViewModel(app) {
     val errands = repository.errands.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val places = repository.places.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val settings = repository.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+    // Do not present a false empty state before Room has emitted all persisted lists.
+    val dataReady = combine(repository.errands, repository.places, repository.settings) { _, _, _ -> true }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
     private val _message = MutableSharedFlow<String>(extraBufferCapacity = 8)
     val messages = _message.asSharedFlow()
     val error = MutableStateFlow<String?>(null)
