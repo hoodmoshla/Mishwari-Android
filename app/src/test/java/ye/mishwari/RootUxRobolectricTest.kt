@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.hasText
@@ -138,12 +139,16 @@ class RootUxRobolectricTest {
         showRoot(MishwariViewModel(application))
         compose.onNodeWithText("الأماكن").performClick()
         compose.onNodeWithText("دليل المحافظات").performClick()
-        compose.onNodeWithText("محافظة واجهة اختبار").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("تصفح").performClick()
-        compose.onNodeWithText("مديرية واجهة اختبار").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("placesList").performScrollToNode(hasText("محافظة واجهة اختبار"))
+        compose.onNodeWithText("محافظة واجهة اختبار").assertIsDisplayed()
+        compose.onNodeWithTag("browsePlace_root-ux-governorate").performClick()
+        compose.onNodeWithTag("placesList").performScrollToNode(hasText("مديرية واجهة اختبار"))
+        compose.onNodeWithText("مديرية واجهة اختبار").assertIsDisplayed()
         compose.onNodeWithText("رجوع · محافظة واجهة اختبار").performClick()
-        compose.onNodeWithText("محافظة واجهة اختبار").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("placesList").performScrollToNode(hasText("محافظة واجهة اختبار"))
+        compose.onNodeWithText("محافظة واجهة اختبار").assertIsDisplayed()
 
+        compose.onNodeWithTag("placesList").performScrollToIndex(0)
         compose.onNodeWithText("أماكني").performClick()
         compose.onNodeWithText("+ إضافة مكان", useUnmergedTree = true).performClick()
         compose.onNodeWithText("اسم السوق / المحل / المكان *").performTextInput("سوق واجهة مخصص")
@@ -165,7 +170,8 @@ class RootUxRobolectricTest {
         showRoot(MishwariViewModel(application))
         compose.onNodeWithText("السفر").performClick()
         compose.onNodeWithText("وجهة المشوار: دون وجهة").performScrollTo().performClick()
-        compose.onNodeWithText("وجهة رحلة اختبار").performScrollTo().performClick()
+        compose.onNodeWithText("ابحث في جميع الأماكن").performTextInput("وجهة رحلة اختبار")
+        compose.onAllNodesWithText("وجهة رحلة اختبار").onLast().performClick()
         compose.onNodeWithText("طلب رحلة اختبار").performScrollTo().assertIsDisplayed()
         compose.onNodeWithTag("travelList").performScrollToNode(hasText("تجهيز المشوار وتفعيل السفر"))
         compose.onNodeWithText("تجهيز المشوار وتفعيل السفر").performClick()

@@ -38,7 +38,7 @@ class GeoIntegrationRobolectricTest {
         app.getSharedPreferences("mishwari_geo_alert_policy", 0).edit().clear().commit()
         shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
         dao.allErrands().forEach { dao.deleteErrand(it.id) }
-        dao.allPlaces().forEach { dao.deletePlace(it.id) }
+        clearPlacesChildrenFirst(dao)
         dao.upsertPlace(Place(id = "market", name = "سوق الاختبار", latitude = 15.0, longitude = 44.0, monitored = true))
         dao.upsertErrand(Errand(id = "one", title = "حاجة أولى", placeId = "market"))
         dao.upsertErrand(Errand(id = "two", title = "حاجة ثانية", placeId = "market", status = "مخطط له"))
@@ -80,7 +80,7 @@ class GeoIntegrationRobolectricTest {
         receiver.processTransition(app, Geofence.GEOFENCE_TRANSITION_ENTER, listOf("market"))
         assertEquals(1, manager.activeNotifications.size)
         manager.cancelAll()
-        val market = dao.allPlaces().single()
+        val market = dao.allPlaces().single { it.id == "market" }
         dao.upsertPlace(market.copy(monitored = false))
         receiver.processTransition(app, Geofence.GEOFENCE_TRANSITION_ENTER, listOf("market"))
         assertEquals(0, manager.activeNotifications.size)
@@ -127,7 +127,7 @@ class GeoIntegrationRobolectricTest {
 
     @Test fun delayedEventFromPreviousGeometryIsRejectedAfterPlaceMoves() = runBlocking {
         val oldRequestId = GeoFenceIdentity.requestId("market", 15.0, 44.0, 500f)
-        val market = dao.allPlaces().single()
+        val market = dao.allPlaces().single { it.id == "market" }
         dao.upsertPlace(market.copy(latitude = 25.0))
 
         receiver.processVersionedTransition(app, Geofence.GEOFENCE_TRANSITION_ENTER, listOf(oldRequestId, "market"))
@@ -146,7 +146,7 @@ class GeoIntegrationRobolectricTest {
         assertTrue(preferences.getBoolean("inside_market", false))
         manager.cancelAll()
 
-        val market = dao.allPlaces().single()
+        val market = dao.allPlaces().single { it.id == "market" }
         dao.upsertPlace(market.copy(latitude = 25.0))
         val movedEntryAt = firstEntryAt + 31 * 60 * 1000L
         receiver.processTransition(app, Geofence.GEOFENCE_TRANSITION_ENTER, listOf("market"), nowMillis = movedEntryAt)

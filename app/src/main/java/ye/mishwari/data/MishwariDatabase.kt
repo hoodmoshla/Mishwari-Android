@@ -1,14 +1,18 @@
 package ye.mishwari.data
 
 import android.content.Context
+import android.content.ContentValues
+import android.database.sqlite.SQLiteDatabase
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.Transaction
 import androidx.room.Upsert
 import kotlinx.coroutines.flow.Flow
+import org.json.JSONObject
 
 data class MishwariSnapshot(
     val places: List<Place>,
@@ -91,6 +95,9 @@ abstract class MishwariDatabase : RoomDatabase() {
 
     companion object {
         private const val DATABASE_NAME = "mishwari.db"
+        private const val DIRECTORY_PREFS = "mishwari_bundled_directory"
+        private const val DIRECTORY_SEEDED = "seeded_v1"
+        private val directorySeedLock = Any()
 
         @Volatile
         private var instance: MishwariDatabase? = null
@@ -100,7 +107,57 @@ abstract class MishwariDatabase : RoomDatabase() {
                 context.applicationContext,
                 MishwariDatabase::class.java,
                 DATABASE_NAME
-            ).build().also { instance = it }
+            ).addCallback(object : RoomDatabase.Callback() {
+                override fun onOpen(db: SupportSQLiteDatabase) {
+                    seedBundledDirectory(context.applicationContext, db)
+                }
+            }).build().also { instance = it }
+        }
+
+        private fun seedBundledDirectory(context: Context, db: SupportSQLiteDatabase) = synchronized(directorySeedLock) {
+            val preferences = context.getSharedPreferences(DIRECTORY_PREFS, Context.MODE_PRIVATE)
+            if (preferences.getBoolean(DIRECTORY_SEEDED, false)) return@synchronized
+
+            val root = context.assets.open("yemen-directory.json").bufferedReader(Charsets.UTF_8).use { JSONObject(it.readText()) }
+            val places = root.getJSONArray("places")
+            val governors = (0 until places.length()).count { places.getJSONObject(it).optString("kind") == "governorate" }
+            val districts = (0 until places.length()).count { places.getJSONObject(it).optString("kind") == "district" }
+            val ids = (0 until places.length()).map { places.getJSONObject(it).getString("id") }
+            require(places.length() == 358 && governors == 22 && districts == 335 && ids.distinct().size == ids.size) {
+                "Bundled directory has unexpected content"
+            }
+            require(root.optString("source").contains("OCHA Yemen / HDX") && root.optString("source").contains("CC BY-IGO 3.0")) {
+                "Bundled directory source or license metadata is missing"
+            }
+
+            db.beginTransaction()
+            try {
+                val ordered = (0 until places.length()).map { places.getJSONObject(it) }
+                    .sortedBy { when (it.optString("kind")) { "country" -> 0; "governorate" -> 1; else -> 2 } }
+                ordered.forEach { place ->
+                    val values = ContentValues().apply {
+                        put("id", place.getString("id"))
+                        put("name", place.getString("name"))
+                        if (place.has("parentId")) put("parentId", place.getString("parentId")) else putNull("parentId")
+                        put("kind", place.optString("kind", "custom"))
+                        put("governorate", place.optString("governorate"))
+                        put("district", place.optString("district"))
+                        put("area", place.optString("area"))
+                        put("detail", place.optString("detail"))
+                        putNull("latitude")
+                        putNull("longitude")
+                        put("radiusMeters", 500f)
+                        put("monitored", 0)
+                        put("source", place.optString("source", root.optString("source")))
+                        put("sourceUpdated", place.optString("sourceUpdated", root.optString("updated")))
+                    }
+                    db.insert("places", SQLiteDatabase.CONFLICT_IGNORE, values)
+                }
+                db.setTransactionSuccessful()
+            } finally {
+                db.endTransaction()
+            }
+            preferences.edit().putBoolean(DIRECTORY_SEEDED, true).apply()
         }
     }
 }

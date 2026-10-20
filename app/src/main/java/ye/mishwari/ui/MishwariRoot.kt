@@ -26,6 +26,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ye.mishwari.MishwariViewModel
 import ye.mishwari.GeoEnvironmentSignature
@@ -97,8 +98,9 @@ fun MishwariRoot(
             var permissionExplanation by rememberSaveable { mutableStateOf<String?>(null) }
             var importing by remember { mutableStateOf(false) }
             var voiceExplanation by rememberSaveable { mutableStateOf(false) }
-            LaunchedEffect(incomingDraft, editingErrand, editingPlace) {
-                if (incomingDraft != null && editingErrand == null && editingPlace == null) {
+            var assistantOpen by rememberSaveable { mutableStateOf(false) }
+            LaunchedEffect(incomingDraft, editingErrand, editingPlace, assistantOpen) {
+                if (incomingDraft != null && editingErrand == null && editingPlace == null && !assistantOpen) {
                     val text = incomingDraft.trim()
                     if (text.isNotBlank()) {
                         editingErrand = Errand(title = text.lineSequence().first().take(200),
@@ -142,6 +144,7 @@ fun MishwariRoot(
                                 item {
                                     Text("${errands.count(::active)} غير منجزة · ${errands.count { it.priority == 2 && active(it) }} مهمة · ${errands.count { it.status == "مكتمل" }} مكتملة", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
+                                item { OutlinedButton(onClick = { assistantOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("مساعد المشوار الذكي") } }
                                 if (!settings["travel_place"].isNullOrBlank()) item { AssistChip(onClick = { tab = 2 }, label = { Text("مشوار نشط: ${places.find { it.id == settings["travel_place"] }?.name ?: "راجع الوجهة"}") }) }
                                 item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { (listOf("غير المنجزة", "الكل") + statuses).forEach { value -> FilterChip(selected = filter == value, onClick = { filter = value }, label = { Text(value) }) } } }
                                 if (placeFilter != null) item { AssistChip(onClick = { placeFilter = null }, label = { Text("الوجهة: ${places.find { it.id == placeFilter }?.name ?: "غير متاحة"} — عرض الجميع ×") }) }
@@ -162,7 +165,7 @@ fun MishwariRoot(
                                 else if (parent == null) it.kind == "governorate" || (it.kind != "country" && it.parentId == null)
                                 else it.parentId == parent
                             }.sortedBy(::placeLabel)
-                            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            LazyColumn(Modifier.fillMaxSize().testTag("placesList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 item { OutlinedTextField(placeQuery, { placeQuery = it }, label = { Text("ابحث في الأماكن") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
                                 item { Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     FilterChip(customOnly, { customOnly = true }, label = { Text("أماكني") })
@@ -183,7 +186,7 @@ fun MishwariRoot(
                                         if (contextLabel != place.name) Text(contextLabel, style = MaterialTheme.typography.bodySmall)
                                         Text("${errands.count { it.placeId in subtree(place.id, places) && active(it) }} طلب غير منجز", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.labelLarge)
                                         Row(Modifier.horizontalScroll(rememberScrollState())) {
-                                            if (!customOnly && placeQuery.isBlank()) TextButton(onClick = { parent = place.id }) { Text("تصفح") }
+                                            if (!customOnly && placeQuery.isBlank()) TextButton(onClick = { parent = place.id }, modifier = Modifier.testTag("browsePlace_${place.id}")) { Text("تصفح") }
                                             TextButton(onClick = { expanded = !expanded }) { Text(if (expanded) "أقل" else "التفاصيل") }
                                         }
                                         if (expanded) {
@@ -224,33 +227,27 @@ fun MishwariRoot(
                         else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("المظهر", style = MaterialTheme.typography.titleMedium)
                             Text("حسب مظهر الهاتف تلقائيًا · يتغير فور تبديل إعداد النظام.", style = MaterialTheme.typography.bodyMedium)
+                            OutlinedButton(onClick = { assistantOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("مساعد المشوار الذكي") }
                             PermissionSummary(permissionState)
-                            SettingsSection("الأذونات والخصوصية") {
-                            Text("الأذونات اختيارية؛ الطلبات والأماكن والنسخ الاحتياطي تعمل دونها.", style = MaterialTheme.typography.bodySmall)
+                            Text("الأذونات اختيارية؛ قوائمك تعمل دونها.", style = MaterialTheme.typography.bodySmall)
+                            SettingsSection("نسخة احتياطية محلية") {
+                                Text("ملف JSON غير مشفّر؛ احفظه بأمان. الاستيراد يدمج ولا يحذف سجلات غير موجودة فيه.", style = MaterialTheme.typography.bodySmall)
+                                OutlinedButton(onClick = exportBackup, modifier = Modifier.fillMaxWidth()) { Text("تصدير نسخة احتياطية") }
+                                OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("استيراد نسخة احتياطية") }
+                            }
+                            SettingsSection("الأذونات والخصوصية", badge = "متقدم") {
                             if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "غير مسموح؛ لن تتاح الميزات التي تحتاج موقعك.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
                             if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
-                            if (permissionState.backgroundLocationGranted && permissionState.fineLocationGranted) Text("الموقع في الخلفية جاهز", style = MaterialTheme.typography.bodySmall)
-                            else if (alertsNeeded && permissionState.fineLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
-                            else Text("لن نطلب موقع الخلفية إلا عند إعداد تنبيه وصول يحتاجه.", style = MaterialTheme.typography.bodySmall)
+                            if (alertsNeeded && permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
                             if (alertsNeeded && !permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
                             TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
-                            SettingsSection("تشخيص تنبيهات الوصول") {
                             Text(if (alertsNeeded) "حالة التنبيهات: ${geoStatusText(settings["geo_status"])}" else "لا توجد نقاط تنبيه مطلوبة حاليًا.", style = MaterialTheme.typography.bodyMedium)
                             OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
                             Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
                             Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play ومزود الموقع الشبكي. قد لا تتولد أحداث وصول دون اتصال بيانات موثوق. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
-                            }
-                            }
-                            SettingsSection("نسخة احتياطية محلية") {
-                            Text("الملف يحتوي طلباتك وأماكنك وإحداثياتها وإعداداتك والصور المدعومة. ليس مشفرًا؛ احفظه في مكان موثوق. لا تُرفع البيانات تلقائيًا إلى أي خادم.")
-                            OutlinedButton(onClick = exportBackup, modifier = Modifier.fillMaxWidth()) { Text("تصدير إلى ملف JSON") }
-                            OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("استيراد نسخة احتياطية") }
-                            }
-                            SettingsSection("دليل اليمن والخرائط") {
-                            Text("دليل أسماء: 22 محافظة و335 مديرية من OCHA Yemen / HDX (COD-AB)، عن الجهاز المركزي للإحصاء. CC BY-IGO 3.0. صلاحية المصدر تبدأ 2019-11-22، ومراجعته المسجلة 2024-12-23؛ ليس تأكيدًا لتغييرات 2026. بلا حدود أو إحداثيات.")
-                            OutlinedButton(onClick = model::installBundledDirectory, modifier = Modifier.fillMaxWidth()) { Text("إضافة الدليل المرفق دون إنترنت") }
+                            Text("الدليل المضمن أُضيف تلقائيًا ويعمل دون إنترنت؛ 22 محافظة و335 مديرية من OCHA / HDX (COD-AB)، المصدر الأصلي CSO، بترخيص CC BY-IGO 3.0. تاريخ المراجعة 2024-12-23؛ ليس تأكيدًا لحداثته حتى 2026. لا يتضمن إحداثيات أو حدودًا. التفاصيل: docs/directory.md.", style = MaterialTheme.typography.bodySmall)
                             TextButton(onClick = importDirectory) { Text("استيراد تحديث دليل من JSON") }
-                            Text("الخرائط: MapLibre Native / © OpenStreetMap contributors. تحتاج اتصالًا وتحمل بلاطات العرض من tile.openstreetmap.org؛ قد يكشف مزود الخريطة نطاق العرض وعنوان الشبكة. لا نرسل طلباتك. لا يوجد دعم مضمون للخرائط غير المتصلة.", style = MaterialTheme.typography.bodySmall)
+                            Text("الخرائط: MapLibre Native / © OpenStreetMap contributors. تحتاج اتصالًا؛ لا نرسل طلباتك إلى مزود البلاطات.", style = MaterialTheme.typography.bodySmall)
                             }
                             Text("طلباتي للمشوار 0.1.0 · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
                             Spacer(Modifier.height(24.dp))
@@ -276,16 +273,28 @@ fun MishwariRoot(
                 text = { Text("سيُفتح تطبيق التعرف على الكلام في هاتفك. نطلب التعرّف دون اتصال، لكن الخدمة قد تستخدم الإنترنت وترسل الصوت إلى مزودها حسب إعداداتها. طلباتي للمشوار لا يسجل الصوت ولا يحتفظ به. راجع النص واختر الوجهة قبل الحفظ؛ الكتابة متاحة دائمًا.") },
                 confirmButton = { TextButton(onClick = { voiceExplanation = false; requestVoice() }) { Text("متابعة إلى الإملاء") } },
                 dismissButton = { TextButton(onClick = { voiceExplanation = false }) { Text("إلغاء") } })
+            if (assistantOpen) Dialog(
+                onDismissRequest = { assistantOpen = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false),
+            ) {
+                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    Column(Modifier.fillMaxSize()) {
+                        TextButton(onClick = { assistantOpen = false }, modifier = Modifier.padding(horizontal = 8.dp)) { Text("رجوع إلى مشواري") }
+                        Box(Modifier.fillMaxWidth().weight(1f)) { AssistantScreen(model, errands, places, requestVoice) }
+                    }
+                }
+            }
             operationError?.let { message -> AlertDialog(onDismissRequest = { model.error.value = null }, title = { Text("لم تُكتمل العملية") }, text = { Text(message) }, confirmButton = { TextButton(onClick = { model.error.value = null }) { Text("حسنًا") } }) }
         }
     }
 }
 
-@Composable private fun SettingsSection(title: String, initiallyExpanded: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
+@Composable private fun SettingsSection(title: String, initiallyExpanded: Boolean = false, badge: String? = null, content: @Composable ColumnScope.() -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(initiallyExpanded) }
     OutlinedCard(Modifier.fillMaxWidth()) {
         TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
             Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+            if (badge != null) Text(badge, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(if (expanded) "إخفاء" else "عرض")
         }
         if (expanded) Column(Modifier.padding(horizontal = 12.dp).padding(bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(8.dp), content = content)
@@ -354,11 +363,11 @@ internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when
             "notifications" -> "إشعارات الوصول"
             else -> "التذكير حتى والتطبيق مغلق"
         }) },
-        text = { Text(when (kind) {
+        text = { Box(Modifier.fillMaxWidth().heightIn(max = 220.dp).verticalScroll(rememberScrollState())) { Text(when (kind) {
             "foreground" -> "يفيد الموقع الدقيق في إعداد تنبيه وصول صحيح لأماكنك. سنطلب الموقع أثناء الاستخدام فقط، وليس في الخلفية. إذا رفضت، تبقى الطلبات والأماكن والنسخ الاحتياطي متاحة. إذا سبق رفض الإذن نهائيًا، ستفتح إعدادات التطبيق بدل تكرار الطلب."
             "notifications" -> "اسمح بالإشعارات كي يظهر تذكير طلباتك عند الوصول. إذا رفضت، لن تظهر تنبيهات الوصول؛ تبقى قوائمك متاحة. قد تُفتح إعدادات الإشعارات إذا كانت محظورة من النظام."
             else -> "لتلقي تنبيه وصول للمكان المرتبط بطلبك حتى والتطبيق مغلق، يحتاج طلباتي للمشوار إذن الموقع في الخلفية. اختر «السماح طوال الوقت» إن ظهر في الإعدادات. تُرسل نقاط التنبيه المختارة إلى خدمة السياجات على الجهاز؛ لا نخزن سجل تنقلاتك ولا نستخدم خادمًا خاصًا. يمكنك الرفض واستخدام قوائمك دون تنبيهات الخلفية."
-        }) },
+        }, modifier = Modifier.fillMaxWidth().testTag("permissionExplanationBody")) } },
         confirmButton = { TextButton(onClick = confirm) { Text("متابعة") } },
         dismissButton = { TextButton(onClick = dismiss) { Text("ليس الآن") } })
 }

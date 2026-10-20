@@ -37,7 +37,7 @@ class GeoWorkerRegistrationCycleRobolectricTest {
 
     @Before fun prepare() = runBlocking {
         dao.allErrands().forEach { dao.deleteErrand(it.id) }
-        dao.allPlaces().forEach { dao.deletePlace(it.id) }
+        clearPlacesChildrenFirst(dao)
         dao.putSetting(AppSetting(GeoWorker.TRAVEL_PLACE_SETTING, ""))
         dao.putSetting(AppSetting(GeoWorker.GEO_FINGERPRINT_SETTING, ""))
         dao.putSetting(AppSetting(GeoWorker.GEO_STATUS_SETTING, ""))
@@ -186,7 +186,7 @@ class GeoWorkerRegistrationCycleRobolectricTest {
         Repository(MishwariDatabase.get(app)).saveErrand(task.copy(status = "مكتمل"))
         assertEquals(ListenableWorker.Result.success(), worker().doWork())
         assertTrue(transport.registered.isEmpty())
-        assertEquals(market, dao.allPlaces().single())
+        assertEquals(market, dao.allPlaces().single { it.id == market.id })
         assertEquals("مكتمل", dao.allErrands().single().status)
     }
 

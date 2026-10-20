@@ -6,6 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onAllNodesWithText
@@ -206,9 +207,10 @@ class PermissionUxRobolectricTest {
         openSettings()
         openPermissionSection()
 
-        compose.onNodeWithText("مراجعة إذن الموقع").performClick()
+        compose.onNodeWithText("مراجعة إذن الموقع").performScrollTo().performClick()
         compose.onAllNodesWithText("الموقع أثناء الاستخدام").onLast().assertIsDisplayed()
-        compose.onNodeWithText("يفيد الموقع الدقيق في إعداد تنبيه وصول صحيح لأماكنك. سنطلب الموقع أثناء الاستخدام فقط، وليس في الخلفية. إذا رفضت، تبقى الطلبات والأماكن والنسخ الاحتياطي متاحة. إذا سبق رفض الإذن نهائيًا، ستفتح إعدادات التطبيق بدل تكرار الطلب.").assertIsDisplayed()
+        compose.onNodeWithTag("permissionExplanationBody").performScrollTo().assertIsDisplayed()
+            .assertTextContains("يفيد الموقع الدقيق في إعداد تنبيه وصول صحيح لأماكنك. سنطلب الموقع أثناء الاستخدام فقط، وليس في الخلفية. إذا رفضت، تبقى الطلبات والأماكن والنسخ الاحتياطي متاحة. إذا سبق رفض الإذن نهائيًا، ستفتح إعدادات التطبيق بدل تكرار الطلب.")
         assertEquals("opening the explanation must not launch a runtime permission request", 0, locationRequests)
 
         compose.onNodeWithText("ليس الآن").performClick()
@@ -222,7 +224,7 @@ class PermissionUxRobolectricTest {
         if (compose.onAllNodesWithText("مراجعة إذن الموقع").fetchSemanticsNodes().isEmpty()) {
             openPermissionSection()
         }
-        compose.onNodeWithText("مراجعة إذن الموقع").performClick()
+        compose.onNodeWithText("مراجعة إذن الموقع").performScrollTo().performClick()
         assertEquals(0, locationRequests)
         compose.onNodeWithText("متابعة").performClick()
         compose.waitUntil(5_000) { locationRequests == 1 }

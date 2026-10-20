@@ -29,7 +29,7 @@ class GeoWorkerRobolectricTest {
     @Before fun isolateDatabaseAndServices() = runBlocking {
         val dao = MishwariDatabase.get(app).dao()
         dao.allErrands().forEach { dao.deleteErrand(it.id) }
-        dao.allPlaces().forEach { dao.deletePlace(it.id) }
+        clearPlacesChildrenFirst(dao)
         dao.putSetting(AppSetting(GeoWorker.GEO_FINGERPRINT_SETTING, ""))
         dao.putSetting(AppSetting(GeoWorker.GEO_STATUS_SETTING, ""))
         GeoFenceTransportProvider.setForTests(null, ConnectionResult.SERVICE_MISSING)

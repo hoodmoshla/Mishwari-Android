@@ -38,7 +38,7 @@ class UiRobolectricTest {
     private fun clearAppDatabase() = runBlocking {
         val dao = MishwariDatabase.get(application).dao()
         dao.allErrands().forEach { dao.deleteErrand(it.id) }
-        dao.allPlaces().forEach { dao.deletePlace(it.id) }
+        clearPlacesChildrenFirst(dao)
     }
 
     @After
@@ -204,7 +204,7 @@ class UiRobolectricTest {
         runBlocking {
             val dao = MishwariDatabase.get(application).dao()
             assertEquals("طلب الرحلة", dao.allErrands().single().title)
-            assertEquals(true, dao.allPlaces().single().monitored)
+            assertEquals(true, dao.allPlaces().single { it.id == "trip-place" }.monitored)
         }
         // Persisting the setting happens on IO before the ViewModel resumes on main to enqueue work.
         compose.waitUntil(10_000) {
