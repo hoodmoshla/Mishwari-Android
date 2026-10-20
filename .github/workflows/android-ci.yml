@@ -52,7 +52,7 @@ jobs:
         run: |
           set -o pipefail
           chmod +x gradlew
-          ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace 2>&1 | tee ci-build.log
+          ./gradlew --no-daemon :app:testDebugUnitTest :app:lint :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace 2>&1 | tee ci-build.log
       - name: Preserve build logs and test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -62,7 +62,7 @@ jobs:
             ci-build.log
             app/build/test-results/testDebugUnitTest/
             app/build/reports/tests/testDebugUnitTest/
-            app/build/reports/lint-results-debug.*
+            app/build/reports/lint-results-*.*
           retention-days: 30
           if-no-files-found: warn
 
@@ -116,11 +116,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ci-artifacts
-          cp app/build/outputs/apk/release/app-release.apk ci-artifacts/Mishwari-0.1.1-release.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.1-release.apk > ci-artifacts/apk-signature.txt
+          cp app/build/outputs/apk/release/app-release.apk ci-artifacts/Mishwari-0.1.2-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.2-release.apk > ci-artifacts/apk-signature.txt
           python3 - <<'PY'
           import hashlib, json, os, pathlib, re
-          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.1-release.apk')
+          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.2-release.apk')
           expected = pathlib.Path('signing/certificate-sha256.txt').read_text().strip().lower()
           report = pathlib.Path('ci-artifacts/apk-signature.txt').read_text()
           certs = re.findall(r'^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)$', report, re.MULTILINE)
@@ -143,7 +143,7 @@ jobs:
           pathlib.Path('ci-artifacts/build-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
           PY
           cd ci-artifacts
-          sha256sum Mishwari-0.1.1-release.apk > SHA256SUMS.txt
+          sha256sum Mishwari-0.1.2-release.apk > SHA256SUMS.txt
       - name: Upload verified permanently signed APK (not a GitHub Release)
         if: success()
         uses: actions/upload-artifact@v4
