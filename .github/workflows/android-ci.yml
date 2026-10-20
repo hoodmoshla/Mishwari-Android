@@ -52,7 +52,7 @@ jobs:
         run: |
           set -o pipefail
           chmod +x gradlew
-          ./gradlew --no-daemon :app:testDebugUnitTest :app:lint :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace 2>&1 | tee ci-build.log
+          ./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest --stacktrace 2>&1 | tee ci-build.log
       - name: Preserve build logs and test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -100,7 +100,7 @@ jobs:
           test -n "$MISHWARI_KEYSTORE_BASE64" || { echo 'Permanent keystore secret missing'; exit 1; }
           umask 077
           printf '%s' "$MISHWARI_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/mishwari-permanent.p12"
-      - name: Build with permanent signing key (no fallback)
+      - name: Lint Release and build with permanent signing key (no fallback)
         shell: bash
         env:
           MISHWARI_KEYSTORE_PATH: ${{ runner.temp }}/mishwari-permanent.p12
@@ -110,7 +110,7 @@ jobs:
         run: |
           set -euo pipefail
           chmod +x gradlew
-          ./gradlew --no-daemon :app:assembleRelease
+          ./gradlew --no-daemon :app:lintRelease :app:assembleRelease 2>&1 | tee ci-release.log
       - name: Verify permanent certificate and write provenance
         shell: bash
         run: |
@@ -144,6 +144,16 @@ jobs:
           PY
           cd ci-artifacts
           sha256sum Mishwari-0.1.2-release.apk > SHA256SUMS.txt
+      - name: Preserve Release lint reports and build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-verification-reports-${{ github.run_number }}
+          path: |
+            ci-release.log
+            app/build/reports/lint-results-release.*
+          retention-days: 30
+          if-no-files-found: warn
       - name: Upload verified permanently signed APK (not a GitHub Release)
         if: success()
         uses: actions/upload-artifact@v4
