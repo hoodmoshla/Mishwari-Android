@@ -106,10 +106,14 @@ class MainActivity : ComponentActivity() {
     }
     private val model: MishwariViewModel by viewModels()
     private var permissionRevision by mutableIntStateOf(0)
+    private var permissionState by mutableStateOf<PermissionState?>(null)
     private var selectedPlace by mutableStateOf<String?>(null)
     private var incomingDraft by mutableStateOf<String?>(null)
     private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         permissionRevision++
+        refreshPermissionState()
+        val denied = it.filterValues { granted -> !granted }.keys
+        if (denied.isNotEmpty()) showPermissionDenial(denied.first())
         scheduleGeoForEnvironmentChange()
     }
     private val createBackup = registerForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { it?.let(model::export) }
@@ -128,6 +132,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        refreshPermissionState()
         selectedPlace = intent?.getStringExtra("place_id")
         if (savedInstanceState != null) {
             // Restored null is meaningful: the original share may already have been consumed.
@@ -137,7 +142,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             MishwariRoot(model, permissionRevision, selectedPlace, { selectedPlace = null },
-                requestLocation = { permissions.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) },
+                requestLocation = ::requestLocationAccess,
                 requestNotifications = ::requestNotificationAccess,
                 openAppSettings = ::openAppSettings,
                 openLocationSettings = { startActivity(Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS)) },
@@ -147,7 +152,8 @@ class MainActivity : ComponentActivity() {
                 selectPhoto = { callback -> model.pendingPhoto = callback; photo.launch("image/*") },
                 incomingDraft = incomingDraft,
                 consumeIncomingDraft = { incomingDraft = null },
-                requestVoice = ::requestVoiceInput)
+                requestVoice = ::requestVoiceInput,
+                requestBackgroundLocation = ::requestBackgroundLocation)
         }
     }
     override fun onSaveInstanceState(outState: Bundle) {
@@ -157,6 +163,7 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
         permissionRevision++
+        refreshPermissionState()
         scheduleGeoForEnvironmentChange()
     }
     override fun onNewIntent(intent: Intent) {
@@ -190,9 +197,67 @@ class MainActivity : ComponentActivity() {
         val changed = GeoEnvironmentSignature.updateAndDetectChange(this)
         GeoScheduler.schedule(this, force = changed, rearmSelected = changed)
     }
+    private fun refreshPermissionState() {
+        permissionState = PermissionState.capture(this, ::shouldShowRequestPermissionRationale)
+    }
+    private fun requestLocationAccess() {
+        val state = PermissionState.capture(this, ::shouldShowRequestPermissionRationale)
+        if (state.fineLocation == PermissionStatus.GRANTED) return
+        if (state.fineLocation == PermissionStatus.PERMANENTLY_DENIED) {
+            openAppSettings()
+            return
+        }
+        val wanted = listOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+            .filter { permission ->
+                val status = if (permission == Manifest.permission.ACCESS_FINE_LOCATION) state.fineLocation else state.coarseLocation
+                status == PermissionStatus.NOT_REQUESTED || status == PermissionStatus.DENIED_CAN_ASK
+            }
+        if (wanted.isEmpty()) {
+            openAppSettings()
+            return
+        }
+        wanted.forEach { PermissionState.markAsked(this, it) }
+        // Android 12+ requires the fine/coarse pair even when upgrading an existing
+        // approximate grant; including coarse does not request a granted permission again.
+        val request = if (Build.VERSION.SDK_INT >= 31 && Manifest.permission.ACCESS_FINE_LOCATION in wanted)
+            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+        else wanted.toTypedArray()
+        permissions.launch(request)
+    }
+    private fun requestBackgroundLocation() {
+        if (Build.VERSION.SDK_INT < 29) return
+        val state = PermissionState.capture(this, ::shouldShowRequestPermissionRationale)
+        if (state.backgroundLocation == PermissionStatus.GRANTED) return
+        if (!state.foregroundLocationGranted) {
+            Toast.makeText(this, "اسمح بالموقع أثناء الاستخدام أولاً. يمكنك متابعة استخدام التطبيق دون إذن الموقع دائمًا.", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (Build.VERSION.SDK_INT == 29) {
+            if (state.backgroundLocation == PermissionStatus.PERMANENTLY_DENIED) {
+                openAppSettings()
+                return
+            }
+            PermissionState.markAsked(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+            permissions.launch(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION))
+            return
+        }
+        // Android 11+ only grants "Allow all the time" from app settings. This callback
+        // is invoked after the UI's explicit background-location explanation/consent.
+        PermissionState.markAsked(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+        try {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+        } catch (_: ActivityNotFoundException) {
+            openAppSettings()
+        }
+    }
     private fun requestNotificationAccess() {
-        if (Build.VERSION.SDK_INT >= 33 &&
-            ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        val state = PermissionState.capture(this, ::shouldShowRequestPermissionRationale)
+        if (Build.VERSION.SDK_INT >= 33 && state.notifications != PermissionStatus.GRANTED) {
+            if (state.notifications == PermissionStatus.PERMANENTLY_DENIED) {
+                openNotificationSettings(false)
+                return
+            }
+            PermissionState.markAsked(this, Manifest.permission.POST_NOTIFICATIONS)
             permissions.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
             return
         }
@@ -203,9 +268,26 @@ class MainActivity : ComponentActivity() {
         val channelClosed = Build.VERSION.SDK_INT >= 26 &&
             manager?.getNotificationChannel(GEO_CHANNEL_ID)?.importance == NotificationManager.IMPORTANCE_NONE
         val appNotificationsClosed = Build.VERSION.SDK_INT >= 24 && manager?.areNotificationsEnabled() == false
-        if (Build.VERSION.SDK_INT < 33 || channelClosed || appNotificationsClosed) {
+        if (channelClosed || appNotificationsClosed) {
             openNotificationSettings(channelClosed)
         }
+    }
+    private fun showPermissionDenial(permission: String) {
+        val label = when (permission) {
+            Manifest.permission.POST_NOTIFICATIONS -> "الإشعارات"
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION -> "الموقع دائمًا"
+            else -> "الموقع أثناء الاستخدام"
+        }
+        val permanent = PermissionState.permissionStatus(this, permission, ::shouldShowRequestPermissionRationale) ==
+            PermissionStatus.PERMANENTLY_DENIED ||
+            (permission == Manifest.permission.ACCESS_BACKGROUND_LOCATION && Build.VERSION.SDK_INT >= 30 &&
+                PermissionState.wasAsked(this, permission) && !PermissionState.isGranted(this, permission))
+        val message = if (permanent) {
+            "رُفض إذن $label. يمكنك متابعة استخدام التطبيق؛ غيّره يدويًا من إعدادات التطبيق إذا رغبت."
+        } else {
+            "رُفض إذن $label. يمكنك متابعة استخدام التطبيق وطلبه لاحقًا من الشاشة."
+        }
+        Toast.makeText(this, message, Toast.LENGTH_LONG).show()
     }
     private fun openNotificationSettings(channelClosed: Boolean) {
         try {

@@ -7,5 +7,5 @@
         <item name="android:navigationBarColor">#F7F8F5</item>
         <item name="android:windowActionModeOverlay">true</item>
     </style>
-    <string name="app_name">مشواري</string>
+    <string name="app_name">طلباتي للمشوار</string>
 </resources>

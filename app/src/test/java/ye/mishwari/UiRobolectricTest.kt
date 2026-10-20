@@ -67,7 +67,7 @@ class UiRobolectricTest {
         }
 
         compose.onNodeWithText("لا توجد طلبات هنا").performScrollTo().assertIsDisplayed()
-        assertEquals(LayoutDirection.Rtl, compose.onNodeWithText("مشواري").fetchSemanticsNode().layoutInfo.layoutDirection)
+        assertEquals(LayoutDirection.Rtl, compose.onNodeWithText("طلباتي للمشوار").fetchSemanticsNode().layoutInfo.layoutDirection)
 
         compose.onNodeWithText("+ إضافة طلب", useUnmergedTree = true).performClick()
         compose.onNodeWithText("اسم الغرض أو المهمة *").performTextInput("شراء قهوة")

@@ -167,11 +167,13 @@ class RootUxRobolectricTest {
         compose.onNodeWithText("وجهة المشوار: دون وجهة").performScrollTo().performClick()
         compose.onNodeWithText("وجهة رحلة اختبار").performScrollTo().performClick()
         compose.onNodeWithText("طلب رحلة اختبار").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("تجهيز المشوار وتفعيل السفر").performScrollTo().performClick()
+        compose.onNodeWithTag("travelList").performScrollToNode(hasText("تجهيز المشوار وتفعيل السفر"))
+        compose.onNodeWithText("تجهيز المشوار وتفعيل السفر").performClick()
         compose.waitUntil(10_000) {
             runBlocking { MishwariDatabase.get(application).dao().getSetting("travel_place") == "root-ux-trip-place" }
         }
-        compose.onNodeWithText("إنهاء وضع السفر").performScrollTo().performClick()
+        compose.onNodeWithTag("travelList").performScrollToNode(hasText("إنهاء وضع السفر"))
+        compose.onNodeWithText("إنهاء وضع السفر").performClick()
         compose.waitUntil(10_000) {
             runBlocking { MishwariDatabase.get(application).dao().getSetting("travel_place") == "" }
         }

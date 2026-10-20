@@ -42,7 +42,12 @@ android {
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     packaging { resources.excludes += "/META-INF/{AL2.0,LGPL2.1}" }
-    testOptions { unitTests.isIncludeAndroidResources = true }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+        // Native icon rendering and legacy Compose graphics must not share a JVM.
+        // Keep every assertion enabled while isolating Robolectric's native process state.
+        unitTests.all { it.forkEvery = 1 }
+    }
 }
 
 // Never produce an unsigned/fallback Release when permanent credentials are absent.

@@ -1,10 +1,6 @@
 @file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 package ye.mishwari.ui
 
-import android.Manifest
-import android.content.pm.PackageManager
-import android.location.LocationManager
-import android.os.Build
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,15 +26,16 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.core.app.NotificationManagerCompat
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ye.mishwari.MishwariViewModel
+import ye.mishwari.GeoEnvironmentSignature
 import ye.mishwari.data.*
 
 internal val categories = listOf("مشتريات", "قطع غيار", "أدوية", "معاملات", "استلام", "صيانة", "أخرى")
 internal val statuses = listOf("جديد", "مخطط له", "مكتمل", "مؤجل", "ملغى")
 private fun active(e: Errand) = e.status != "مكتمل" && e.status != "ملغى"
+internal val errandDisplayOrder = compareByDescending<Errand> { active(it) }
+    .thenByDescending { it.priority }.thenBy { it.dueDate.ifBlank { "9999" } }.thenByDescending { it.createdAt }
 internal fun subtree(root: String, places: List<Place>): Set<String> {
     val result = mutableSetOf(root)
     var changed = true
@@ -69,7 +66,8 @@ fun MishwariRoot(
     requestLocation: () -> Unit, requestNotifications: () -> Unit, openAppSettings: () -> Unit,
     openLocationSettings: () -> Unit, exportBackup: () -> Unit, importBackup: () -> Unit,
     importDirectory: () -> Unit, selectPhoto: ((String) -> Unit) -> Unit,
-    incomingDraft: String? = null, consumeIncomingDraft: () -> Unit = {}, requestVoice: () -> Unit = {}
+    incomingDraft: String? = null, consumeIncomingDraft: () -> Unit = {}, requestVoice: () -> Unit = {},
+    requestBackgroundLocation: () -> Unit = openAppSettings
 ) {
     val dataReady by model.dataReady.collectAsStateWithLifecycle()
     val errands by model.errands.collectAsStateWithLifecycle()
@@ -77,6 +75,13 @@ fun MishwariRoot(
     val settingsList by model.settings.collectAsStateWithLifecycle()
     val operationError by model.error.collectAsStateWithLifecycle()
     val settings = settingsList.associate { it.key to it.value }
+    val context = LocalContext.current
+    val permissionState = remember(permissionRevision) { GeoEnvironmentSignature.capture(context) }
+    val alertPlaces = ye.mishwari.geo.GeoPolicy.select(
+        ye.mishwari.geo.GeoPolicy.fromData(places, errands, settings["travel_place"]?.takeIf { it.isNotBlank() }),
+        settings["travel_place"]?.takeIf { it.isNotBlank() }
+    )
+    val alertsNeeded = alertPlaces.isNotEmpty()
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         MishwariTheme {
             val snackbar = remember { SnackbarHostState() }
@@ -89,7 +94,7 @@ fun MishwariRoot(
             var editingPlace by remember { mutableStateOf<Place?>(null) }
             var deletingErrand by remember { mutableStateOf<Errand?>(null) }
             var deletingPlace by remember { mutableStateOf<Place?>(null) }
-            var backgroundExplanation by remember { mutableStateOf(false) }
+            var permissionExplanation by rememberSaveable { mutableStateOf<String?>(null) }
             var importing by remember { mutableStateOf(false) }
             var voiceExplanation by rememberSaveable { mutableStateOf(false) }
             LaunchedEffect(incomingDraft, editingErrand, editingPlace) {
@@ -105,7 +110,7 @@ fun MishwariRoot(
             }
             LaunchedEffect(deepLinkPlace) { if (deepLinkPlace != null) { placeFilter = deepLinkPlace; tab = 0; filter = "غير المنجزة"; consumeDeepLink() } }
             Scaffold(
-                topBar = { TopAppBar(title = { Text(listOf("مشواري", "الأماكن", "السفر", "الإعدادات")[tab], fontWeight = FontWeight.Bold) }, actions = { if (tab == 0) TextButton(onClick = { voiceExplanation = true }) { Text("إضافة بالصوت") } }) },
+                topBar = { TopAppBar(title = { Text(listOf("طلباتي للمشوار", "الأماكن", "السفر", "الإعدادات")[tab], fontWeight = FontWeight.Bold) }, actions = { if (tab == 0) TextButton(onClick = { voiceExplanation = true }) { Text("إضافة بالصوت") } }) },
                 snackbarHost = { SnackbarHost(snackbar) },
                 bottomBar = {
                     NavigationBar {
@@ -131,7 +136,7 @@ fun MishwariRoot(
                                 val withinPlace = placeFilter == null || e.placeId in subtree(placeFilter!!, places)
                                 val matchStatus = when (filter) { "غير المنجزة" -> active(e); "الكل" -> true; else -> e.status == filter }
                                 withinPlace && matchStatus && listOf(e.title, e.description, e.notes, p?.let(::placeLabel).orEmpty()).any { it.contains(query.trim(), ignoreCase = true) }
-                            }.sortedWith(compareByDescending<Errand> { it.priority }.thenBy { it.dueDate.ifBlank { "9999" } }.thenByDescending { it.createdAt })
+                            }.sortedWith(errandDisplayOrder)
                             LazyColumn(Modifier.fillMaxSize().testTag("errandList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 item { OutlinedTextField(query, { query = it }, label = { Text("ابحث عن طلب أو وجهة") }, singleLine = true, modifier = Modifier.fillMaxWidth(), trailingIcon = { if (query.isNotEmpty()) TextButton(onClick = { query = "" }) { Text("مسح") } }) }
                                 item {
@@ -163,6 +168,7 @@ fun MishwariRoot(
                                     FilterChip(customOnly, { customOnly = true }, label = { Text("أماكني") })
                                     FilterChip(!customOnly, { customOnly = false }, label = { Text("دليل المحافظات") })
                                 } }
+                                if (alertsNeeded) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
                                 if (!customOnly && placeQuery.isBlank()) item {
                                     Text("المحافظة ← المديرية ← المدينة أو السوق", style = MaterialTheme.typography.bodySmall)
                                     if (current != null) TextButton(onClick = { parent = current.parentId?.takeUnless { id -> places.find { it.id == id }?.kind == "country" } }) { Text("رجوع · ${current.name}") }
@@ -198,12 +204,12 @@ fun MishwariRoot(
                             val trip = settings["travel_place"].orEmpty()
                             val destination = places.find { it.id == trip }
                             var chosen by rememberSaveable(trip) { mutableStateOf(trip) }
-                            val relevant = if (chosen.isBlank()) emptyList() else errands.filter { it.placeId in subtree(chosen, places) && active(it) }
-                            LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            val relevant = if (chosen.isBlank()) emptyList() else errands.filter { it.placeId in subtree(chosen, places) && active(it) }.sortedWith(errandDisplayOrder)
+                            LazyColumn(Modifier.fillMaxSize().testTag("travelList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 item { Text("جهّز مشوارك", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("اختر الوجهة، راجع طلباتك، ثم فعّل السفر. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium) }
                                 if (destination != null) item { Card { Column(Modifier.padding(12.dp)) { Text("مشوار نشط: ${destination.name}", fontWeight = FontWeight.Bold); TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء وضع السفر") } } } }
                                 item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true) }
-                                item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium) }
+                                item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium); if (chosen.isNotBlank()) Text("طلبات ${places.find { it.id == chosen }?.name.orEmpty()} والأماكن التابعة لها · ${relevant.count { it.priority == 2 }} مهمة", style = MaterialTheme.typography.bodySmall) }
                                 if (relevant.isEmpty()) item { EmptyState("قائمة المشوار فارغة", "اختر وجهة لها طلبات غير منجزة، أو أضف طلبًا مرتبطًا بها.", "إضافة طلب للوجهة", { editingErrand = Errand(title = "", placeId = chosen.ifBlank { null }) }) }
                                 items(relevant, key = { it.id }) { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.save(e.copy(status = "مكتمل")) }, { editingErrand = e }, { deletingErrand = e }) }
                                 item {
@@ -211,24 +217,29 @@ fun MishwariRoot(
                                     Text("يُفعّل السفر نقاط الطلبات المرتبطة بالوجهة فقط. أسماء المحافظات والمديريات وحدها ليست نقاط وصول.", style = MaterialTheme.typography.bodySmall)
                                     Button(onClick = { model.setting("travel_place", chosen) }, enabled = chosen.isNotBlank() && chosen != trip, modifier = Modifier.fillMaxWidth()) { Text("تجهيز المشوار وتفعيل السفر") }
                                 }
-                                item { CompactStatus(permissionRevision, destination?.name, { tab = 3 }) }
+                                if (alertsNeeded) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
+                                else item { Text("قائمة المشوار تعمل دون أذونات. تحتاج تنبيهات الوصول إلى طلب مرتبط بمكان له إحداثيات.", style = MaterialTheme.typography.bodySmall) }
                             }
                         }
                         else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                             Text("المظهر", style = MaterialTheme.typography.titleMedium)
                             Text("حسب مظهر الهاتف تلقائيًا · يتغير فور تبديل إعداد النظام.", style = MaterialTheme.typography.bodyMedium)
-                            SettingsSection("الأذونات والخصوصية", initiallyExpanded = true) {
-                            CompactStatus(permissionRevision, null, null)
-                            Text("التنبيه يحتاج موقعًا دقيقًا، وإتاحة الموقع دائمًا في الخلفية، وتشغيل الموقع والإشعارات. لن نطلب إذن الخلفية قبل موافقتك؛ الطلبات تعمل بدونه.")
-                            Button(onClick = requestLocation, modifier = Modifier.fillMaxWidth()) { Text("السماح بالموقع أثناء الاستخدام") }
-                            OutlinedButton(onClick = { backgroundExplanation = true }, modifier = Modifier.fillMaxWidth()) { Text("إعداد الموقع في الخلفية") }
-                            OutlinedButton(onClick = requestNotifications, modifier = Modifier.fillMaxWidth()) { Text("السماح بالإشعارات") }
-                            TextButton(onClick = openLocationSettings) { Text("فتح إعدادات تشغيل الموقع") }
+                            PermissionSummary(permissionState)
+                            SettingsSection("الأذونات والخصوصية") {
+                            Text("الأذونات اختيارية؛ الطلبات والأماكن والنسخ الاحتياطي تعمل دونها.", style = MaterialTheme.typography.bodySmall)
+                            if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "غير مسموح؛ لن تتاح الميزات التي تحتاج موقعك.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
+                            if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
+                            if (permissionState.backgroundLocationGranted && permissionState.fineLocationGranted) Text("الموقع في الخلفية جاهز", style = MaterialTheme.typography.bodySmall)
+                            else if (alertsNeeded && permissionState.fineLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
+                            else Text("لن نطلب موقع الخلفية إلا عند إعداد تنبيه وصول يحتاجه.", style = MaterialTheme.typography.bodySmall)
+                            if (alertsNeeded && !permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
                             TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
-                            Text("حالة التنبيهات: ${geoStatusText(settings["geo_status"])}", style = MaterialTheme.typography.bodyMedium)
+                            SettingsSection("تشخيص تنبيهات الوصول") {
+                            Text(if (alertsNeeded) "حالة التنبيهات: ${geoStatusText(settings["geo_status"])}" else "لا توجد نقاط تنبيه مطلوبة حاليًا.", style = MaterialTheme.typography.bodyMedium)
                             OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
                             Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
                             Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play ومزود الموقع الشبكي. قد لا تتولد أحداث وصول دون اتصال بيانات موثوق. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
+                            }
                             }
                             SettingsSection("نسخة احتياطية محلية") {
                             Text("الملف يحتوي طلباتك وأماكنك وإحداثياتها وإعداداتك والصور المدعومة. ليس مشفرًا؛ احفظه في مكان موثوق. لا تُرفع البيانات تلقائيًا إلى أي خادم.")
@@ -241,7 +252,7 @@ fun MishwariRoot(
                             TextButton(onClick = importDirectory) { Text("استيراد تحديث دليل من JSON") }
                             Text("الخرائط: MapLibre Native / © OpenStreetMap contributors. تحتاج اتصالًا وتحمل بلاطات العرض من tile.openstreetmap.org؛ قد يكشف مزود الخريطة نطاق العرض وعنوان الشبكة. لا نرسل طلباتك. لا يوجد دعم مضمون للخرائط غير المتصلة.", style = MaterialTheme.typography.bodySmall)
                             }
-                            Text("مشواري 0.1.0 · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
+                            Text("طلباتي للمشوار 0.1.0 · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
                             Spacer(Modifier.height(24.dp))
                         }
                     }
@@ -251,11 +262,18 @@ fun MishwariRoot(
             editingPlace?.let { value -> PlaceEditor(value, places, { editingPlace = null }, { place -> model.save(place) { editingPlace = null; editingErrand = editingErrand?.copy(placeId = place.id) } }) }
             deletingErrand?.let { e -> Confirm("حذف الطلب؟", "سيُحذف «${e.title}» من هذا الجهاز.", { deletingErrand = null }, { model.remove(e); deletingErrand = null }) }
             deletingPlace?.let { p -> Confirm("حذف المكان؟", "تبقى طلباته محفوظة دون وجهة. إذا كانت له أماكن تابعة، انقلها أو احذفها أولًا.", { deletingPlace = null }, { model.remove(p); deletingPlace = null }) }
-            if (backgroundExplanation) AlertDialog(onDismissRequest = { backgroundExplanation = false }, title = { Text("التذكير حتى والتطبيق مغلق") }, text = { Text("لتلقي تنبيه الوصول إلى أماكنك المختارة، اسمح لمشواري بالوصول إلى الموقع دائمًا من إعدادات الأذونات، بعد السماح بالموقع الدقيق أثناء الاستخدام. تُرسل نقاط التنبيه المختارة إلى خدمة السياجات على الجهاز؛ لا نخزن سجل تنقلاتك ولا نستخدم خادمًا خاصًا. يمكنك رفض هذا الإذن والاستمرار باستخدام قوائمك.") }, confirmButton = { TextButton(onClick = { backgroundExplanation = false; openAppSettings() }) { Text("أوافق، افتح الإعدادات") } }, dismissButton = { TextButton(onClick = { backgroundExplanation = false }) { Text("ليس الآن") } })
+            permissionExplanation?.let { kind -> PermissionExplanation(kind, { permissionExplanation = null }) {
+                permissionExplanation = null
+                when (kind) {
+                    "foreground" -> if (!permissionState.fineLocationGranted) requestLocation()
+                    "notifications" -> if (!permissionState.notificationsReady()) requestNotifications()
+                    "background" -> if (alertsNeeded && permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) requestBackgroundLocation()
+                }
+            } }
             if (importing) Confirm("استيراد نسخة محلية", "تُدمج البيانات ويُحدّث السجل ذو المعرّف نفسه. لا تُحذف السجلات غير الموجودة في الملف. يُنصح بتصدير نسخة حالية أولًا. لن تُعاد تفعيل مراقبة الخلفية دون مراجعتك.", { importing = false }, { importing = false; importBackup() })
             if (voiceExplanation) AlertDialog(onDismissRequest = { voiceExplanation = false },
                 title = { Text("إملاء طلب بالعربية") },
-                text = { Text("سيُفتح تطبيق التعرف على الكلام في هاتفك. نطلب التعرّف دون اتصال، لكن الخدمة قد تستخدم الإنترنت وترسل الصوت إلى مزودها حسب إعداداتها. مشواري لا يسجل الصوت ولا يحتفظ به. راجع النص واختر الوجهة قبل الحفظ؛ الكتابة متاحة دائمًا.") },
+                text = { Text("سيُفتح تطبيق التعرف على الكلام في هاتفك. نطلب التعرّف دون اتصال، لكن الخدمة قد تستخدم الإنترنت وترسل الصوت إلى مزودها حسب إعداداتها. طلباتي للمشوار لا يسجل الصوت ولا يحتفظ به. راجع النص واختر الوجهة قبل الحفظ؛ الكتابة متاحة دائمًا.") },
                 confirmButton = { TextButton(onClick = { voiceExplanation = false; requestVoice() }) { Text("متابعة إلى الإملاء") } },
                 dismissButton = { TextButton(onClick = { voiceExplanation = false }) { Text("إلغاء") } })
             operationError?.let { message -> AlertDialog(onDismissRequest = { model.error.value = null }, title = { Text("لم تُكتمل العملية") }, text = { Text(message) }, confirmButton = { TextButton(onClick = { model.error.value = null }) { Text("حسنًا") } }) }
@@ -282,22 +300,69 @@ fun MishwariRoot(
     } }
 }
 @Composable private fun Confirm(title: String, body: String, dismiss: () -> Unit, confirm: () -> Unit) { AlertDialog(onDismissRequest = dismiss, title = { Text(title) }, text = { Text(body) }, confirmButton = { TextButton(onClick = confirm) { Text("متابعة") } }, dismissButton = { TextButton(onClick = dismiss) { Text("إلغاء") } }) }
-@Composable private fun CompactStatus(revision: Int, travel: String?, onClick: (() -> Unit)?) {
-    val context = LocalContext.current
-    val state = remember(revision) {
-        val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val background = Build.VERSION.SDK_INT < 29 || ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
-        val manager = context.getSystemService(LocationManager::class.java)
-        val location = if (Build.VERSION.SDK_INT >= 28) manager.isLocationEnabled else manager.isProviderEnabled(LocationManager.GPS_PROVIDER) || manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
-        val channel = context.getSystemService(android.app.NotificationManager::class.java).getNotificationChannel("mishwari_geo_alerts")
-        val notificationPermission = Build.VERSION.SDK_INT < 33 || ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED
-        val notifications = notificationPermission && NotificationManagerCompat.from(context).areNotificationsEnabled() && channel?.importance != android.app.NotificationManager.IMPORTANCE_NONE
-        listOf(when { !fine -> "اسمح بالموقع الدقيق أثناء الاستخدام"; !background -> "فعّل الموقع طوال الوقت من الأذونات"; !location -> "شغّل موقع الهاتف"; else -> "الموقع جاهز" }, if (notifications) "الإشعارات متاحة" else "اسمح بالإشعارات من الإعدادات")
-    }
-    Surface(Modifier.fillMaxWidth().then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) { Text(state.joinToString(" · "), style = MaterialTheme.typography.labelLarge); Text(if (travel != null) "وضع السفر: $travel" else "وضع السفر غير مفعّل", style = MaterialTheme.typography.bodySmall); if (onClick != null) Text("الخطوة التالية: مراجعة أذونات التنبيهات ←", style = MaterialTheme.typography.labelMedium) }
+internal fun GeoEnvironmentSignature.notificationsReady() = notificationPermissionGranted && appNotificationsEnabled &&
+    geoChannelImportance != android.app.NotificationManager.IMPORTANCE_NONE
+
+internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when {
+    !state.fineLocationGranted -> "foreground"
+    !state.notificationsReady() -> "notifications"
+    !state.backgroundLocationGranted -> "background"
+    else -> null
+}
+
+@Composable internal fun PermissionSummary(state: GeoEnvironmentSignature) {
+    Surface(Modifier.fillMaxWidth().testTag("permissionSummary"), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Text(when {
+                state.fineLocationGranted && state.locationEnabled -> "الموقع جاهز"
+                state.fineLocationGranted -> "إذن الموقع ممنوح · موقع الهاتف مغلق"
+                state.coarseLocationGranted -> "الموقع التقريبي متاح"
+                else -> "الموقع اختياري · غير مسموح"
+            }, style = MaterialTheme.typography.bodySmall)
+            Text(if (state.notificationsReady()) "الإشعارات مفعلة" else "الإشعارات غير مفعلة · القوائم تعمل كالمعتاد", style = MaterialTheme.typography.bodySmall)
+        }
     }
 }
+
+@Composable private fun PermissionAction(title: String, body: String, action: String, onClick: () -> Unit) {
+    Text(title, style = MaterialTheme.typography.titleSmall)
+    Text(body, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth()) { Text(action) }
+}
+
+/** Only shown where there is an actual arrival-alert candidate, never as a gate to lists. */
+@Composable internal fun AlertReadiness(state: GeoEnvironmentSignature, explain: (String) -> Unit, openLocationSettings: () -> Unit) {
+    val missing = nextAlertPermission(state)
+    OutlinedCard(Modifier.fillMaxWidth().testTag("alertReadiness")) {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(if (missing == null && state.locationEnabled) "أذونات تنبيهات الوصول جاهزة" else "تنبيهات الوصول تحتاج إعدادًا", style = MaterialTheme.typography.titleSmall)
+            if (missing != null || !state.locationEnabled) Text("لن يصلك تنبيه موثوق قبل إكمال الإعداد. يمكنك استخدام قائمة المشوار دون تنبيهات.", style = MaterialTheme.typography.bodySmall)
+            if (missing != null) OutlinedButton(onClick = { explain(missing) }) { Text(when (missing) {
+                "foreground" -> "إعداد الموقع أثناء الاستخدام"
+                "notifications" -> "إعداد إشعارات الوصول"
+                else -> "إعداد تنبيهات الخلفية"
+            }) }
+            else if (!state.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
+        }
+    }
+}
+
+@Composable private fun PermissionExplanation(kind: String, dismiss: () -> Unit, confirm: () -> Unit) {
+    AlertDialog(onDismissRequest = dismiss,
+        title = { Text(when (kind) {
+            "foreground" -> "الموقع أثناء الاستخدام"
+            "notifications" -> "إشعارات الوصول"
+            else -> "التذكير حتى والتطبيق مغلق"
+        }) },
+        text = { Text(when (kind) {
+            "foreground" -> "يفيد الموقع الدقيق في إعداد تنبيه وصول صحيح لأماكنك. سنطلب الموقع أثناء الاستخدام فقط، وليس في الخلفية. إذا رفضت، تبقى الطلبات والأماكن والنسخ الاحتياطي متاحة. إذا سبق رفض الإذن نهائيًا، ستفتح إعدادات التطبيق بدل تكرار الطلب."
+            "notifications" -> "اسمح بالإشعارات كي يظهر تذكير طلباتك عند الوصول. إذا رفضت، لن تظهر تنبيهات الوصول؛ تبقى قوائمك متاحة. قد تُفتح إعدادات الإشعارات إذا كانت محظورة من النظام."
+            else -> "لتلقي تنبيه وصول للمكان المرتبط بطلبك حتى والتطبيق مغلق، يحتاج طلباتي للمشوار إذن الموقع في الخلفية. اختر «السماح طوال الوقت» إن ظهر في الإعدادات. تُرسل نقاط التنبيه المختارة إلى خدمة السياجات على الجهاز؛ لا نخزن سجل تنقلاتك ولا نستخدم خادمًا خاصًا. يمكنك الرفض واستخدام قوائمك دون تنبيهات الخلفية."
+        }) },
+        confirmButton = { TextButton(onClick = confirm) { Text("متابعة") } },
+        dismissButton = { TextButton(onClick = dismiss) { Text("ليس الآن") } })
+}
+
 @Composable private fun ErrandCard(e: Errand, place: Place?, complete: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) { Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); Checkbox(e.status == "مكتمل", { complete() }, modifier = Modifier.semantics { contentDescription = if (e.status == "مكتمل") "إعادة فتح الطلب: ${e.title}" else "إكمال الطلب: ${e.title}" }) }
