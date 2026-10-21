@@ -1,35 +1,41 @@
-# تطوير مشواري والبناء على GitHub
+# تطوير مشواري والتحقق قبل التوزيع
 
-المستودع مستقل وخاص: https://github.com/hoodmoshla/Mishwari-Android. لا تستخدم إعدادات أو مفاتيح توقيع تطبيق آخر معه. تبقى مرحلة التنفيذ والمراجعة في `codex/initial-implementation`، و`main` مستقر لا تُدمج إليه نسخة غير متحققة. قد يشير README الرئيسي إلى فرع العمل بدل وجود التطبيق غير المكتمل على main.
+المستودع الخاص هو [hoodmoshla/Mishwari-Android](https://github.com/hoodmoshla/Mishwari-Android)، والعمل الحالي على `codex/initial-implementation`. لا تُدمج هذه المرحلة إلى `main` ولا تُنشئ GitHub Release قبل اعتمادها. هوية التطبيق `ye.mishwari`، و`versionName=0.1.2` و`versionCode=3` ثابتة لهذه الإصلاحات.
 
-## بناء نسخة جديدة
+## الفحص المحلي
 
-1. استنسخ المستودع الخاص بحسابك، وانتقل إلى فرع التطوير.
-2. استخدم JDK 17 وAndroid SDK 35، وحدد SDK في `local.properties` المحلي غير المتتبع عند الحاجة.
-3. شغّل:
+استخدم JDK 17 وAndroid SDK Platform/Build Tools 35. حدّد `sdk.dir` داخل `local.properties` المحلي غير المتتبع، ثم شغّل:
 
 ```bash
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
+./gradlew --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest
 ```
 
-APK في `app/build/outputs/apk/debug/app-debug.apk`. اختبارات الجهاز بعد توصيله وتشغيل USB debugging: `./gradlew :app:connectedDebugAndroidTest`. لا تشغّلها على بيانات مهمة قبل تصدير نسخة محلية.
+اختبارات JVM وRobolectric تستخدم نسخة Debug المهيأة بـ`ui-test-manifest`. بناء APK اختبارات Android لا يعني تنفيذها؛ شغّل `:app:connectedDebugAndroidTest` على محاكي/جهاز اختبار منفصل. لا تستخدم هاتفًا فيه بيانات مهمة قبل نسخة احتياطية، ولا تحذف بياناته لمعالجة اختلاف التوقيع. ملف Debug ليس تحديثًا للنسخة الدائمة.
 
-كل Push على main أو `codex/**` وكل Pull Request يشغّل `Android CI`. يبني APK اختباريًا فقط بعد نجاح اختبارات JVM وRobolectric وLint. كما يبني APK اختبارات الجهاز، لكنه **لا يشغّلها على هاتف**؛ لا تخلط بين البناء والاختبار الفعلي. راجع `TESTING.md` للاختبار الميداني.
+## ما ينفّذه CI
 
-## تنزيل APK والنتائج
+كل Push على `main` أو `codex/**` وكل Pull Request يشغّل Workflow واحدًا: `.github/workflows/android-ci.yml`.
 
-افتح Actions في المستودع، ثم Android CI، ثم التشغيل الأخضر. تحت Artifacts تجد `Mishwari-debug-<run_number>` وفيه APK واحد و`SHA256SUMS.txt` و`apk-signature.txt`. يلزم فك ضغط Artifact. التقرير الآخر `verification-reports-<run_number>` يضم سجل Gradle وتقارير HTML/XML وLint. مدة الحفظ 30 يومًا، ويمكنك تنزيلها قبل انتهائها. يحتفظ التشغيل الفاشل بالتقارير التي أُنتجت فعلًا دون إعلان APK صالح. إذا فشل إعداد JDK أو SDK قبل بدء Gradle، فلا يوجد سجل Gradle؛ سبب الإخفاق في سجل خطوة الإعداد داخل Actions نفسه.
+1. يتحقق من رفض Release عند غياب أسرار التوقيع، ويشغّل اختبارات Debug وLint ويبني التطبيق وAPK اختبارات Android.
+2. بعد نجاحها، ينفّذ اختبارات Android على محاكي Google APIs بمعمارية x86_64 لكل من API 26 و35. هذه اختبارات محاكي وليست اختبار هاتف أو Geofence ميدانيًا.
+3. على فرع العمل المحدد فقط، وبعد نجاح البوابتين، يشغّل `lintRelease` ويبني Release بالمفتاح الدائم ثم يتحقق من الشهادة قبل رفع Artifact. لا توجد خطوة تنشئ GitHub Release أو تدمج فرعًا.
+
+تُحفظ تقارير الوحدة وLint في `verification-reports-رقم_التشغيل`، وتقارير المحاكي في `android-tests-api-رقم_API-رقم_التشغيل`، وتقارير Release في `release-verification-reports-رقم_التشغيل`. المخرج الموقّع باسم `Mishwari-signed-رقم_التشغيل` يتضمن APK و`SHA256SUMS.txt` و`apk-signature.txt` و`build-provenance.json`. مدة حفظ Artifacts ثلاثون يومًا. افتح التشغيل نفسه لمعرفة commit والنتيجة؛ لا تعتبر وجود ملف اعتمادًا ميدانيًا.
 
 ## التوقيع والأسرار
 
-لا يحتاج Workflow الحالي أي Secret. `GITHUB_TOKEN` تلقائي بصلاحية قراءة المحتوى فقط. لا توجد عمليات رفع إصدار إنتاجي أو مفاتيح مكان مخفية. لا تسجل Tokens أو كلمات مرور أو keystore أو `local.properties` في Git.
+Release يستخدم مفتاح مشواري الدائم فقط. يرفض البناء غياب `MISHWARI_KEYSTORE_PATH` أو `MISHWARI_STORE_PASSWORD` أو `MISHWARI_KEY_ALIAS` أو `MISHWARI_KEY_PASSWORD` بدل استخدام بديل. في CI يُستعاد الملف من `MISHWARI_KEYSTORE_BASE64` إلى مجلد مؤقت وتُقرأ بقية القيم من GitHub Secrets ثم يُحذف الملف المؤقت. لا تطبع الأسرار أو تضع keystore أو كلمة مرور أو `local.properties` في Git، ولا تخلط إعدادات أي تطبيق آخر مع هذا المستودع.
 
-الـAPK الحالي **Debug**، ليس إصدارًا إنتاجيًا ولا شهادة تحديث دائمة. قد يختلف توقيع Debug بين بيئات البناء وتشغيلات CI، فلا تفترض أن APK جديدًا يحدّث نسخة سابقة دون تعارض. صدّر بياناتك أولًا؛ لا تمسحها لمعالجة تعارض الشهادة. إعداد مفتاح إصدار دائم خاص بمشواري مطلوب قبل توزيع إنتاجي؛ لم نُنشئ مفتاحًا بديلًا ولا نستخدم أي مفتاح تطبيق آخر.
+قارن `apksigner verify --verbose --print-certs` بالمرجع `signing/certificate-sha256.txt`: `da2adb23a6d2c5c12af57037bab627fd33133f0528a9fbf4c1fcb976e50d6894`. اختلاف البصمة يمنع التسليم كتحديث؛ لا تعالجه بإنشاء مفتاح أو إزالة التطبيق وبياناته.
 
-عند اعتماد Release لاحقًا، أضف أسراره بنفسك من صفحة المستودع: **Settings → Secrets and variables → Actions → New repository secret**. أسماء مقترحة خاصة بهذا المشروع: `MISHWARI_KEYSTORE_BASE64` لمحتوى ملف التوقيع المشفر بنقل Base64، و`MISHWARI_KEYSTORE_PASSWORD`، و`MISHWARI_KEY_ALIAS`، و`MISHWARI_KEY_PASSWORD`. Base64 ليس تشفيرًا للحماية؛ احتفظ بالملف الأصلي ونسخة آمنة خارجه. لا ترسل القيم في محادثة أو Issue أو Commit. يلزم قبل ربط هذه الأسرار بـWorkflow مراجعة الهوية `ye.mishwari` والشهادة المرجعية وسلوك التحديث، ثم خطوة تحقق `apksigner` قبل أي نشر. لا يقرأ Workflow الحالي هذه الأسماء، ولا توجد خطوة Release مفعلة بمجرد إضافتها.
+## قاعدة البيانات والدليل والمساعد
 
-## تغيير قاعدة البيانات والبيانات الإدارية
+مخطط Room v1 محفوظ في `app/schemas/` ولم يتغير في إصلاحات المراجعة. لا توجد destructive migration؛ أي تغيير جداول لاحق يحتاج زيادة إصدار وmigration صريحة واختبارات بيانات قائمة. اختبارات السلامة الحالية تفتح fixture مطابقًا لـv1 وتتحقق من البيانات، وتختبر رفض downgrade غير المدعوم دون إسقاط الصفوف.
 
-مخطط Room 1 محفوظ في `app/schemas/`. أي تعديل لاحق في الجداول يحتاج زيادة إصدار ومهاجرة واختبار بيانات قائمة؛ لا تضف destructive migration. الدليل الإداري أسماء موثقة لا حدود جغرافية. المصدر والترخيص والتحفظات في `research/yemen-admin-data-notes.md`، والمعرّفات المستقرة مهمة لتحديثه دون فقد ربط الطلبات.
+دليل اليمن يحتوي 358 سجلًا إداريًا بلا إحداثيات. لا تُضف إحداثيات تخمينية، ولا تجعل التقاط الموقع يشغّل المراقبة أو يحفظ النقطة دون مراجعة المستخدم. اختبارات المساعد تستخدم نقلًا وهميًا وبيانات اصطناعية؛ نجاحها لا يعني اختبار Gemini أو OpenAI حقيقيًا.
 
-العربية وRTL مطبقان في واجهة Compose، وطبقة البيانات مستقلة عنها. حافظ على اختبارات التخزين والإشعارات والواجهة عند تطوير الإدخال بالصوت أو المشاركة؛ لا تجعل أي خدمة شبكة شرطًا لإضافة طلب.
+## تجربة التصغير
+
+R8 وتصغير الموارد غير مفعّلين في بناء التطبيق الأساسي. جرت المقارنة في worktree منفصل مع الإبقاء على المعماريات الأربع والهوية والتوقيع. انخفاض الحجم وحده ليس اختبار توافق: تحذيرات Kotlin metadata وبقاء اختبارات الهاتف/نسخة Release المقلّصة دون تحقق تمنع اعتماد التصغير. لا تُضف ABI filters لاستبعاد أجهزة المستخدمين.
+
+راجع [قائمة القبول الميداني](FIELD_ACCEPTANCE.ar.md) قبل التفكير في الدمج أو النشر.
