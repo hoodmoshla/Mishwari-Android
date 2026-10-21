@@ -16,12 +16,12 @@ import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
 import com.google.android.gms.location.GeofenceStatusCodes
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withTimeout
 import ye.mishwari.MainActivity
 import ye.mishwari.R
 import ye.mishwari.data.AppSetting
@@ -32,34 +32,47 @@ class GeoReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         val pendingResult = goAsync()
         val app = context.applicationContext
+        val thisHandoff = CompletableDeferred<Unit>()
+        val previousHandoff = synchronized(handoffLock) {
+            val previous = lastHandoff
+            lastHandoff = thisHandoff
+            previous
+        }
         receiverScope.launch {
             try {
-                withTimeout(EVENT_TIMEOUT_MILLIS) {
+                GeoEventWork.withHandoffTimeout {
+                    previousHandoff.await()
                     val dao = MishwariDatabase.get(app).dao()
                     val event = GeofencingEvent.fromIntent(intent)
                     if (event == null) {
                         dao.putSetting(AppSetting(key = GeoWorker.GEO_STATUS_SETTING, value = "event_invalid"))
-                        return@withTimeout
+                        return@withHandoffTimeout
                     }
                     if (event.hasError()) {
                         if (event.errorCode == GeofenceStatusCodes.GEOFENCE_NOT_AVAILABLE) {
                             GeoScheduler.schedule(app, force = true, rearmSelected = true)
                         }
                         dao.putSetting(AppSetting(key = GeoWorker.GEO_STATUS_SETTING, value = "event_error:${event.errorCode}"))
-                        return@withTimeout
+                        return@withHandoffTimeout
                     }
                     val transition = event.geofenceTransition
                     if (transition != Geofence.GEOFENCE_TRANSITION_ENTER && transition != Geofence.GEOFENCE_TRANSITION_EXIT) {
                         dao.putSetting(AppSetting(key = GeoWorker.GEO_STATUS_SETTING, value = "event_transition_unsupported:$transition"))
-                        return@withTimeout
+                        return@withHandoffTimeout
                     }
-                    processVersionedTransition(app, transition, event.triggeringGeofences.orEmpty().mapNotNull { it.requestId })
+                    val requestIds = event.triggeringGeofences.orEmpty().mapNotNull { it.requestId }.distinct()
+                    if (requestIds.isEmpty()) {
+                        dao.putSetting(AppSetting(key = GeoWorker.GEO_STATUS_SETTING, value = "event_no_geofences"))
+                        return@withHandoffTimeout
+                    }
+                    GeoEventWork.awaitEnqueue(GeoEventWork.enqueue(app, transition, requestIds))
                 }
             } catch (_: CancellationException) {
-                // goAsync is completed in finally; do not launch unbounded work after timeout.
+                // WorkManager owns processing after its durable enqueue has completed.
             } catch (_: Exception) {
-                runCatching { MishwariDatabase.get(app).dao().putSetting(AppSetting(key = GeoWorker.GEO_STATUS_SETTING, value = "receiver_error")) }
+                // Keep BroadcastReceiver work bounded if validation or durable enqueue itself fails.
             } finally {
+                thisHandoff.complete(Unit)
                 pendingResult.finish()
             }
         }
@@ -238,8 +251,10 @@ class GeoReceiver : BroadcastReceiver() {
         private const val FIRST_NOTIFICATION_ID = 10_000
         private const val INVALID_NOTIFICATION_ID = -1
         private const val MAX_TASK_TITLES = 4
-        private const val EVENT_TIMEOUT_MILLIS = 8_000L
+        internal const val EVENT_TIMEOUT_MILLIS = 8_000L
         private val receiverScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val handoffLock = Any()
+        private var lastHandoff = CompletableDeferred(Unit)
         private val processingLock = kotlinx.coroutines.sync.Mutex()
         private val notificationIdLock = Any()
 

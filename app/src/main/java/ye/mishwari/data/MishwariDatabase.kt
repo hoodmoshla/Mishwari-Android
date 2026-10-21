@@ -56,6 +56,9 @@ interface MishwariDao {
     @Upsert
     suspend fun upsertPlace(place: Place)
 
+    @Query("UPDATE places SET parentId = NULL WHERE parentId = :id")
+    suspend fun detachPlaceChildren(id: String)
+
     @Query("DELETE FROM places WHERE id = :id")
     suspend fun deletePlace(id: String)
 

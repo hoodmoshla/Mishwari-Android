@@ -223,12 +223,13 @@ fun AssistantScreen(
             }
         }
         if (suggestions.isNotEmpty()) item {
-            Text("اقتراحات غير مؤكدة · لا تغيّر طلباتك الحالية", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("اقتراحات غير مؤكدة · لا تُطبّق إلا بعد مراجعتك وموافقتك", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         }
         items(suggestions) { suggestion ->
             OutlinedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(suggestion.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                    if (suggestion.errandId != null) Text("تحديث الطلب الأصلي · ${suggestion.errandId}", style = MaterialTheme.typography.labelSmall)
                     Text(suggestion.description)
                     Text("أولوية ${suggestion.priority.assistantPriorityLabel()} مقترحة · ${suggestion.dueDate.ifBlank { "بلا موعد مقترح" }} · ${places.firstOrNull { it.id == suggestion.placeId }?.let(::placeLabel) ?: "بلا وجهة"}", style = MaterialTheme.typography.bodySmall)
                     Text("هذه توصية غير مؤكدة وليست ترتيب مسار أو تغييرًا للبيانات.", style = MaterialTheme.typography.bodySmall)
@@ -287,10 +288,9 @@ fun AssistantScreen(
     editingSuggestion?.let { suggestion ->
         AssistantSuggestionEditor(
             suggestion = suggestion,
-            places = places,
+            places = places.filter { it.id in model.reviewableAssistantPlaceIds() },
             onDismiss = { editingSuggestion = null },
-            onSave = { revised -> model.acceptAssistantSuggestion(revised) {
-                model.dismissAssistantSuggestion(suggestion)
+            onSave = { revised -> model.acceptReviewedAssistantSuggestion(suggestion, revised) {
                 editingSuggestion = null
             } },
         )
@@ -322,14 +322,24 @@ private fun AssistantSuggestionEditor(
     var dueDate by remember(suggestion) { mutableStateOf(suggestion.dueDate) }
     var placeId by remember(suggestion) { mutableStateOf(suggestion.placeId.orEmpty()) }
     var placeMenu by remember { mutableStateOf(false) }
+    val capture = suggestion.mode == "capture"
+    val editPriority = capture || suggestion.mode in setOf("priorities", "trip")
+    val editPlace = capture || suggestion.mode == "group"
+    val validDate = dueDate.isBlank() || runCatching {
+        dueDate.length == 10 && java.time.LocalDate.parse(dueDate).toString() == dueDate
+    }.getOrDefault(false)
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("راجع اقتراحًا قبل إنشاء طلب") },
+        title = { Text(if (capture) "راجع اقتراحًا قبل إنشاء طلب" else "راجع تحديث الطلب الأصلي") },
         text = {
             Column(Modifier.heightIn(max = 480.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text("سيُنشأ طلب جديد فقط بعد موافقتك؛ لا يتغير أي طلب موجود.", style = MaterialTheme.typography.bodySmall)
+                Text(if (capture) "سيُنشأ طلب جديد فقط بعد موافقتك؛ لا يتغير أي طلب موجود."
+                    else "سيُحدّث الطلب «${suggestion.title}» (${suggestion.errandId}) فقط بعد موافقتك. تبقى الصور والملاحظات وبقية التفاصيل محفوظة.", style = MaterialTheme.typography.bodySmall)
+                if (capture) {
                 OutlinedTextField(title, { title = it.take(200) }, label = { Text("العنوان") }, singleLine = true, modifier = Modifier.fillMaxWidth())
                 OutlinedTextField(description, { description = it.take(2000) }, label = { Text("الوصف") }, minLines = 2, modifier = Modifier.fillMaxWidth())
+                }
+                if (editPriority) {
                 Text("الأولوية")
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(selected = priority == 0, onClick = { priority = 0 }, label = { Text("منخفضة") })
@@ -337,6 +347,9 @@ private fun AssistantSuggestionEditor(
                     FilterChip(selected = priority == 2, onClick = { priority = 2 }, label = { Text("مهمة") })
                 }
                 OutlinedTextField(dueDate, { dueDate = it.take(10) }, label = { Text("الموعد · YYYY-MM-DD") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+                if (!validDate) Text("أدخل تاريخًا صحيحًا بصيغة YYYY-MM-DD أو اترك الموعد فارغًا.", color = MaterialTheme.colorScheme.error)
+                }
+                if (editPlace) {
                 ExposedDropdownMenuBox(expanded = placeMenu, onExpandedChange = { placeMenu = it }) {
                     OutlinedTextField(value = places.firstOrNull { it.id == placeId }?.let(::placeLabel) ?: "بدون وجهة", onValueChange = {}, readOnly = true, label = { Text("الوجهة") }, trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(placeMenu) }, modifier = Modifier.menuAnchor().fillMaxWidth())
                     ExposedDropdownMenu(expanded = placeMenu, onDismissRequest = { placeMenu = false }) {
@@ -344,9 +357,10 @@ private fun AssistantSuggestionEditor(
                         places.sortedBy(::placeLabel).forEach { place -> DropdownMenuItem(text = { Text(placeLabel(place)) }, onClick = { placeId = place.id; placeMenu = false }) }
                     }
                 }
+                }
             }
         },
-        confirmButton = { TextButton(onClick = { onSave(suggestion.copy(title = title.trim(), description = description.trim(), priority = priority, dueDate = dueDate.trim(), placeId = placeId.takeIf { it.isNotBlank() })) }, enabled = title.isNotBlank(), modifier = Modifier.testTag("assistantSaveAsNewErrand")) { Text("حفظ كطلب جديد") } },
+        confirmButton = { TextButton(onClick = { onSave(suggestion.copy(title = title.trim(), description = description.trim(), priority = priority, dueDate = dueDate.trim(), placeId = placeId.takeIf { it.isNotBlank() })) }, enabled = title.isNotBlank() && (!editPriority || validDate), modifier = Modifier.testTag(if (capture) "assistantSaveAsNewErrand" else "assistantApplyToOriginal")) { Text(if (capture) "حفظ كطلب جديد" else "أوافق، حدّث الطلب الأصلي") } },
         dismissButton = { TextButton(onClick = onDismiss) { Text("إلغاء") } },
     )
 }

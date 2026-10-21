@@ -14,7 +14,7 @@ import java.util.UUID
 
 /**
  * Persistence and import/export facade. Backups contain only explicitly stored records and
- * coordinates, never a hidden or inferred location history. Inline photos are optional, capped,
+ * coordinates, never a hidden or inferred location history. Inline photos are capped,
  * and read only from filesDir/photos. External imports do not enable place monitoring.
  */
 class Repository(private val db: MishwariDatabase) {
@@ -30,51 +30,138 @@ class Repository(private val db: MishwariDatabase) {
         dao.upsertErrand(e)
     }
 
+    /** Saves first, then removes a replaced photo only when no saved row or draft still uses it. */
+    suspend fun saveErrand(e: Errand, context: Context, protectedPhotoPaths: Set<String>) {
+        val previousPhoto = db.withTransaction {
+            DataValidation.validateErrand(e)
+            if (e.placeId != null) require(dao.allPlaces().any { it.id == e.placeId }) { "المكان المحدد للطلب غير موجود" }
+            val oldPath = dao.allErrands().firstOrNull { it.id == e.id }?.photoPath
+            dao.upsertErrand(e)
+            oldPath
+        }
+        if (previousPhoto != null && previousPhoto != e.photoPath) {
+            deletePhotoIfUnused(context, previousPhoto, protectedPhotoPaths)
+        }
+    }
+
     suspend fun removeErrand(e: Errand) = dao.deleteErrand(e.id)
+
+    /** Deletes an errand transactionally, then cleans only its now-unused photo after commit. */
+    suspend fun removeErrand(e: Errand, context: Context, protectedPhotoPaths: Set<String>) {
+        val photoPath = db.withTransaction {
+            val storedPath = dao.allErrands().firstOrNull { it.id == e.id }?.photoPath
+            dao.deleteErrand(e.id)
+            storedPath
+        }
+        photoPath?.let { deletePhotoIfUnused(context, it, protectedPhotoPaths) }
+    }
+
+    /** Call only when a draft has been explicitly discarded; all other active drafts must be protected. */
+    suspend fun discardPhoto(context: Context, path: String, protectedPhotoPaths: Set<String>): Boolean =
+        deletePhotoIfUnused(context, path, protectedPhotoPaths)
+
+    /**
+     * Cleans only the caller-supplied candidates (never scans the photos directory). The caller
+     * must remove finished drafts from its protected set before passing their paths here.
+     */
+    suspend fun cleanupPhotoCandidates(
+        context: Context,
+        paths: Collection<String>,
+        protectedPhotoPaths: Set<String>
+    ): Int = paths.distinct().count { path -> deletePhotoIfUnused(context, path, protectedPhotoPaths) }
 
     suspend fun savePlace(p: Place) = db.withTransaction {
         DataValidation.validatePlace(p)
+        require(!p.monitored || (p.latitude != null && p.longitude != null)) {
+            "أضف إحداثيات صالحة قبل تفعيل مراقبة الوصول"
+        }
         val combined = (dao.allPlaces().filterNot { it.id == p.id } + p)
         DataValidation.validateHierarchy(combined, requireParents = true)
         dao.upsertPlace(p)
     }
 
-    suspend fun removePlace(p: Place) = dao.deletePlace(p.id)
+    /** Children are detached first; errands retain their rows and the FK sets their place to null. */
+    suspend fun removePlace(p: Place) = db.withTransaction {
+        dao.detachPlaceChildren(p.id)
+        dao.deletePlace(p.id)
+    }
 
     suspend fun setSetting(key: String, value: String) {
         DataValidation.validateSettingKey(key)
         dao.putSetting(AppSetting(key, value))
     }
 
-    /** Exports schema-1 UTF-8 JSON. Only files inside filesDir/photos and <= 2 MiB are embedded. */
+    /** Exports schema-1 UTF-8 JSON; managed photos are embedded up to the 5 MiB picker limit. */
     suspend fun exportBackup(context: Context): String = withContext(kotlinx.coroutines.Dispatchers.IO) {
         val snapshot = dao.snapshot()
         val places = snapshot.places
         val errands = snapshot.errands
         val settings = snapshot.settings
         val root = JSONObject().put("schema", BACKUP_SCHEMA)
-        root.put("places", JSONArray().apply { places.forEach { put(it.toJson()) } })
-        root.put("errands", JSONArray().apply {
-            errands.forEach { errand ->
-                val json = errand.toJson()
-                safeLocalPhotoBytes(context, errand.photoPath)?.let { bytes ->
-                    json.put("photoBase64", Base64.encodeToString(bytes, Base64.NO_WRAP))
-                }
-                put(json)
+        val placeRows = JSONArray()
+        val errandRows = JSONArray()
+        val settingRows = JSONArray()
+        root.put("places", placeRows).put("errands", errandRows).put("settings", settingRows)
+        var accumulatedBytes = root.toString().toByteArray(Charsets.UTF_8).size
+        fun appendBounded(rows: JSONArray, row: JSONObject) {
+            val rowBytes = row.toString().toByteArray(Charsets.UTF_8).size
+            val separatorBytes = if (rows.length() == 0) 0 else 1
+            require(rowBytes <= MAX_BACKUP_BYTES - accumulatedBytes - separatorBytes) {
+                "حجم النسخة الاحتياطية يتجاوز الحد المسموح (25 ميغابايت)"
             }
-        })
-        root.put("settings", JSONArray().apply {
-            settings.forEach { put(JSONObject().put("key", it.key).put("value", it.value)) }
-        })
-        root.toString()
+            accumulatedBytes += rowBytes + separatorBytes
+            rows.put(row)
+        }
+        places.forEach { appendBounded(placeRows, it.toJson()) }
+        run {
+            errands.forEach { errand ->
+                // Photo locations are device-local and are never meaningful in a portable backup.
+                val json = errand.toJson().apply { remove("photoPath") }
+                if (!errand.photoPath.isNullOrBlank()) {
+                    val bytes = safeLocalPhotoBytes(context, errand.photoPath)
+                    if (bytes == null && isManagedPhotoPath(context, errand.photoPath)) {
+                        throw IllegalArgumentException(
+                            "تعذر تضمين صورة الطلب ${errand.id}: الملف مفقود أو يتجاوز 5 ميغابايت"
+                        )
+                    }
+                    bytes?.let { json.put("photoBase64", Base64.encodeToString(it, Base64.NO_WRAP)) }
+                }
+                appendBounded(errandRows, json)
+            }
+        }
+        settings.forEach { appendBounded(settingRows, JSONObject().put("key", it.key).put("value", it.value)) }
+        root.toString().also {
+            require(it.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) {
+                "حجم النسخة الاحتياطية يتجاوز الحد المسموح (25 ميغابايت)"
+            }
+        }
     }
 
     /**
      * Validates the complete input before writing. Records are additive (colliding ids/keys update);
      * the database change itself is one Room transaction. Returns the imported errand count.
      */
-    suspend fun importBackup(context: Context, json: String): Int = withContext(kotlinx.coroutines.Dispatchers.IO) {
+    /** Legacy caller cannot prove which editor paths are active; preserve replaced files in that case. */
+    suspend fun importBackup(context: Context, json: String): Int =
+        importBackupInternal(context, json, emptySet(), cleanupReplacedPhotos = false)
+
+    suspend fun importBackup(
+        context: Context,
+        json: String,
+        protectedPhotoPaths: Set<String>
+    ): Int = importBackupInternal(context, json, protectedPhotoPaths, cleanupReplacedPhotos = true)
+
+    private suspend fun importBackupInternal(
+        context: Context,
+        json: String,
+        protectedPhotoPaths: Set<String>,
+        cleanupReplacedPhotos: Boolean
+    ): Int = withContext(kotlinx.coroutines.Dispatchers.IO) {
+        require(json.toByteArray(Charsets.UTF_8).size <= MAX_BACKUP_BYTES) {
+            "حجم النسخة الاحتياطية يتجاوز الحد المسموح (25 ميغابايت)"
+        }
         val parsed = parseBackup(json)
+        val previousErrands = dao.allErrands().associateBy { it.id }
         val importedPlaces = parsed.places.map { it.copy(monitored = false) }
         val currentPlaces = dao.allPlaces()
         val mergedPlaces = mergePlaces(currentPlaces, importedPlaces)
@@ -88,6 +175,7 @@ class Repository(private val db: MishwariDatabase) {
         }
 
         val createdFiles = mutableListOf<File>()
+        var replacedPhotoPaths: List<String> = emptyList()
         try {
             val importedErrands = parsed.errands.map { errand ->
                 val bytes = parsed.photoBytes[errand.id] ?: return@map errand
@@ -95,26 +183,45 @@ class Repository(private val db: MishwariDatabase) {
                 require(dir.exists() || dir.mkdirs()) { "تعذر إنشاء مجلد الصور الآمن" }
                 val filesRoot = context.filesDir.canonicalFile
                 val safeDir = dir.canonicalFile
-                require(safeDir.path.startsWith(filesRoot.path + File.separator)) { "مسار مجلد الصور غير آمن" }
+                require(safeDir.parentFile == filesRoot && safeDir.isDirectory) { "مسار مجلد الصور غير آمن" }
                 val target = File(safeDir, "${UUID.randomUUID()}.bin").canonicalFile
                 require(target.parentFile == safeDir) { "وجهة الصورة غير آمنة" }
-                target.writeBytes(bytes)
                 createdFiles += target
+                target.writeBytes(bytes)
                 errand.copy(photoPath = target.absolutePath)
             }
             val sanitizedErrands = importedErrands.map { imported ->
-                if (parsed.photoBytes.containsKey(imported.id)) imported else imported.copy(photoPath = null)
+                when {
+                    parsed.photoBytes.containsKey(imported.id) -> imported
+                    // Schema-1 legacy exports carried only a device path. Never trust that path,
+                    // but retain this device's existing attachment when the same record is restored.
+                    imported.id in parsed.legacyPhotoErrandIds -> imported.copy(photoPath = previousErrands[imported.id]?.photoPath)
+                    else -> imported.copy(photoPath = null)
+                }
             }
+            replacedPhotoPaths = parsed.errands.mapNotNull { imported ->
+                previousErrands[imported.id]?.photoPath?.takeIf { old ->
+                    old != sanitizedErrands.first { it.id == imported.id }.photoPath
+                }
+            }.distinct()
             // Never import worker fingerprints, delivery state, or an active trip from a file.
             // Otherwise an apparently passive restore could silently register location monitoring.
             val safeSettings = parsed.settings.filter { it.key == "theme" && it.value in setOf("system", "light", "dark") } +
                 AppSetting("travel_place", "")
             dao.applySnapshot(orderParentsFirst(importedPlaces, mergedPlaces), sanitizedErrands, safeSettings)
-            parsed.errands.size
         } catch (failure: Throwable) {
-            createdFiles.forEach { it.delete() }
+            // Cancellation can race with Room returning from a committed transaction. Never unlink
+            // a newly created file without checking whether a committed row now references it.
+            withContext(kotlinx.coroutines.NonCancellable) {
+                createdFiles.forEach { file -> runCatching { deletePhotoIfUnused(context, file.path, protectedPhotoPaths) } }
+            }
             throw failure
         }
+        // Database work has committed; cleanup failures must never remove files referenced by rows.
+        if (cleanupReplacedPhotos) {
+            replacedPhotoPaths.forEach { path -> runCatching { deletePhotoIfUnused(context, path, protectedPhotoPaths) } }
+        }
+        parsed.errands.size
     }
 
     /** Imports the standardized administrative hierarchy additively; returns imported place count. */
@@ -156,7 +263,8 @@ class Repository(private val db: MishwariDatabase) {
         val places: List<Place>,
         val errands: List<Errand>,
         val settings: List<AppSetting>,
-        val photoBytes: Map<String, ByteArray>
+        val photoBytes: Map<String, ByteArray>,
+        val legacyPhotoErrandIds: Set<String>,
     )
 
     private fun parseBackup(json: String): ParsedBackup {
@@ -166,8 +274,10 @@ class Repository(private val db: MishwariDatabase) {
             val places = root.getJSONArray("places").toObjects { it.toPlace() }
             require(places.map { it.id }.toSet().size == places.size) { "توجد معرّفات أماكن مكررة في النسخة الاحتياطية" }
             val photoBytes = mutableMapOf<String, ByteArray>()
+            val legacyPhotoErrandIds = mutableSetOf<String>()
             val errands = root.getJSONArray("errands").toObjects { row ->
                 val errand = row.toErrand()
+                if (row.has("photoPath") && !row.has("photoBase64")) legacyPhotoErrandIds += errand.id
                 row.optionalString("photoBase64")?.let { encoded ->
                     require(encoded.length <= MAX_BASE64_PHOTO_CHARS) { "حجم الصورة المضمّنة يتجاوز الحد المسموح" }
                     require(encoded.isNotEmpty() && BASE64_PATTERN.matches(encoded)) { "بيانات الصورة المضمّنة غير صالحة" }
@@ -187,7 +297,7 @@ class Repository(private val db: MishwariDatabase) {
             settings.forEach { DataValidation.validateSettingKey(it.key) }
             DataValidation.validateHierarchy(places, requireParents = true)
             errands.forEach(DataValidation::validateErrand)
-            return ParsedBackup(places, errands, settings, photoBytes)
+            return ParsedBackup(places, errands, settings, photoBytes, legacyPhotoErrandIds)
         } catch (e: IllegalArgumentException) {
             throw e
         } catch (e: Exception) {
@@ -303,7 +413,7 @@ class Repository(private val db: MishwariDatabase) {
             val file = File(path).canonicalFile
             val filesRoot = context.filesDir.canonicalFile
             val photoDirectory = File(filesRoot, "photos").canonicalFile
-            if (!photoDirectory.path.startsWith(filesRoot.path + File.separator)) return null
+            if (photoDirectory.parentFile != filesRoot) return null
             val root = photoDirectory.path + File.separator
             if (!file.isFile || !file.canonicalPath.startsWith(root) || file.length() > MAX_INLINE_PHOTO_BYTES) {
                 return null
@@ -323,6 +433,32 @@ class Repository(private val db: MishwariDatabase) {
             output.toByteArray()
         } catch (_: IOException) { null }
     }
+
+    private suspend fun deletePhotoIfUnused(context: Context, path: String, protectedPhotoPaths: Set<String>): Boolean =
+        withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val candidate = runCatching { File(path).canonicalFile }.getOrNull() ?: return@withContext false
+            val filesRoot = runCatching { context.filesDir.canonicalFile }.getOrNull() ?: return@withContext false
+            val photoDirectory = runCatching { File(filesRoot, "photos").canonicalFile }.getOrNull()
+                ?: return@withContext false
+            if (photoDirectory.parentFile != filesRoot || candidate.parentFile != photoDirectory ||
+                !UUID_PHOTO_NAME.matches(candidate.name) || !candidate.isFile
+            ) return@withContext false
+            val protected = protectedPhotoPaths.mapNotNull { runCatching { File(it).canonicalPath }.getOrNull() }.toSet()
+            if (candidate.path in protected) return@withContext false
+            db.withTransaction {
+                val referenced = dao.allErrands().any { saved ->
+                    saved.photoPath?.let { runCatching { File(it).canonicalPath }.getOrNull() == candidate.path } == true
+                }
+                !referenced && candidate.delete()
+            }
+        }
+
+    private fun isManagedPhotoPath(context: Context, path: String): Boolean = try {
+        val filesRoot = context.filesDir.canonicalFile
+        val photoDirectory = File(filesRoot, "photos").canonicalFile
+        val candidate = File(path).canonicalFile
+        photoDirectory.parentFile == filesRoot && candidate.path.startsWith(photoDirectory.path + File.separator)
+    } catch (_: IOException) { false }
 
     private fun mergePlaces(existing: List<Place>, incoming: List<Place>): List<Place> {
         val merged = LinkedHashMap<String, Place>()
@@ -348,9 +484,11 @@ class Repository(private val db: MishwariDatabase) {
 
     companion object {
         private const val BACKUP_SCHEMA = 1
-        private const val MAX_INLINE_PHOTO_BYTES = 2 * 1024 * 1024
+        private const val MAX_INLINE_PHOTO_BYTES = 5 * 1024 * 1024
+        private const val MAX_BACKUP_BYTES = 25 * 1024 * 1024
         private const val MAX_BASE64_PHOTO_CHARS = ((MAX_INLINE_PHOTO_BYTES + 2) / 3) * 4
         private val BASE64_PATTERN = Regex("(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?")
+        private val UUID_PHOTO_NAME = Regex("[0-9a-fA-F-]{36}\\.(?:img|bin)")
     }
 }
 

@@ -64,9 +64,15 @@ private class GoogleGeoFenceTransport(private val context: Context) : GeoFenceTr
             throw SecurityException("Geofencing requires precise and background location access")
         }
         val fences = places.map { place ->
+            require(GeoPolicy.validCoordinates(place.latitude, place.longitude)) {
+                "Geofencing requires finite latitude/longitude within geographic bounds"
+            }
+            require(place.radiusMeters.isFinite() && place.radiusMeters > 0f) {
+                "Geofencing requires a finite positive radius"
+            }
             Geofence.Builder()
                 .setRequestId(GeoFenceIdentity.requestId(place))
-                .setCircularRegion(place.latitude!!, place.longitude!!, place.radiusMeters)
+                .setCircularRegion(requireNotNull(place.latitude), requireNotNull(place.longitude), place.radiusMeters)
                 .setExpirationDuration(Geofence.NEVER_EXPIRE)
                 .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT)
                 .setNotificationResponsiveness(NOTIFICATION_RESPONSIVENESS_MILLIS)

@@ -2,6 +2,7 @@ package ye.mishwari
 
 import android.app.Application
 import android.net.Uri
+import androidx.room.withTransaction
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,8 @@ class MishwariViewModel @JvmOverloads constructor(
     assistantStoreOverride: AssistantStore? = null,
     assistantProviderOverride: AssistantProvider? = null,
 ) : AndroidViewModel(app) {
-    private val repository = Repository(MishwariDatabase.get(app))
+    private val database = MishwariDatabase.get(app)
+    private val repository = Repository(database)
     val errands = repository.errands.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val places = repository.places.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
     val settings = repository.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
@@ -30,6 +32,7 @@ class MishwariViewModel @JvmOverloads constructor(
     val messages = _message.asSharedFlow()
     val error = MutableStateFlow<String?>(null)
     var pendingPhoto: ((String) -> Unit)? = null
+    private val draftPhotoPaths = linkedSetOf<String>()
 
     // Isolated from Room and JSON backups; core CRUD never needs this store or network.
     private val assistantStore by lazy { assistantStoreOverride ?: AssistantStore(app) }
@@ -44,6 +47,8 @@ class MishwariViewModel @JvmOverloads constructor(
     val assistantSuggestions = _assistantSuggestions.asStateFlow()
     private val _assistantResult = MutableStateFlow<String?>(null)
     val assistantResult = _assistantResult.asStateFlow()
+    private var approvedAssistantPayload: String? = null
+    private val consumedAssistantProposalIds = mutableSetOf<String>()
 
     init {
         viewModelScope.launch {
@@ -108,19 +113,55 @@ class MishwariViewModel @JvmOverloads constructor(
             require(config.enabled) { "المساعد معطّل؛ فعّله من إعداداته أولاً" }
             val key = assistantStore.readKey() ?: throw IllegalArgumentException("أدخل مفتاح API واحفظه أولاً")
             val text = assistantProvider.complete(config.endpoint, config.model, key, payload, AssistantPayload.system(mode))
-            AssistantSuggestionParser.parse(text, AssistantPayload.allowedPlaceIds(payload))
+            AssistantSuggestionParser.parse(text, mode, payload)
         }
+        approvedAssistantPayload = payload
         _assistantResult.value = response.advice
-        _assistantSuggestions.value = if (mode == "capture") response.suggestions else emptyList()
+        _assistantSuggestions.value = response.suggestions
     }
 
-    /** Explicit final user action creates a NEW record; existing errands are never auto-updated. */
+    /** Convenience for an unchanged pending proposal; no unreviewed object can be persisted. */
     fun acceptAssistantSuggestion(suggestion: AssistantSuggestion, onSaved: () -> Unit = {}) =
-        assistantTask("حُفظ الطلب بعد موافقتك") {
-            val errand = Errand(title = suggestion.title.trim(), description = suggestion.description.trim(),
-                priority = suggestion.priority, dueDate = suggestion.dueDate, placeId = suggestion.placeId)
-            withContext(Dispatchers.IO) { repository.saveErrand(errand) }
-            _assistantSuggestions.value = _assistantSuggestions.value.filterNot { it == suggestion }
+        acceptReviewedAssistantSuggestion(suggestion, suggestion, onSaved)
+
+    /** Called only by the final explicit save button, with the original pending proposal identity. */
+    fun acceptReviewedAssistantSuggestion(
+        original: AssistantSuggestion,
+        revised: AssistantSuggestion,
+        onSaved: () -> Unit = {},
+    ) = assistantTask("حُفظ الطلب بعد موافقتك") {
+            val payload = requireNotNull(approvedAssistantPayload) { "أعد مراجعة الاقتراح" }
+            val pending = _assistantSuggestions.value
+            require(pending.any { it === original }) { "الاقتراح لم يعد معلقًا أو سبق اعتماده" }
+            require(revised.proposalId == original.proposalId && revised.errandId == original.errandId && revised.mode == original.mode) {
+                "لا يمكن تغيير هوية الاقتراح أثناء مراجعته"
+            }
+            val acceptedId = withContext(Dispatchers.IO) {
+                database.withTransaction {
+                    val current = database.dao().allErrands()
+                    val accepted = if (original.mode == "capture") {
+                        val planned = AssistantProposalApplier.acceptCapture(original, payload, true, consumedAssistantProposalIds)
+                        require(revised.placeId == null || revised.placeId in AssistantPayload.allowedPlaceIds(payload)) {
+                            "الوجهة ليست ضمن البيانات التي راجعتها"
+                        }
+                        val fresh = planned.errand.copy(title = revised.title.trim(), description = revised.description.trim(),
+                            priority = revised.priority, dueDate = revised.dueDate, placeId = revised.placeId)
+                        val normalizedTitle = ArabicPlaceMatcher.normalize(fresh.title)
+                        require(current.none { it.status !in setOf("مكتمل", "ملغى") && it.placeId == fresh.placeId &&
+                            ArabicPlaceMatcher.normalize(it.title) == normalizedTitle }) { "يوجد طلب غير منجز بالعنوان والوجهة نفسيهما؛ لم يُنشأ طلب مكرر" }
+                        planned.copy(errand = fresh)
+                    } else {
+                        val stored = current.singleOrNull { it.id == original.errandId }
+                            ?: throw IllegalArgumentException("الطلب الأصلي لم يعد موجودًا؛ لن يُنشأ بديل عنه")
+                        AssistantProposalApplier.acceptExisting(original.mode, payload, pending, original, revised, stored,
+                            true, consumedAssistantProposalIds)
+                    }
+                    repository.saveErrand(accepted.errand)
+                    accepted.consumedProposalId
+                }
+            }
+            consumedAssistantProposalIds += acceptedId
+            _assistantSuggestions.value = _assistantSuggestions.value.filterNot { it.proposalId == original.proposalId }
             onSaved()
             runCatching { GeoScheduler.schedule(getApplication()) }
         }
@@ -129,9 +170,14 @@ class MishwariViewModel @JvmOverloads constructor(
         _assistantSuggestions.value = _assistantSuggestions.value.filterNot { it == suggestion }
     }
 
+    fun reviewableAssistantPlaceIds(): Set<String> = approvedAssistantPayload?.let {
+        runCatching { AssistantPayload.allowedPlaceIds(it) }.getOrDefault(emptySet())
+    }.orEmpty()
+
     fun clearAssistantResult() {
         _assistantSuggestions.value = emptyList()
         _assistantResult.value = null
+        approvedAssistantPayload = null
     }
 
     fun action(success: String = "تم الحفظ", onSuccess: () -> Unit = {}, block: suspend () -> Unit) {
@@ -150,10 +196,16 @@ class MishwariViewModel @JvmOverloads constructor(
             }
         }
     }
-    fun save(e: Errand, onSaved: () -> Unit = {}) = action(onSuccess = onSaved) { repository.saveErrand(e) }
-    fun remove(e: Errand) = action("تم حذف الطلب") { repository.removeErrand(e) }
+    fun save(e: Errand, onSaved: () -> Unit = {}) {
+        val protected = draftPhotoPaths.toSet()
+        action(onSuccess = onSaved) { repository.saveErrand(e, getApplication(), protected) }
+    }
+    fun remove(e: Errand) {
+        val protected = draftPhotoPaths.toSet()
+        action("تم حذف الطلب") { repository.removeErrand(e, getApplication(), protected) }
+    }
     fun save(p: Place, onSaved: () -> Unit = {}) = action(onSuccess = onSaved) { repository.savePlace(p) }
-    fun remove(p: Place) = action("تم حذف المكان؛ الطلبات محفوظة دون وجهة") { repository.removePlace(p) }
+    fun remove(p: Place) = action("تم حذف المكان؛ حُفظت الطلبات والأماكن التابعة وفُصلت عن الأب المحذوف") { repository.removePlace(p) }
     fun setting(key: String, value: String) = action { repository.setSetting(key, value) }
     fun refreshAlerts() = action("طُلبت إعادة تهيئة التنبيهات؛ راجع حالة التسجيل") {
         GeoScheduler.schedule(getApplication(), force = true, rearmSelected = true)
@@ -164,11 +216,14 @@ class MishwariViewModel @JvmOverloads constructor(
         require(data.toByteArray(Charsets.UTF_8).size <= 25 * 1024 * 1024) { "النسخة تتجاوز حد 25 ميغابايت؛ قلّل الصور المرفقة قبل التصدير" }
         requireNotNull(app.contentResolver.openOutputStream(uri, "wt")) { "تعذّر فتح الملف" }.bufferedWriter(Charsets.UTF_8).use { it.write(data) }
     }
-    fun importBackup(uri: Uri) = action("تم استيراد النسخة المحلية") {
+    fun importBackup(uri: Uri) {
+        val protected = draftPhotoPaths.toSet()
+        action("تم استيراد النسخة المحلية") {
         val app = getApplication<Application>()
         val bytes = requireNotNull(app.contentResolver.openInputStream(uri)).use { it.readBounded(25 * 1024 * 1024) }
         require(bytes.size <= 25 * 1024 * 1024) { "الملف أكبر من 25 ميغابايت" }
-        repository.importBackup(app, bytes.toString(Charsets.UTF_8))
+        repository.importBackup(app, bytes.toString(Charsets.UTF_8), protected)
+        }
     }
     fun importDirectory(uri: Uri) = action("تم تحديث دليل الأماكن") {
         val app = getApplication<Application>()
@@ -180,16 +235,47 @@ class MishwariViewModel @JvmOverloads constructor(
         val app = getApplication<Application>()
         repository.importDirectory(app.assets.open("yemen-directory.json").bufferedReader().use { it.readText() })
     }
-    fun importPhoto(uri: Uri) = action("تم إرفاق الصورة؛ احفظ الطلب للاحتفاظ بها") {
+    /** An explicit editor finish releases only files created by this draft, never a directory scan. */
+    fun finishPhotoEditing() {
+        pendingPhoto = null
+        val candidates = draftPhotoPaths.toSet()
+        draftPhotoPaths.clear()
+        if (candidates.isEmpty()) return
+        viewModelScope.launch(Dispatchers.IO) {
+            // A saved/shared file is retained by the repository reference check.
+            runCatching { repository.cleanupPhotoCandidates(getApplication(), candidates, emptySet()) }
+        }
+    }
+
+    fun importPhoto(uri: Uri) {
+        // The system picker may return after its editor was dismissed. Do not create an orphan.
+        val callback = pendingPhoto ?: return
+        action("تم إرفاق الصورة؛ احفظ الطلب للاحتفاظ بها") {
         val app = getApplication<Application>()
         val bytes = requireNotNull(app.contentResolver.openInputStream(uri)).use { it.readBounded(5 * 1024 * 1024) }
         require(bytes.size <= 5 * 1024 * 1024) { "اختر صورة أقل من 5 ميغابايت" }
         val options = android.graphics.BitmapFactory.Options().apply { inJustDecodeBounds = true }
         android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
         require(options.outWidth in 1..16000 && options.outHeight in 1..16000) { "الصورة غير صالحة أو كبيرة الأبعاد" }
-        val folder = File(app.filesDir, "photos").apply { mkdirs() }
-        val file = File(folder, "${UUID.randomUUID()}.img").apply { writeBytes(bytes) }
-        withContext(Dispatchers.Main) { pendingPhoto?.invoke(file.absolutePath); pendingPhoto = null }
+        val folder = File(app.filesDir, "photos").canonicalFile
+        require(folder.parentFile == app.filesDir.canonicalFile && (folder.isDirectory || folder.mkdirs())) { "تعذّر فتح مجلد الصور الآمن" }
+        val file = File(folder, "${UUID.randomUUID()}.img")
+        var delivered = false
+        try {
+            file.outputStream().use { it.write(bytes); it.fd.sync() }
+            withContext(Dispatchers.Main) {
+                if (pendingPhoto === callback) {
+                    draftPhotoPaths += file.absolutePath
+                    delivered = true
+                    callback(file.absolutePath)
+                    pendingPhoto = null
+                } else file.delete()
+            }
+        } catch (failure: Throwable) {
+            if (!delivered) file.delete()
+            throw failure
+        }
+        }
     }
 }
 

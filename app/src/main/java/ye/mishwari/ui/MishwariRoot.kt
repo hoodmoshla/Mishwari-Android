@@ -191,7 +191,9 @@ fun MishwariRoot(
                                         }
                                         if (expanded) {
                                             Text(if (place.latitude == null) "بلا نقطة وصول؛ أضف إحداثيات من التعديل لتفعيل التنبيه." else "نطاق التنبيه: ${place.radiusMeters.toInt()} متر", style = MaterialTheme.typography.bodySmall)
-                                            Row(verticalAlignment = Alignment.CenterVertically) { Switch(place.monitored, { model.save(place.copy(monitored = it)) }, enabled = place.latitude != null, modifier = Modifier.semantics { contentDescription = "مراقبة الوصول: ${place.name}" }); Text("مراقبة الوصول", Modifier.weight(1f)) }
+                                            val validPoint = place.latitude?.let { it.isFinite() && it in -90.0..90.0 } == true &&
+                                                place.longitude?.let { it.isFinite() && it in -180.0..180.0 } == true
+                                            Row(verticalAlignment = Alignment.CenterVertically) { Switch(place.monitored && validPoint, { model.save(place.copy(monitored = it)) }, enabled = validPoint, modifier = Modifier.semantics { contentDescription = "مراقبة الوصول: ${place.name}" }); Text("مراقبة الوصول", Modifier.weight(1f)) }
                                             if (place.source != "يدوي") Text("${place.source} · ${place.sourceUpdated}", style = MaterialTheme.typography.labelSmall)
                                             Row(Modifier.horizontalScroll(rememberScrollState())) {
                                                 TextButton(onClick = { placeFilter = place.id; tab = 0 }) { Text("الطلبات") }
@@ -249,16 +251,16 @@ fun MishwariRoot(
                             TextButton(onClick = importDirectory) { Text("استيراد تحديث دليل من JSON") }
                             Text("الخرائط: MapLibre Native / © OpenStreetMap contributors. تحتاج اتصالًا؛ لا نرسل طلباتك إلى مزود البلاطات.", style = MaterialTheme.typography.bodySmall)
                             }
-                            Text("طلباتي للمشوار 0.1.0 · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
+                            Text("طلباتي للمشوار ${ye.mishwari.BuildConfig.VERSION_NAME} · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
                             Spacer(Modifier.height(24.dp))
                         }
                     }
                 }
             }
-            editingErrand?.let { value -> ErrandEditor(value, places, { editingErrand = null; model.pendingPhoto = null }, { model.save(it) { editingErrand = null; model.pendingPhoto = null } }, { editingPlace = Place(name = "") }, selectPhoto) }
+            editingErrand?.let { value -> ErrandEditor(value, places, { editingErrand = null; model.finishPhotoEditing() }, { model.save(it) { editingErrand = null; model.finishPhotoEditing() } }, { editingPlace = Place(name = "") }, selectPhoto) }
             editingPlace?.let { value -> PlaceEditor(value, places, { editingPlace = null }, { place -> model.save(place) { editingPlace = null; editingErrand = editingErrand?.copy(placeId = place.id) } }) }
             deletingErrand?.let { e -> Confirm("حذف الطلب؟", "سيُحذف «${e.title}» من هذا الجهاز.", { deletingErrand = null }, { model.remove(e); deletingErrand = null }) }
-            deletingPlace?.let { p -> Confirm("حذف المكان؟", "تبقى طلباته محفوظة دون وجهة. إذا كانت له أماكن تابعة، انقلها أو احذفها أولًا.", { deletingPlace = null }, { model.remove(p); deletingPlace = null }) }
+            deletingPlace?.let { p -> Confirm("حذف المكان؟", "تبقى طلباته المباشرة محفوظة دون وجهة، وتبقى الأماكن التابعة وطلباتها محفوظة. ستُفصل الأماكن التابعة مباشرةً عن هذا الأب فقط.", { deletingPlace = null }, { model.remove(p); deletingPlace = null }) }
             permissionExplanation?.let { kind -> PermissionExplanation(kind, { permissionExplanation = null }) {
                 permissionExplanation = null
                 when (kind) {

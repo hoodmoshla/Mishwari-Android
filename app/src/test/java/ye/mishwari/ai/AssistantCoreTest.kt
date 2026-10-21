@@ -115,6 +115,27 @@ private class FakeHttpServer(private val handler: (FakeHttpRequest) -> FakeHttpR
 
 class AssistantProviderJvmTest {
     @Test
+    fun geminiCompatiblePathUsesExistingTransportWithoutChangingOpenAiPath() {
+        assertTrue(AssistantEndpoint.isValid("https://generativelanguage.googleapis.com/v1beta/openai/chat/completions"))
+        assertTrue(AssistantEndpoint.isValid("https://api.openai.com/v1/chat/completions"))
+        val seenPath = AtomicReference<String>()
+        val seenAuthorization = AtomicReference<String>()
+        val seenJson = AtomicReference<String>()
+        withServer({ request ->
+            seenPath.set(request.path)
+            seenAuthorization.set(request.headers["authorization"])
+            seenJson.set(request.body)
+            FakeHttpResponse(body = validChatResponse("synthetic compatibility response"))
+        }) { base ->
+            val response = testProvider().complete("$base/v1beta/openai/chat/completions", "synthetic-gemini-model", FAKE_KEY, "synthetic only", "system")
+            assertEquals("synthetic compatibility response", response)
+            assertEquals("/v1beta/openai/chat/completions", seenPath.get())
+            assertEquals("Bearer $FAKE_KEY", seenAuthorization.get())
+            assertEquals("synthetic-gemini-model", JSONObject(seenJson.get()).getString("model"))
+        }
+    }
+
+    @Test
     fun sendsExactEndpointPayloadAndAllowsMissingModel() {
         val seenPath = AtomicReference<String>()
         val seenAuthorization = AtomicReference<String>()

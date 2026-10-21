@@ -12,6 +12,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
@@ -22,8 +28,26 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
+import android.Manifest
+import android.content.pm.PackageManager
+import android.location.LocationManager
+import android.os.Build
+import android.app.NotificationManager
+import android.content.Context
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import ye.mishwari.data.MishwariDatabase
 import ye.mishwari.data.Errand
 import ye.mishwari.data.Place
+import ye.mishwari.location.CurrentLocationRequest
+import ye.mishwari.location.LocationCaptureFailure
+import ye.mishwari.location.LocationCaptureResult
+import ye.mishwari.location.placeAlertReadiness
+import ye.mishwari.location.validCoordinates
+import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Composable
 internal fun Editor(
@@ -74,18 +98,21 @@ internal fun Choice(label: String, value: String, options: List<String>, change:
 
 /** A compact administrative drill-down; global search always includes custom and orphaned records. */
 @Composable
-internal fun PlaceSelector(label: String, selected: String?, places: List<Place>, change: (String?) -> Unit, allowNone: Boolean = true) {
+internal fun PlaceSelector(label: String, selected: String?, places: List<Place>, change: (String?) -> Unit, allowNone: Boolean = true, showAlertReadiness: Boolean = true) {
     var open by rememberSaveable { mutableStateOf(false) }
     val selectedPlace = places.firstOrNull { it.id == selected }
+    val geoStatus = rememberGeoRegistrationStatus()
     OutlinedButton(onClick = { open = true }, modifier = Modifier.fillMaxWidth()) {
         Text("$label: ${selectedPlace?.let(::placeLabel) ?: "دون وجهة"}")
     }
-    if (open) PlacePickerDialog(label, selected, places, allowNone, onSelect = { change(it); open = false }, onClose = { open = false })
+    if (showAlertReadiness && selectedPlace != null) AlertReadinessLine(selectedPlace, geoStatus)
+    if (open) PlacePickerDialog(label, selected, places, allowNone, showAlertReadiness, geoStatus,
+        onSelect = { change(it); open = false }, onClose = { open = false })
 }
 
 @Composable
 private fun PlacePickerDialog(
-    label: String, selected: String?, places: List<Place>, allowNone: Boolean,
+    label: String, selected: String?, places: List<Place>, allowNone: Boolean, showAlertReadiness: Boolean, geoStatus: String?,
     onSelect: (String?) -> Unit, onClose: () -> Unit
 ) {
     var query by rememberSaveable { mutableStateOf("") }
@@ -217,6 +244,7 @@ private fun PlacePickerDialog(
                                         else -> placeLabel(item).takeIf { it != item.name }.orEmpty()
                                     }
                                     if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodySmall)
+                                    if (showAlertReadiness) AlertReadinessLine(item, geoStatus)
                                 }
                             }
                         }
@@ -311,12 +339,79 @@ internal fun PlaceEditor(original: Place, places: List<Place>, dismiss: () -> Un
     var locationExpanded by rememberSaveable(original.id) { mutableStateOf(false) }
     var alertExpanded by rememberSaveable(original.id) { mutableStateOf(false) }
     var map by remember { mutableStateOf(false) }
+    var captureMessage by remember(original.id) { mutableStateOf("") }
+    var capturedAccuracy by remember(original.id) { mutableStateOf<Float?>(null) }
+    var capturedApproximate by remember(original.id) { mutableStateOf(false) }
+    var captureRequest by remember(original.id) { mutableStateOf<CurrentLocationRequest?>(null) }
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val editorActive = remember(original.id) { AtomicBoolean(true) }
+    DisposableEffect(original.id) {
+        editorActive.set(true)
+        onDispose {
+            editorActive.set(false)
+            captureRequest?.cancel()
+            captureRequest = null
+        }
+    }
+    DisposableEffect(lifecycleOwner, original.id) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_STOP && editorActive.get()) {
+                captureRequest?.cancel()
+                captureRequest = null
+                captureMessage = "توقف التقاط الموقع عند مغادرة الشاشة الأمامية؛ لم تُحفظ الإحداثيات تلقائيًا."
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+    fun beginCurrentLocationCapture() {
+        if (!editorActive.get()) return
+        captureRequest?.cancel()
+        captureMessage = "جارٍ انتظار قراءة موقع حالي؛ لن يُحفظ إلا عند الضغط على حفظ المكان."
+        capturedAccuracy = null
+        capturedApproximate = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        captureRequest = CurrentLocationRequest(context, { result ->
+            if (!editorActive.get()) return@CurrentLocationRequest
+            captureRequest = null
+            when (result) {
+                is LocationCaptureResult.Success -> {
+                    latitude = String.format(Locale.US, "%.6f", result.latitude)
+                    longitude = String.format(Locale.US, "%.6f", result.longitude)
+                    capturedAccuracy = result.accuracyMeters
+                    captureMessage = if (capturedApproximate) "تم التقاط نقطة تقريبية للمراجعة فقط؛ راجع الإحداثيات والدقة ثم اضغط حفظ المكان." else "تم التقاط نقطة جديدة للمراجعة فقط؛ راجع الإحداثيات والدقة ثم اضغط حفظ المكان."
+                }
+                is LocationCaptureResult.Failure -> {
+                    captureMessage = when (result.reason) {
+                        LocationCaptureFailure.PERMISSION_REQUIRED -> "إذن الموقع الأمامي غير متاح. اسمح بالموقع الدقيق أو التقريبي ثم أعد المحاولة."
+                        LocationCaptureFailure.PROVIDER_DISABLED -> "خدمات الموقع متوقفة أو لا يوجد مزود موقع مفعّل."
+                        LocationCaptureFailure.TIMEOUT -> "انتهت مهلة الموقع دون قراءة حديثة ودقتها مقبولة؛ لم تُغيّر الإحداثيات."
+                        LocationCaptureFailure.UNAVAILABLE -> "تعذر بدء قراءة الموقع على هذا الجهاز."
+                    }
+                }
+            }
+        }).start()
+    }
+    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+        if (!editorActive.get()) return@rememberLauncherForActivityResult
+        if (result.values.any { it }) beginCurrentLocationCapture()
+        else captureMessage = "لم يُمنح إذن الموقع. لا تُطلب صلاحية الموقع الدائم لهذا الالتقاط الواحد."
+    }
+    fun requestCurrentLocation() {
+        val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val coarse = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        if (fine || coarse) beginCurrentLocationCapture()
+        else {
+            captureMessage = "سيُطلب إذن الموقع الأمامي الآن لالتقاط واحد فقط؛ لا يعمل الالتقاط في الخلفية."
+            permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
+        }
+    }
     val ancestors = remember(places) { places.associateBy { it.id } }
     val lat = westernDigits(latitude).trim().toDoubleOrNull()
     val lon = westernDigits(longitude).trim().toDoubleOrNull()
     val r = westernDigits(radius).trim().toFloatOrNull()
     val noCoordinates = latitude.isBlank() && longitude.isBlank()
-    val validCoordinates = lat != null && lon != null && lat.isFinite() && lon.isFinite() && lat in -90.0..90.0 && lon in -180.0..180.0
+    val validCoordinates = validCoordinates(lat, lon)
     val validRadius = r != null && r.isFinite() && r in 100f..20000f
     Editor("${if (original.name.isBlank()) "إضافة" else "تعديل"} مكان", dismiss, {
         save(original.copy(name = name.trim(), parentId = parent, governorate = governorate.trim(), district = district.trim(), area = area.trim(), detail = detail.trim(), latitude = lat, longitude = lon, radiusMeters = r ?: 500f, monitored = monitored && validCoordinates))
@@ -334,7 +429,7 @@ internal fun PlaceEditor(original: Place, places: List<Place>, dismiss: () -> Un
                 if (picked.kind == "governorate") { governorate = picked.name; district = "" }
                 if (picked.kind == "district") district = picked.name
             }
-        }, allowNone = true)
+        }, allowNone = true, showAlertReadiness = false)
         TextButton(onClick = { locationExpanded = !locationExpanded }, modifier = Modifier.fillMaxWidth()) { Text(if (locationExpanded) "إخفاء تفاصيل الموقع" else "تفاصيل موقع إضافية") }
         if (locationExpanded) {
             Field("المحافظة (يمكن إدخالها يدويًا)", governorate, { governorate = it })
@@ -343,10 +438,14 @@ internal fun PlaceEditor(original: Place, places: List<Place>, dismiss: () -> Un
             Field("تفاصيل الموقع", detail, { detail = it }, single = false)
         }
         TextButton(onClick = { alertExpanded = !alertExpanded }, modifier = Modifier.fillMaxWidth()) { Text(if (alertExpanded) "إخفاء إعدادات الموقع والتنبيه" else "إعدادات الموقع والتنبيه الاختيارية") }
+        AlertReadinessLine(original.copy(latitude = lat, longitude = lon, monitored = monitored && validCoordinates), rememberGeoRegistrationStatus())
         if (alertExpanded) {
-            OutlinedButton(onClick = { map = true }, modifier = Modifier.fillMaxWidth()) { Text("تحديد نقطة من خريطة OpenStreetMap") }
-            Field("خط العرض — اختياري", latitude, { latitude = it }, numeric = true)
-            Field("خط الطول — اختياري", longitude, { longitude = it }, numeric = true)
+            OutlinedButton(onClick = { map = true; capturedAccuracy = null }, modifier = Modifier.fillMaxWidth()) { Text("تحديد نقطة من خريطة OpenStreetMap") }
+            OutlinedButton(onClick = { requestCurrentLocation() }, modifier = Modifier.fillMaxWidth()) { Text("التقاط موقعي الحالي للمراجعة") }
+            Field("خط العرض — اختياري", latitude, { latitude = it; capturedAccuracy = null }, numeric = true)
+            Field("خط الطول — اختياري", longitude, { longitude = it; capturedAccuracy = null }, numeric = true)
+            if (capturedAccuracy != null) Text("${if (capturedApproximate) "دقة موقع تقريبي" else "دقة القراءة الجديدة"}: ±${capturedAccuracy!!.toInt()} متر تقريبًا. قد لا تكفي هذه الدقة لنطاق 100 متر ولا تضمن التنبيه.", style = MaterialTheme.typography.bodySmall)
+            if (captureMessage.isNotBlank()) Text(captureMessage, style = MaterialTheme.typography.bodySmall)
             if (!noCoordinates && !validCoordinates) Text("أدخل الإحداثيين بصورة صحيحة، أو اترك كليهما فارغًا.", color = MaterialTheme.colorScheme.error)
             Field("نصف قطر التنبيه بالمتر (100–20000)", radius, { radius = it }, numeric = true)
             Text("500 متر بداية عملية. النطاقات الصغيرة ودقة GPS الضعيفة قد تؤخر التنبيه.", style = MaterialTheme.typography.bodySmall)
@@ -371,4 +470,39 @@ private fun westernDigits(value: String): String = buildString {
             else -> append(character)
         }
     }
+}
+
+@Composable
+private fun rememberGeoRegistrationStatus(): String? {
+    val context = LocalContext.current.applicationContext
+    val updates = remember(context) {
+        MishwariDatabase.get(context).dao().observeSettings()
+            .map { settings -> settings.firstOrNull { it.key == "geo_status" }?.value }
+            .distinctUntilChanged()
+            .catch { emit(null) }
+    }
+    val status by updates.collectAsState(initial = null)
+    return status
+}
+
+@Composable
+private fun AlertReadinessLine(place: Place, geoStatus: String?) {
+    val context = LocalContext.current
+    val fine = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val background = Build.VERSION.SDK_INT < Build.VERSION_CODES.Q ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_BACKGROUND_LOCATION) == PackageManager.PERMISSION_GRANTED
+    val notifications = (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+        ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) &&
+        runCatching { context.getSystemService(NotificationManager::class.java)?.areNotificationsEnabled() ?: true }.getOrDefault(false)
+    val locationServicesEnabled = runCatching {
+        val manager = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager ?: return@runCatching false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) manager.isLocationEnabled
+        else manager.isProviderEnabled(LocationManager.GPS_PROVIDER) || manager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
+    }.getOrDefault(false)
+    val readiness = placeAlertReadiness(place, fine, background, notifications, geoStatus, locationServicesEnabled)
+    Text(
+        "جاهزية تنبيه الوصول: ${readiness.registrationMessage}",
+        style = MaterialTheme.typography.bodySmall,
+        color = if (readiness.registeredForThisPlace) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+    )
 }
