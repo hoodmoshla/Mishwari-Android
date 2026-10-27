@@ -30,6 +30,36 @@ class Repository(private val db: MishwariDatabase) {
         dao.upsertErrand(e)
     }
 
+    /** Toggles the latest stored row so a stale list snapshot cannot undo a checkbox action. */
+    suspend fun toggleErrandCompletion(errandId: String) = db.withTransaction {
+        val current = dao.allErrands().singleOrNull { it.id == errandId }
+            ?: throw IllegalArgumentException("الطلب لم يعد موجودًا")
+        val nextStatus = if (current.status == "مكتمل") "جديد" else "مكتمل"
+        val updated = current.copy(status = nextStatus)
+        DataValidation.validateErrand(updated)
+        dao.upsertErrand(updated)
+    }
+
+    /** Validates every draft before one Room transaction persists the complete user-reviewed batch. */
+    suspend fun saveErrandsBatch(errands: List<Errand>) = db.withTransaction {
+        require(errands.isNotEmpty() && errands.size <= 50) { "يجب أن تحتوي الدفعة على 1 إلى 50 طلبًا" }
+        require(errands.map { it.id }.toSet().size == errands.size) { "توجد معرّفات طلبات مكررة في الدفعة" }
+        val placeIds = dao.allPlaces().mapTo(HashSet()) { it.id }
+        errands.forEach { errand ->
+            DataValidation.validateErrand(errand)
+            require(errand.placeId == null || errand.placeId in placeIds) { "المكان المحدد لبعض الطلبات لم يعد موجودًا" }
+        }
+        dao.upsertErrands(errands)
+    }
+
+    /** Reopens only existing rows directly linked to the selected place; never creates replacements. */
+    suspend fun reopenCompletedAtPlace(placeId: String): Int = db.withTransaction {
+        require(dao.allPlaces().any { it.id == placeId }) { "المكان المحدد لم يعد موجودًا" }
+        val completed = dao.errandsForPlace(placeId).filter { it.status == "مكتمل" }
+        if (completed.isNotEmpty()) dao.upsertErrands(completed.map { it.copy(status = "جديد") })
+        completed.size
+    }
+
     /** Saves first, then removes a replaced photo only when no saved row or draft still uses it. */
     suspend fun saveErrand(e: Errand, context: Context, protectedPhotoPaths: Set<String>) {
         val previousPhoto = db.withTransaction {
@@ -333,6 +363,7 @@ class Repository(private val db: MishwariDatabase) {
         category = optionalString("category") ?: "مشتريات",
         quantity = optionalString("quantity") ?: "",
         expectedPrice = optionalString("expectedPrice") ?: "",
+        actualPrice = optionalString("actualPrice") ?: "",
         notes = optionalString("notes") ?: "",
         priority = optionalInt("priority") ?: 1,
         dueDate = optionalString("dueDate") ?: "",
@@ -351,7 +382,8 @@ class Repository(private val db: MishwariDatabase) {
     private fun Errand.toJson() = JSONObject()
         .put("id", id).put("title", title).put("description", description)
         .putNullable("placeId", placeId).put("category", category).put("quantity", quantity)
-        .put("expectedPrice", expectedPrice).put("notes", notes).put("priority", priority)
+        .put("expectedPrice", expectedPrice).put("actualPrice", actualPrice)
+        .put("notes", notes).put("priority", priority)
         .put("dueDate", dueDate).putNullable("photoPath", photoPath).put("status", status)
         .put("createdAt", createdAt)
 

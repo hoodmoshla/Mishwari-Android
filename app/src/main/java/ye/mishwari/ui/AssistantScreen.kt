@@ -51,6 +51,8 @@ fun AssistantScreen(
     errands: List<Errand>,
     places: List<Place>,
     requestVoice: () -> Unit,
+    showConfiguration: Boolean = true,
+    openAiSettings: () -> Unit = {},
 ) {
     val config by model.assistantConfig.collectAsStateWithLifecycle()
     val busy by model.assistantBusy.collectAsStateWithLifecycle()
@@ -105,7 +107,19 @@ fun AssistantScreen(
             Text("مساعد المشوار الذكي", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
             Text("اختياري ومعطّل افتراضيًا. لا يُرسل شيء عند فتح الشاشة أو حفظ الإعدادات.", style = MaterialTheme.typography.bodyMedium)
         }
-        item {
+        if (!showConfiguration) item {
+            OutlinedCard(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        if (config.enabled && config.hasKey) "المساعد جاهز؛ اختر ما تريد إرساله وراجع الحمولة قبل الإرسال."
+                        else "المساعد غير مهيأ بعد. أضف المزود والمفتاح من إعدادات الذكاء الاصطناعي.",
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    TextButton(onClick = openAiSettings, enabled = !busy) { Text("إعدادات الذكاء الاصطناعي") }
+                }
+            }
+        }
+        if (showConfiguration) item {
             OutlinedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("إعداد الاتصال", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)

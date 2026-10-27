@@ -8,6 +8,7 @@ import androidx.room.Database
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.room.Transaction
 import androidx.room.Upsert
@@ -90,7 +91,7 @@ interface MishwariDao {
 
 @Database(
     entities = [Place::class, Errand::class, AppSetting::class],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 abstract class MishwariDatabase : RoomDatabase() {
@@ -101,6 +102,11 @@ abstract class MishwariDatabase : RoomDatabase() {
         private const val DIRECTORY_PREFS = "mishwari_bundled_directory"
         private const val DIRECTORY_SEEDED = "seeded_v1"
         private val directorySeedLock = Any()
+        val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE errands ADD COLUMN actualPrice TEXT NOT NULL DEFAULT ''")
+            }
+        }
 
         @Volatile
         private var instance: MishwariDatabase? = null
@@ -110,7 +116,7 @@ abstract class MishwariDatabase : RoomDatabase() {
                 context.applicationContext,
                 MishwariDatabase::class.java,
                 DATABASE_NAME
-            ).addCallback(object : RoomDatabase.Callback() {
+            ).addMigrations(MIGRATION_1_2).addCallback(object : RoomDatabase.Callback() {
                 override fun onOpen(db: SupportSQLiteDatabase) {
                     seedBundledDirectory(context.applicationContext, db)
                 }

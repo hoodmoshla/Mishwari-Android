@@ -120,8 +120,7 @@ class PermissionUxRobolectricTest {
     }
 
     private fun openSettings() {
-        // The top-bar title and bottom-navigation label share the same text; choose the last match.
-        compose.onAllNodesWithText("الإعدادات").onLast().performClick()
+        compose.onNodeWithTag("navigation_4").performClick()
         compose.waitUntil(10_000) {
             compose.onAllNodesWithTag("permissionSummary").fetchSemanticsNodes().isNotEmpty() ||
                 compose.onAllNodesWithText("الموقع اختياري · غير مسموح").fetchSemanticsNodes().isNotEmpty()
@@ -129,7 +128,7 @@ class PermissionUxRobolectricTest {
     }
 
     private fun openPermissionSection() {
-        compose.onNodeWithText("الأذونات والخصوصية").performClick()
+        compose.onNodeWithText("الأذونات والخصوصية").performScrollTo().performClick()
     }
 
     @Test
@@ -216,7 +215,7 @@ class PermissionUxRobolectricTest {
         compose.onNodeWithText("ليس الآن").performClick()
         compose.onNodeWithText("مراجعة إذن الموقع").performScrollTo().assertIsDisplayed()
         assertEquals(0, locationRequests)
-        compose.onAllNodesWithText("طلباتي").onLast().performClick()
+        compose.onNodeWithTag("navigation_1").performClick()
         compose.onNodeWithText("ابحث عن طلب أو وجهة").assertIsDisplayed()
 
         // Return to settings and verify that only the explicit confirmation invokes the request callback.

@@ -1,6 +1,7 @@
 package ye.mishwari.data
 
 import androidx.room.Entity
+import androidx.room.ColumnInfo
 import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -27,6 +28,7 @@ data class Errand(
     val category: String = "مشتريات",
     val quantity: String = "",
     val expectedPrice: String = "",
+    @ColumnInfo(defaultValue = "''") val actualPrice: String = "",
     val notes: String = "",
     val priority: Int = 1,
     val dueDate: String = "",

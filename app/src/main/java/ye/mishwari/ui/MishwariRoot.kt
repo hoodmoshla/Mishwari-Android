@@ -34,7 +34,7 @@ import ye.mishwari.data.*
 
 internal val categories = listOf("مشتريات", "قطع غيار", "أدوية", "معاملات", "استلام", "صيانة", "أخرى")
 internal val statuses = listOf("جديد", "مخطط له", "مكتمل", "مؤجل", "ملغى")
-private fun active(e: Errand) = e.status != "مكتمل" && e.status != "ملغى"
+internal fun active(e: Errand) = e.status != "مكتمل" && e.status != "ملغى"
 internal val errandDisplayOrder = compareByDescending<Errand> { active(it) }
     .thenByDescending { it.priority }.thenBy { it.dueDate.ifBlank { "9999" } }.thenByDescending { it.createdAt }
 internal fun subtree(root: String, places: List<Place>): Set<String> {
@@ -44,19 +44,24 @@ internal fun subtree(root: String, places: List<Place>): Set<String> {
     return result
 }
 internal fun placeLabel(p: Place) = listOf(p.governorate, p.district, p.area, p.name).filter { it.isNotBlank() }.distinct().joinToString(" / ")
+internal fun matchesArabicSearch(text: String, query: String): Boolean {
+    val needle = ye.mishwari.ai.ArabicPlaceMatcher.normalize(query).lowercase(java.util.Locale.ROOT)
+    if (needle.isBlank()) return true
+    return ye.mishwari.ai.ArabicPlaceMatcher.normalize(text).lowercase(java.util.Locale.ROOT).contains(needle)
+}
 
 // Keep the editor identity across Activity recreation; its individual fields use rememberSaveable.
 private val errandEditorSaver = Saver<Errand?, Bundle>(
     save = { e -> Bundle().apply { if (e != null) {
         putString("id", e.id); putString("title", e.title); putString("description", e.description)
         putString("place", e.placeId); putString("category", e.category); putString("quantity", e.quantity)
-        putString("price", e.expectedPrice); putString("notes", e.notes); putInt("priority", e.priority)
+        putString("price", e.expectedPrice); putString("actualPrice", e.actualPrice); putString("notes", e.notes); putInt("priority", e.priority)
         putString("due", e.dueDate); putString("photo", e.photoPath); putString("status", e.status); putLong("created", e.createdAt)
     } } },
     restore = { b -> if (!b.containsKey("id")) null else Errand(
         id = b.getString("id")!!, title = b.getString("title").orEmpty(), description = b.getString("description").orEmpty(),
         placeId = b.getString("place"), category = b.getString("category")!!, quantity = b.getString("quantity").orEmpty(),
-        expectedPrice = b.getString("price").orEmpty(), notes = b.getString("notes").orEmpty(), priority = b.getInt("priority"),
+        expectedPrice = b.getString("price").orEmpty(), actualPrice = b.getString("actualPrice").orEmpty(), notes = b.getString("notes").orEmpty(), priority = b.getInt("priority"),
         dueDate = b.getString("due").orEmpty(), photoPath = b.getString("photo"), status = b.getString("status")!!, createdAt = b.getLong("created")
     ) }
 )
@@ -75,6 +80,7 @@ fun MishwariRoot(
     val places by model.places.collectAsStateWithLifecycle()
     val settingsList by model.settings.collectAsStateWithLifecycle()
     val operationError by model.error.collectAsStateWithLifecycle()
+    val bulkSaveBusy by model.bulkSaveBusy.collectAsStateWithLifecycle()
     val settings = settingsList.associate { it.key to it.value }
     val context = LocalContext.current
     val permissionState = remember(permissionRevision) { GeoEnvironmentSignature.capture(context) }
@@ -98,33 +104,39 @@ fun MishwariRoot(
             var permissionExplanation by rememberSaveable { mutableStateOf<String?>(null) }
             var importing by remember { mutableStateOf(false) }
             var voiceExplanation by rememberSaveable { mutableStateOf(false) }
-            var assistantOpen by rememberSaveable { mutableStateOf(false) }
-            LaunchedEffect(incomingDraft, editingErrand, editingPlace, assistantOpen) {
-                if (incomingDraft != null && editingErrand == null && editingPlace == null && !assistantOpen) {
+            var bulkInputOpen by remember { mutableStateOf(false) }
+            var reopeningPlace by remember { mutableStateOf<Place?>(null) }
+            LaunchedEffect(incomingDraft, editingErrand, editingPlace) {
+                if (incomingDraft != null && editingErrand == null && editingPlace == null) {
                     val text = incomingDraft.trim()
                     if (text.isNotBlank()) {
                         editingErrand = Errand(title = text.lineSequence().first().take(200),
                             description = if (text.length > 200 || '\n' in text) text else "")
-                        tab = 0
+                        tab = 1
                     }
                     consumeIncomingDraft()
                 }
             }
-            LaunchedEffect(deepLinkPlace) { if (deepLinkPlace != null) { placeFilter = deepLinkPlace; tab = 0; filter = "غير المنجزة"; consumeDeepLink() } }
+            LaunchedEffect(deepLinkPlace) { if (deepLinkPlace != null) { placeFilter = deepLinkPlace; tab = 1; filter = "غير المنجزة"; consumeDeepLink() } }
             Scaffold(
-                topBar = { TopAppBar(title = { Text(listOf("طلباتي للمشوار", "الأماكن", "السفر", "الإعدادات")[tab], fontWeight = FontWeight.Bold) }, actions = { if (tab == 0) TextButton(onClick = { voiceExplanation = true }) { Text("إضافة بالصوت") } }) },
+                topBar = { TopAppBar(
+                    title = { Text(when (tab) { 0 -> "الرئيسية"; 1 -> "طلباتي"; 2 -> "المشوار"; 3 -> "المساعد الذكي"; 5 -> "الأماكن"; else -> "الإعدادات" }, fontWeight = FontWeight.Bold) },
+                    navigationIcon = { if (tab == 5) TextButton(onClick = { tab = 4 }) { Text("رجوع") } },
+                    actions = { if (tab == 0 || tab == 1) TextButton(onClick = { voiceExplanation = true }) { Text("إضافة بالصوت") } },
+                ) },
                 snackbarHost = { SnackbarHost(snackbar) },
                 bottomBar = {
                     NavigationBar {
-                        listOf("طلباتي", "الأماكن", "السفر", "الإعدادات").forEachIndexed { i, label ->
-                            NavigationBarItem(selected = tab == i, onClick = { tab = i }, icon = { NavigationIcon(i) }, label = { Text(label) })
+                        val selectedTab = if (tab == 5) 4 else tab
+                        listOf("الرئيسية", "طلباتي", "المشوار", "المساعد الذكي", "الإعدادات").forEachIndexed { i, label ->
+                            NavigationBarItem(selected = selectedTab == i, onClick = { tab = i }, icon = { NavigationIcon(i) }, label = { Text(label) }, modifier = Modifier.testTag("navigation_$i"))
                         }
                     }
                 },
                 floatingActionButton = {
-                    if (tab == 0 || tab == 1) ExtendedFloatingActionButton(
-                        onClick = { if (tab == 0) editingErrand = Errand(title = "", placeId = placeFilter) else editingPlace = Place(name = "") },
-                    ) { Text(if (tab == 0) "+ إضافة طلب" else "+ إضافة مكان") }
+                    if (tab == 0 || tab == 1 || tab == 5) ExtendedFloatingActionButton(
+                        onClick = { if (tab == 5) editingPlace = Place(name = "") else editingErrand = Errand(title = "", placeId = placeFilter) },
+                    ) { Text(if (tab == 5) "+ إضافة مكان" else "+ إضافة طلب") }
                 }
             ) { padding ->
                 Box(Modifier.fillMaxSize().padding(padding)) {
@@ -132,38 +144,56 @@ fun MishwariRoot(
                         CircularProgressIndicator()
                         Text("جارٍ تحميل قوائمك…")
                     } else when (tab) {
-                        0 -> {
+                        0 -> HomeDashboard(
+                            errands = errands,
+                            places = places,
+                            activeTripId = settings["travel_place"]?.takeIf { it.isNotBlank() },
+                            onOpenRequests = { tab = 1; filter = "غير المنجزة"; placeFilter = null },
+                            onOpenTrip = { tab = 2 },
+                            onOpenPlaces = { tab = 5 },
+                            onOpenAssistant = { tab = 3 },
+                            onAddRequest = { placeFilter = null; editingErrand = Errand(title = "") },
+                            onOpenPlace = { id -> tab = 1; placeFilter = id; filter = "غير المنجزة" },
+                        )
+                        1 -> {
                             val shown = errands.filter { e ->
                                 val p = places.find { it.id == e.placeId }
                                 val withinPlace = placeFilter == null || e.placeId in subtree(placeFilter!!, places)
                                 val matchStatus = when (filter) { "غير المنجزة" -> active(e); "الكل" -> true; else -> e.status == filter }
-                                withinPlace && matchStatus && listOf(e.title, e.description, e.notes, p?.let(::placeLabel).orEmpty()).any { it.contains(query.trim(), ignoreCase = true) }
+                                withinPlace && matchStatus && listOf(e.title, e.description, e.notes, e.category, e.quantity, e.expectedPrice, e.actualPrice, p?.let(::placeLabel).orEmpty()).any { matchesArabicSearch(it, query) }
                             }.sortedWith(errandDisplayOrder)
                             LazyColumn(Modifier.fillMaxSize().testTag("errandList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 item { OutlinedTextField(query, { query = it }, label = { Text("ابحث عن طلب أو وجهة") }, singleLine = true, modifier = Modifier.fillMaxWidth(), trailingIcon = { if (query.isNotEmpty()) TextButton(onClick = { query = "" }) { Text("مسح") } }) }
                                 item {
                                     Text("${errands.count(::active)} غير منجزة · ${errands.count { it.priority == 2 && active(it) }} مهمة · ${errands.count { it.status == "مكتمل" }} مكتملة", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
-                                item { OutlinedButton(onClick = { assistantOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("مساعد المشوار الذكي") } }
+                                item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    OutlinedButton(onClick = { bulkInputOpen = true }, modifier = Modifier.weight(1f)) { Text("إدخال قائمة متعددة الأسطر") }
+                                    OutlinedButton(onClick = { tab = 3 }, modifier = Modifier.weight(1f)) { Text("المساعد الذكي") }
+                                } }
+                                item { BudgetSummary(errands) }
                                 if (!settings["travel_place"].isNullOrBlank()) item { AssistChip(onClick = { tab = 2 }, label = { Text("مشوار نشط: ${places.find { it.id == settings["travel_place"] }?.name ?: "راجع الوجهة"}") }) }
                                 item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { (listOf("غير المنجزة", "الكل") + statuses).forEach { value -> FilterChip(selected = filter == value, onClick = { filter = value }, label = { Text(value) }) } } }
                                 if (placeFilter != null) item { AssistChip(onClick = { placeFilter = null }, label = { Text("الوجهة: ${places.find { it.id == placeFilter }?.name ?: "غير متاحة"} — عرض الجميع ×") }) }
                                 if (shown.isEmpty()) item {
                                     EmptyState("لا توجد طلبات هنا", if (errands.isEmpty()) "ابدأ بطلب واحد؛ يمكنك اختيار وجهته الآن أو لاحقًا. قوائمك تعمل دون إنترنت." else "لا توجد نتائج مطابقة. جرّب كلمة أخرى أو اعرض كل الطلبات.", if (errands.isEmpty()) "إضافة أول طلب" else "مسح البحث والمرشّحات", { if (errands.isEmpty()) editingErrand = Errand(title = "", placeId = placeFilter) else { query = ""; filter = "الكل"; placeFilter = null } })
                                 }
-                                items(shown, key = { it.id }) { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.save(e.copy(status = if (e.status == "مكتمل") "جديد" else "مكتمل")) }, { editingErrand = e }, { deletingErrand = e }) }
+                                items(shown, key = { it.id }) { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.toggleErrandCompletion(e.id) }, { editingErrand = e }, { deletingErrand = e }) }
                             }
                         }
-                        1 -> {
+                        5 -> {
                             var placeQuery by rememberSaveable { mutableStateOf("") }
                             var customOnly by rememberSaveable { mutableStateOf(true) }
                             var parent by rememberSaveable { mutableStateOf<String?>(null) }
                             val current = places.find { it.id == parent }
-                            val shown = places.filter {
-                                if (placeQuery.isNotBlank()) placeLabel(it).contains(placeQuery.trim(), true)
-                                else if (customOnly) it.kind == "custom" || it.monitored || it.latitude != null
-                                else if (parent == null) it.kind == "governorate" || (it.kind != "country" && it.parentId == null)
-                                else it.parentId == parent
+                            val scopedPlaces = places.filter {
+                                if (customOnly) it.kind == "custom" else it.kind != "custom" && it.kind != "country"
+                            }
+                            val shown = when {
+                                placeQuery.isNotBlank() -> scopedPlaces.filter { matchesArabicSearch(placeLabel(it), placeQuery) }
+                                customOnly -> scopedPlaces
+                                parent == null -> scopedPlaces.filter { it.kind == "governorate" || it.parentId == null }
+                                else -> scopedPlaces.filter { it.parentId == parent }
                             }.sortedBy(::placeLabel)
                             LazyColumn(Modifier.fillMaxSize().testTag("placesList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                                 item { OutlinedTextField(placeQuery, { placeQuery = it }, label = { Text("ابحث في الأماكن") }, singleLine = true, modifier = Modifier.fillMaxWidth()) }
@@ -191,12 +221,16 @@ fun MishwariRoot(
                                         }
                                         if (expanded) {
                                             Text(if (place.latitude == null) "بلا نقطة وصول؛ أضف إحداثيات من التعديل لتفعيل التنبيه." else "نطاق التنبيه: ${place.radiusMeters.toInt()} متر", style = MaterialTheme.typography.bodySmall)
+                                            val completedHere = errands.count { it.placeId == place.id && it.status == "مكتمل" }
+                                            if (completedHere > 0) OutlinedButton(onClick = { reopeningPlace = place }, modifier = Modifier.fillMaxWidth().testTag("reopenPlace_${place.id}")) {
+                                                Text("إعادة فتح المكتملة هنا ($completedHere)")
+                                            }
                                             val validPoint = place.latitude?.let { it.isFinite() && it in -90.0..90.0 } == true &&
                                                 place.longitude?.let { it.isFinite() && it in -180.0..180.0 } == true
                                             Row(verticalAlignment = Alignment.CenterVertically) { Switch(place.monitored && validPoint, { model.save(place.copy(monitored = it)) }, enabled = validPoint, modifier = Modifier.semantics { contentDescription = "مراقبة الوصول: ${place.name}" }); Text("مراقبة الوصول", Modifier.weight(1f)) }
                                             if (place.source != "يدوي") Text("${place.source} · ${place.sourceUpdated}", style = MaterialTheme.typography.labelSmall)
                                             Row(Modifier.horizontalScroll(rememberScrollState())) {
-                                                TextButton(onClick = { placeFilter = place.id; tab = 0 }) { Text("الطلبات") }
+                                                TextButton(onClick = { placeFilter = place.id; tab = 1 }) { Text("الطلبات") }
                                                 TextButton(onClick = { editingPlace = place }) { Text("تعديل") }
                                                 TextButton(onClick = { deletingPlace = place }) { Text("حذف") }
                                             }
@@ -210,30 +244,63 @@ fun MishwariRoot(
                             val destination = places.find { it.id == trip }
                             var chosen by rememberSaveable(trip) { mutableStateOf(trip) }
                             val relevant = if (chosen.isBlank()) emptyList() else errands.filter { it.placeId in subtree(chosen, places) && active(it) }.sortedWith(errandDisplayOrder)
+                            val groupedRelevant = relevant.groupBy { it.placeId.orEmpty() }.toSortedMap(compareBy { id -> places.find { it.id == id }?.let(::placeLabel).orEmpty() })
+                            val tripAlertCandidates = if (chosen.isBlank()) emptyList() else ye.mishwari.geo.GeoPolicy.select(
+                                ye.mishwari.geo.GeoPolicy.fromData(places, errands, chosen), chosen
+                            )
                             LazyColumn(Modifier.fillMaxSize().testTag("travelList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                item { Text("جهّز مشوارك", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("اختر الوجهة، راجع طلباتك، ثم فعّل السفر. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium) }
-                                if (destination != null) item { Card { Column(Modifier.padding(12.dp)) { Text("مشوار نشط: ${destination.name}", fontWeight = FontWeight.Bold); TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء وضع السفر") } } } }
+                                item { Text("جهّز مشوارك", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("اختر الوجهة، راجع طلباتك، ثم فعّل المشوار. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium) }
+                                if (destination != null) item { Card { Column(Modifier.padding(12.dp)) { Text("مشوار نشط: ${destination.name}", fontWeight = FontWeight.Bold); TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء المشوار") } } } }
                                 item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true) }
                                 item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium); if (chosen.isNotBlank()) Text("طلبات ${places.find { it.id == chosen }?.name.orEmpty()} والأماكن التابعة لها · ${relevant.count { it.priority == 2 }} مهمة", style = MaterialTheme.typography.bodySmall) }
-                                if (relevant.isEmpty()) item { EmptyState("قائمة المشوار فارغة", "اختر وجهة لها طلبات غير منجزة، أو أضف طلبًا مرتبطًا بها.", "إضافة طلب للوجهة", { editingErrand = Errand(title = "", placeId = chosen.ifBlank { null }) }) }
-                                items(relevant, key = { it.id }) { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.save(e.copy(status = "مكتمل")) }, { editingErrand = e }, { deletingErrand = e }) }
                                 item {
-                                    Text("٣ · تفعيل السفر والتنبيهات", style = MaterialTheme.typography.titleMedium)
-                                    Text("يُفعّل السفر نقاط الطلبات المرتبطة بالوجهة فقط. أسماء المحافظات والمديريات وحدها ليست نقاط وصول.", style = MaterialTheme.typography.bodySmall)
-                                    Button(onClick = { model.setting("travel_place", chosen) }, enabled = chosen.isNotBlank() && chosen != trip, modifier = Modifier.fillMaxWidth()) { Text("تجهيز المشوار وتفعيل السفر") }
+                                    OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text("حالة GPS وتنبيهات الوصول", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                                        Text(when {
+                                            chosen.isBlank() -> "اختر وجهة أولاً لعرض نقاط الوصول الممكنة."
+                                            tripAlertCandidates.isEmpty() -> "غير جاهزة: لا يوجد طلب نشط مرتبط بمكان مراقَب ذي إحداثيات صالحة. أضف الإحداثيات وفعّل مراقبة الوصول من شاشة الأماكن."
+                                            !permissionState.locationEnabled -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن موقع الهاتف مغلق."
+                                            !permissionState.notificationsReady() -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن إشعارات الوصول غير مفعلة."
+                                            else -> "توجد ${tripAlertCandidates.size} نقطة صالحة؛ راجع أذونات الموقع والخلفية أدناه قبل الاعتماد على التنبيه."
+                                        }, style = MaterialTheme.typography.bodySmall)
+                                    } }
                                 }
-                                if (alertsNeeded) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
-                                else item { Text("قائمة المشوار تعمل دون أذونات. تحتاج تنبيهات الوصول إلى طلب مرتبط بمكان له إحداثيات.", style = MaterialTheme.typography.bodySmall) }
+                                if (relevant.isEmpty()) item { EmptyState("قائمة المشوار فارغة", "اختر وجهة لها طلبات غير منجزة، أو أضف طلبًا مرتبطًا بها.", "إضافة طلب للوجهة", { editingErrand = Errand(title = "", placeId = chosen.ifBlank { null }) }) }
+                                items(groupedRelevant.entries.toList(), key = { "trip-place-${it.key}" }) { group ->
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        Text("الوجهة · ${places.find { it.id == group.key }?.let(::placeLabel) ?: "مكان محفوظ"}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                        group.value.forEach { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.toggleErrandCompletion(e.id) }, { editingErrand = e }, { deletingErrand = e }) }
+                                    }
+                                }
+                                item {
+                                    Text("٣ · تفعيل المشوار والتنبيهات", style = MaterialTheme.typography.titleMedium)
+                                    Text("يُفعّل المشوار نقاط الطلبات المرتبطة بالوجهة فقط. أسماء المحافظات والمديريات وحدها ليست نقاط وصول.", style = MaterialTheme.typography.bodySmall)
+                                    Button(onClick = { model.setting("travel_place", chosen) }, enabled = chosen.isNotBlank() && chosen != trip, modifier = Modifier.fillMaxWidth()) { Text("تجهيز المشوار والتنبيهات") }
+                                }
+                                if (tripAlertCandidates.isNotEmpty()) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
+                                else item { Text("القائمة تعمل دون أذونات. التنبيه يتطلب إحداثيات صالحة ومراقبة المكان وإذن الموقع والإشعارات.", style = MaterialTheme.typography.bodySmall) }
                             }
                         }
-                        else -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("المظهر", style = MaterialTheme.typography.titleMedium)
-                            Text("حسب مظهر الهاتف تلقائيًا · يتغير فور تبديل إعداد النظام.", style = MaterialTheme.typography.bodyMedium)
-                            OutlinedButton(onClick = { assistantOpen = true }, modifier = Modifier.fillMaxWidth()) { Text("مساعد المشوار الذكي") }
+                        3 -> AssistantScreen(
+                            model = model,
+                            errands = errands,
+                            places = places,
+                            requestVoice = requestVoice,
+                            showConfiguration = false,
+                            openAiSettings = { tab = 4 },
+                        )
+                        4 -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Text("الإعدادات والخصوصية", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            AssistantSettingsSection(model, Modifier.fillMaxWidth())
+                            OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text("الأماكن", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Text("افصل أماكنك المحفوظة عن دليل المحافظات والمديريات، وأدر إحداثيات التنبيه من شاشة واحدة.", style = MaterialTheme.typography.bodySmall)
+                                OutlinedButton(onClick = { tab = 5 }, modifier = Modifier.fillMaxWidth()) { Text("إدارة الأماكن والدليل") }
+                            } }
                             PermissionSummary(permissionState)
                             Text("الأذونات اختيارية؛ قوائمك تعمل دونها.", style = MaterialTheme.typography.bodySmall)
                             SettingsSection("نسخة احتياطية محلية") {
-                                Text("ملف JSON غير مشفّر؛ احفظه بأمان. الاستيراد يدمج ولا يحذف سجلات غير موجودة فيه.", style = MaterialTheme.typography.bodySmall)
+                                Text("ملف JSON غير مشفّر، وقد يحتوي بيانات الطلبات وأسماء الأماكن وإحداثيات GPS وصور الطلبات. احفظه بأمان؛ الاستيراد يدمج ولا يحذف سجلات غير موجودة فيه.", modifier = Modifier.testTag("backupDisclosure"), style = MaterialTheme.typography.bodySmall)
                                 OutlinedButton(onClick = exportBackup, modifier = Modifier.fillMaxWidth()) { Text("تصدير نسخة احتياطية") }
                                 OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("استيراد نسخة احتياطية") }
                             }
@@ -259,8 +326,23 @@ fun MishwariRoot(
             }
             editingErrand?.let { value -> ErrandEditor(value, places, { editingErrand = null; model.finishPhotoEditing() }, { model.save(it) { editingErrand = null; model.finishPhotoEditing() } }, { editingPlace = Place(name = "") }, selectPhoto) }
             editingPlace?.let { value -> PlaceEditor(value, places, { editingPlace = null }, { place -> model.save(place) { editingPlace = null; editingErrand = editingErrand?.copy(placeId = place.id) } }) }
+            if (bulkInputOpen) BulkErrandInputDialog(
+                places = places,
+                onDismiss = { bulkInputOpen = false },
+                onSave = { drafts -> model.saveErrandsBatch(drafts) { bulkInputOpen = false } },
+                enabled = !bulkSaveBusy,
+            )
             deletingErrand?.let { e -> Confirm("حذف الطلب؟", "سيُحذف «${e.title}» من هذا الجهاز.", { deletingErrand = null }, { model.remove(e); deletingErrand = null }) }
             deletingPlace?.let { p -> Confirm("حذف المكان؟", "تبقى طلباته المباشرة محفوظة دون وجهة، وتبقى الأماكن التابعة وطلباتها محفوظة. ستُفصل الأماكن التابعة مباشرةً عن هذا الأب فقط.", { deletingPlace = null }, { model.remove(p); deletingPlace = null }) }
+            reopeningPlace?.let { place ->
+                val count = errands.count { it.placeId == place.id && it.status == "مكتمل" }
+                Confirm(
+                    "إعادة فتح الطلبات المكتملة؟",
+                    "سيُعاد فتح $count طلبًا مرتبطًا بـ«${place.name}» بتحديث سجلاته الأصلية فقط، دون إنشاء نسخ مكررة.",
+                    { reopeningPlace = null },
+                    { reopeningPlace = null; model.reopenCompletedAtPlace(place.id) },
+                )
+            }
             permissionExplanation?.let { kind -> PermissionExplanation(kind, { permissionExplanation = null }) {
                 permissionExplanation = null
                 when (kind) {
@@ -275,17 +357,6 @@ fun MishwariRoot(
                 text = { Text("سيُفتح تطبيق التعرف على الكلام في هاتفك. نطلب التعرّف دون اتصال، لكن الخدمة قد تستخدم الإنترنت وترسل الصوت إلى مزودها حسب إعداداتها. طلباتي للمشوار لا يسجل الصوت ولا يحتفظ به. راجع النص واختر الوجهة قبل الحفظ؛ الكتابة متاحة دائمًا.") },
                 confirmButton = { TextButton(onClick = { voiceExplanation = false; requestVoice() }) { Text("متابعة إلى الإملاء") } },
                 dismissButton = { TextButton(onClick = { voiceExplanation = false }) { Text("إلغاء") } })
-            if (assistantOpen) Dialog(
-                onDismissRequest = { assistantOpen = false },
-                properties = DialogProperties(usePlatformDefaultWidth = false),
-            ) {
-                Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    Column(Modifier.fillMaxSize()) {
-                        TextButton(onClick = { assistantOpen = false }, modifier = Modifier.padding(horizontal = 8.dp)) { Text("رجوع إلى مشواري") }
-                        Box(Modifier.fillMaxWidth().weight(1f)) { AssistantScreen(model, errands, places, requestVoice) }
-                    }
-                }
-            }
             operationError?.let { message -> AlertDialog(onDismissRequest = { model.error.value = null }, title = { Text("لم تُكتمل العملية") }, text = { Text(message) }, confirmButton = { TextButton(onClick = { model.error.value = null }) { Text("حسنًا") } }) }
         }
     }
@@ -376,19 +447,19 @@ internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when
 
 @Composable private fun ErrandCard(e: Errand, place: Place?, complete: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
     Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) { Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); Checkbox(e.status == "مكتمل", { complete() }, modifier = Modifier.semantics { contentDescription = if (e.status == "مكتمل") "إعادة فتح الطلب: ${e.title}" else "إكمال الطلب: ${e.title}" }) }
+        Row(verticalAlignment = Alignment.CenterVertically) { Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); Checkbox(e.status == "مكتمل", { complete() }, modifier = Modifier.testTag("errandCheckbox_${e.id}").semantics { contentDescription = if (e.status == "مكتمل") "إعادة فتح الطلب: ${e.title}" else "إكمال الطلب: ${e.title}" }) }
         Text(place?.let(::placeLabel) ?: "دون وجهة", style = MaterialTheme.typography.bodyMedium)
         Text("${e.category} · ${e.status} · ${listOf("منخفضة", "عادية", "عالية").getOrElse(e.priority) { "عادية" }}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
         var details by rememberSaveable(e.id) { mutableStateOf(false) }
         if (details) {
         if (e.description.isNotBlank()) Text(e.description)
-        if (e.quantity.isNotBlank() || e.expectedPrice.isNotBlank()) Text("الكمية: ${e.quantity.ifBlank { "—" }} · المتوقع: ${e.expectedPrice.ifBlank { "—" }}", style = MaterialTheme.typography.bodySmall)
+        if (e.quantity.isNotBlank() || e.expectedPrice.isNotBlank() || e.actualPrice.isNotBlank()) Text("الكمية: ${e.quantity.ifBlank { "—" }} · المتوقع: ${e.expectedPrice.ifBlank { "—" }} · الفعلي: ${e.actualPrice.ifBlank { "—" }}", style = MaterialTheme.typography.bodySmall)
         if (e.dueDate.isNotBlank()) Text("الاستحقاق: ${e.dueDate}", style = MaterialTheme.typography.bodySmall)
         if (e.notes.isNotBlank()) Text(e.notes, style = MaterialTheme.typography.bodySmall)
         if (e.photoPath != null) Text("صورة مرفقة — افتح التعديل لعرضها", style = MaterialTheme.typography.labelSmall)
         }
         Row(Modifier.horizontalScroll(rememberScrollState())) {
-            if (e.description.isNotBlank() || e.notes.isNotBlank() || e.quantity.isNotBlank() || e.expectedPrice.isNotBlank() || e.dueDate.isNotBlank() || e.photoPath != null) TextButton(onClick = { details = !details }) { Text(if (details) "أقل" else "التفاصيل") }
+            if (e.description.isNotBlank() || e.notes.isNotBlank() || e.quantity.isNotBlank() || e.expectedPrice.isNotBlank() || e.actualPrice.isNotBlank() || e.dueDate.isNotBlank() || e.photoPath != null) TextButton(onClick = { details = !details }) { Text(if (details) "أقل" else "التفاصيل") }
             TextButton(onClick = edit) { Text("تعديل") }; TextButton(onClick = delete) { Text("حذف") } }
     } }
 }

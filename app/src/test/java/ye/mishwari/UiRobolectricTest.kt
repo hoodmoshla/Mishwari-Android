@@ -7,6 +7,7 @@ import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performClick
@@ -66,8 +67,9 @@ class UiRobolectricTest {
             )
         }
 
+        compose.onNodeWithTag("navigation_1").performClick()
         compose.onNodeWithText("لا توجد طلبات هنا").performScrollTo().assertIsDisplayed()
-        assertEquals(LayoutDirection.Rtl, compose.onNodeWithText("طلباتي للمشوار").fetchSemanticsNode().layoutInfo.layoutDirection)
+        assertEquals(LayoutDirection.Rtl, compose.onNodeWithTag("navigation_1").fetchSemanticsNode().layoutInfo.layoutDirection)
 
         compose.onNodeWithText("+ إضافة طلب", useUnmergedTree = true).performClick()
         compose.onNodeWithText("اسم الغرض أو المهمة *").performTextInput("شراء قهوة")
@@ -131,6 +133,7 @@ class UiRobolectricTest {
             MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {},
                 incomingDraft = incoming.value, consumeIncomingDraft = { incoming.value = null })
         }
+        compose.onNodeWithTag("navigation_1").performClick()
         compose.onNodeWithText("+ إضافة طلب", useUnmergedTree = true).performClick()
         compose.onNodeWithText("اسم الغرض أو المهمة *").performTextInput("مسودة حالية")
         compose.runOnIdle { incoming.value = "نص وارد جديد" }
@@ -197,9 +200,9 @@ class UiRobolectricTest {
         }
         val model = MishwariViewModel(application)
         compose.activity.setContent { MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
-        compose.onNodeWithText("السفر").performClick()
-        compose.waitUntil(10_000) { compose.onAllNodesWithText("إنهاء وضع السفر").fetchSemanticsNodes().isNotEmpty() }
-        compose.onNodeWithText("إنهاء وضع السفر").performScrollTo().performClick()
+        compose.onNodeWithTag("navigation_2").performClick()
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("إنهاء المشوار").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("إنهاء المشوار").performScrollTo().performClick()
         compose.waitUntil(10_000) { runBlocking { MishwariDatabase.get(application).dao().getSetting("travel_place") == "" } }
         runBlocking {
             val dao = MishwariDatabase.get(application).dao()

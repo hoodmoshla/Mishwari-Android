@@ -8,6 +8,7 @@ object DataValidation {
     const val MAX_RADIUS_METERS = 20_000f
     const val MAX_ID_LENGTH = 128
     private const val MAX_TITLE_LENGTH = 200
+    private const val MAX_ACTUAL_PRICE_LENGTH = 100
     private val categories = setOf("مشتريات", "قطع غيار", "أدوية", "معاملات", "استلام", "صيانة", "أخرى")
     private val statuses = setOf("جديد", "مخطط له", "مكتمل", "مؤجل", "ملغى")
 
@@ -19,6 +20,7 @@ object DataValidation {
         require(errand.category in categories) { "فئة الطلب غير معروفة" }
         require(errand.status in statuses) { "حالة الطلب غير معروفة" }
         require(errand.priority in 0..2) { "الأولوية يجب أن تكون بين 0 و2" }
+        require(errand.actualPrice.length <= MAX_ACTUAL_PRICE_LENGTH) { "السعر الفعلي يجب ألا يتجاوز 100 حرف" }
         if (errand.dueDate.isNotBlank()) {
             require(errand.dueDate.length == 10 && runCatching { LocalDate.parse(errand.dueDate) }.isSuccess) {
                 "تاريخ الاستحقاق يجب أن يكون بصيغة YYYY-MM-DD صحيحة"

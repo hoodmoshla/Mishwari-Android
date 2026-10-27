@@ -147,7 +147,7 @@ private fun PlacePickerDialog(
         val term = query.trim()
         if (term.isBlank()) emptyList() else places.filter { place ->
             listOf(place.name, place.governorate, place.district, place.area, place.detail, placeLabel(place))
-                .any { it.contains(term, ignoreCase = true) }
+                .any { matchesArabicSearch(it, term) }
         }.sortedBy(::placeLabel)
     }
     val rootPlaces = remember(places) {
@@ -264,6 +264,7 @@ internal fun ErrandEditor(original: Errand, places: List<Place>, dismiss: () -> 
     var category by rememberSaveable(original.id) { mutableStateOf(original.category) }
     var quantity by rememberSaveable(original.id) { mutableStateOf(original.quantity) }
     var price by rememberSaveable(original.id) { mutableStateOf(original.expectedPrice) }
+    var actualPrice by rememberSaveable(original.id) { mutableStateOf(original.actualPrice) }
     var notes by rememberSaveable(original.id) { mutableStateOf(original.notes) }
     var priority by rememberSaveable(original.id) { mutableIntStateOf(original.priority) }
     var due by rememberSaveable(original.id) { mutableStateOf(original.dueDate) }
@@ -280,7 +281,7 @@ internal fun ErrandEditor(original: Errand, places: List<Place>, dismiss: () -> 
     val normalizedDue = westernDigits(due).trim()
     val validDate = due.isBlank() || runCatching { java.time.LocalDate.parse(normalizedDue); true }.getOrDefault(false)
     Editor(if (original.title.isBlank()) "إضافة طلب" else "تعديل الطلب", dismiss, {
-        save(original.copy(title = title.trim(), description = description.trim(), placeId = place, category = category, quantity = quantity, expectedPrice = price, notes = notes, priority = priority, dueDate = normalizedDue, photoPath = photo, status = status))
+        save(original.copy(title = title.trim(), description = description.trim(), placeId = place, category = category, quantity = quantity, expectedPrice = price, actualPrice = actualPrice, notes = notes, priority = priority, dueDate = normalizedDue, photoPath = photo, status = status))
     }, title.isNotBlank() && validDate) {
         Text("أدخل الاسم والوجهة؛ بقية التفاصيل اختيارية.", style = MaterialTheme.typography.bodySmall)
         Field("اسم الغرض أو المهمة *", title, { title = it })
@@ -294,6 +295,7 @@ internal fun ErrandEditor(original: Errand, places: List<Place>, dismiss: () -> 
             Choice("الفئة", category, categories, { category = it })
             Field("الكمية", quantity, { quantity = it })
             Field("السعر المتوقع", price, { price = it })
+            Field("السعر الفعلي (اختياري)", actualPrice, { actualPrice = it })
             Choice("الأولوية", priority.toString(), listOf("0", "1", "2"), { priority = it.toInt() }, mapOf("0" to "منخفضة", "1" to "عادية", "2" to "عالية"))
             Field("الاستحقاق: YYYY-MM-DD", due, { due = it })
             if (!validDate) Text("اكتب تاريخًا صحيحًا مثل 2026-12-31؛ تُقبل الأرقام العربية أيضًا", color = MaterialTheme.colorScheme.error)

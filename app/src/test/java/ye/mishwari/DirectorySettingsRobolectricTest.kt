@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onLast
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -44,23 +45,19 @@ class DirectorySettingsRobolectricTest {
     }
 
     @Test
-    fun settingsHideAdvancedDirectoryImportAndBothAssistantEntriesHaveClearReturn() {
+    fun settingsCentralizeAssistantAndHideAdvancedDirectoryImportUntilRequested() {
         val model = MishwariViewModel(application)
         compose.activity.setContent {
             MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {})
         }
-        compose.waitUntil(10_000) {
-            compose.onAllNodesWithText("مساعد المشوار الذكي").fetchSemanticsNodes().isNotEmpty()
-        }
-
-        // The list entry opens the assistant overlay with an explicit way back.
-        compose.onNodeWithText("مساعد المشوار الذكي").performClick()
-        compose.onNodeWithText("رجوع إلى مشواري").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("navigation_3").performClick()
+        compose.onNodeWithText("مساعد المشوار الذكي").assertIsDisplayed()
+        compose.onNodeWithText("إعدادات الذكاء الاصطناعي").performClick()
+        compose.onNodeWithTag("assistantSettingsSection").assertIsDisplayed()
 
         // Settings remain short until the advanced section is explicitly opened.
-        compose.onAllNodesWithText("الإعدادات").onLast().performClick()
-        compose.onNodeWithText("مساعد المشوار الذكي").performScrollTo().assertIsDisplayed().performClick()
-        compose.onNodeWithText("رجوع إلى مشواري").assertIsDisplayed().performClick()
+        compose.onNodeWithTag("navigation_4").performClick()
+        compose.onNodeWithTag("assistantSettingsSection").assertIsDisplayed()
         compose.onNodeWithText("استيراد تحديث دليل من JSON").assertDoesNotExist()
         compose.onNodeWithText("الأذونات والخصوصية").performScrollTo().performClick()
         compose.onNodeWithText("استيراد تحديث دليل من JSON").performScrollTo().assertIsDisplayed()

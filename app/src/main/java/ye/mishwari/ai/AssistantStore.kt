@@ -25,63 +25,96 @@ class AssistantStore(
     @Synchronized
     fun load(): AssistantConfig {
         val settings = readSettings()
+        val endpoint = settings.optString("endpoint", "")
+        val provider = settings.optString("provider", AssistantProviderIds.OPENAI_COMPATIBLE)
+            .takeIf { it in SUPPORTED_PROVIDERS } ?: AssistantProviderIds.OPENAI_COMPATIBLE
         return AssistantConfig(
-            endpoint = settings.optString("endpoint", ""),
+            endpoint = endpoint,
             model = settings.optString("model", ""),
             enabled = settings.optBoolean("enabled", false) && keyFile.isFile &&
-                AssistantEndpoint.isValid(settings.optString("endpoint", "")),
+                AssistantEndpoint.isValid(endpoint),
             hasKey = keyFile.isFile,
+            provider = provider,
         )
     }
 
     /**
-     * Saves settings. A changed endpoint is persisted disabled and without a key; a new key
-     * must be supplied in a subsequent save, preventing an old credential crossing providers.
-     * A null key leaves the current key unchanged; pass blank to remove it (or call deleteKey).
+     * Saves settings and an optional replacement credential as one logical operation. Changing
+     * endpoint or provider never reuses the previous key: a missing key removes it and disables
+     * the assistant; a supplied valid key is encrypted and installed in this same call.
      */
     @Synchronized
-    fun save(endpoint: String, model: String, key: String?, enabled: Boolean) {
-        validateEndpointForStorage(endpoint)
-        require(model.length <= MAX_MODEL_LENGTH) { "اسم النموذج أطول من المسموح" }
-        val currentSettings = readSettings()
-        val previous = currentSettings.optString("endpoint", "")
-        val changedEndpoint = endpoint != previous && (previous.isNotEmpty() || keyFile.exists())
-        if (changedEndpoint) {
-            currentSettings.put("enabled", false)
-            writeAtomically(configFile, currentSettings.toString().toByteArray(Charsets.UTF_8))
-            deleteKeyFile()
-        }
+    fun save(
+        endpoint: String,
+        model: String,
+        key: String?,
+        enabled: Boolean,
+        provider: String = AssistantProviderIds.OPENAI_COMPATIBLE,
+    ) {
+        validate(endpoint, model, key, provider)
 
-        if (!changedEndpoint && key != null) {
-            if (key.isBlank()) {
-                currentSettings.put("enabled", false)
-                writeAtomically(configFile, currentSettings.toString().toByteArray(Charsets.UTF_8))
-                deleteKeyFile()
-            } else {
-                require(endpoint.isNotBlank()) { "أدخل عنوان HTTPS قبل حفظ المفتاح" }
-                require(key.length <= MAX_KEY_LENGTH && key.none { it == '\r' || it == '\n' || it == '\u0000' }) {
-                    "مفتاح API غير صالح"
-                }
-                currentSettings.put("enabled", false)
-                writeAtomically(configFile, currentSettings.toString().toByteArray(Charsets.UTF_8))
-                writeAtomically(keyFile, keyCipher.encrypt(key.toByteArray(Charsets.UTF_8)))
-            }
-        }
+        val oldSettings = readSettings()
+        val oldEndpoint = oldSettings.optString("endpoint", "")
+        val oldProvider = oldSettings.optString("provider", AssistantProviderIds.OPENAI_COMPATIBLE)
+            .takeIf { it in SUPPORTED_PROVIDERS } ?: AssistantProviderIds.OPENAI_COMPATIBLE
+        val identityChanged = endpoint != oldEndpoint || provider != oldProvider
+        val oldConfigBytes = configFile.takeIf { it.isFile }?.readBytes()
+        val oldKeyBytes = keyFile.takeIf { it.isFile }?.readBytes()
 
-        val keyAvailable = keyFile.isFile
-        val json = JSONObject()
+        // Perform encryption before changing either on-disk file, so invalid input/Keystore errors
+        // cannot destroy the last good configuration or credential.
+        val encryptedReplacement = key?.takeIf { it.isNotBlank() }
+            ?.toByteArray(Charsets.UTF_8)
+            ?.let(keyCipher::encrypt)
+
+        val base = JSONObject()
             .put("endpoint", endpoint)
             .put("model", model)
-            .put("enabled", !changedEndpoint && enabled && keyAvailable && endpoint.isNotBlank())
-        writeAtomically(configFile, json.toString().toByteArray(Charsets.UTF_8))
+            .put("provider", provider)
+            .put("enabled", false)
+
+        try {
+            if (identityChanged) deleteKeyFile()
+            // Install the new identity in a disabled state before installing its new credential.
+            // A crash in this interval cannot associate the old key with the new provider/URL.
+            writeAtomically(base.toString().toByteArray(Charsets.UTF_8), configFile)
+
+            when {
+                key == null -> Unit // Preserve only when endpoint/provider identity is unchanged.
+                key.isBlank() -> deleteKeyFile()
+                else -> writeAtomically(requireNotNull(encryptedReplacement), keyFile)
+            }
+
+            val keyAvailable = keyFile.isFile
+            val finalConfig = JSONObject()
+                .put("endpoint", endpoint)
+                .put("model", model)
+                .put("provider", provider)
+                .put("enabled", enabled && keyAvailable && endpoint.isNotBlank())
+            writeAtomically(finalConfig.toString().toByteArray(Charsets.UTF_8), configFile)
+        } catch (failure: Exception) {
+            // Best-effort rollback keeps the previous valid files intact if any commit step fails.
+            runCatching { restoreFile(configFile, oldConfigBytes) }
+            runCatching { restoreFile(keyFile, oldKeyBytes) }
+            throw failure
+        }
     }
 
     @Synchronized
     fun deleteKey() {
         val settings = readSettings()
+        val oldConfigBytes = configFile.takeIf { it.isFile }?.readBytes()
+        val oldKeyBytes = keyFile.takeIf { it.isFile }?.readBytes()
         settings.put("enabled", false)
-        writeAtomically(configFile, settings.toString().toByteArray(Charsets.UTF_8))
-        deleteKeyFile()
+        try {
+            // Delete first: if config writing fails, restore the key and the old settings.
+            deleteKeyFile()
+            writeAtomically(settings.toString().toByteArray(Charsets.UTF_8), configFile)
+        } catch (failure: Exception) {
+            runCatching { restoreFile(configFile, oldConfigBytes) }
+            runCatching { restoreFile(keyFile, oldKeyBytes) }
+            throw failure
+        }
     }
 
     /** Returns null when no key is present or encrypted data cannot be read; never logs details. */
@@ -95,9 +128,24 @@ class AssistantStore(
         } catch (_: Exception) {
             val settings = readSettings()
             settings.put("enabled", false)
-            writeAtomically(configFile, settings.toString().toByteArray(Charsets.UTF_8))
+            writeAtomically(settings.toString().toByteArray(Charsets.UTF_8), configFile)
             deleteKeyFile()
             null
+        }
+    }
+
+    private fun validate(endpoint: String, model: String, key: String?, provider: String) {
+        require(provider in SUPPORTED_PROVIDERS) { "اختر مزودًا مدعومًا" }
+        require(endpoint.isEmpty() || AssistantEndpoint.isValid(endpoint)) { "أدخل عنوان HTTPS صالحًا" }
+        require(endpoint.length <= MAX_ENDPOINT_LENGTH && endpoint == endpoint.trim()) { "عنوان الاتصال غير صالح" }
+        require(model.length <= MAX_MODEL_LENGTH && model.none { it == '\r' || it == '\n' || it == '\u0000' }) {
+            "اسم النموذج غير صالح أو أطول من المسموح"
+        }
+        if (key != null && key.isNotBlank()) {
+            require(endpoint.isNotBlank()) { "أدخل عنوان HTTPS قبل حفظ المفتاح" }
+            require(key.length <= MAX_KEY_LENGTH && key.none { it == '\r' || it == '\n' || it == '\u0000' }) {
+                "مفتاح API غير صالح"
+            }
         }
     }
 
@@ -116,26 +164,31 @@ class AssistantStore(
         if (file.exists()) check(file.delete() && !file.exists()) { "تعذر حذف مفتاح المساعد؛ بقي المساعد معطّلًا" }
     }
 
-    private fun writeAtomically(destination: File, bytes: ByteArray) {
+    private fun restoreFile(file: File, bytes: ByteArray?) {
+        if (bytes == null) deleteFileIfPresent(file) else writeAtomically(bytes, file)
+    }
+
+    /** Writes a sibling temporary file and renames over the destination without deleting it first. */
+    private fun writeAtomically(bytes: ByteArray, destination: File) {
         val temporary = File(directory, destination.name + ".tmp")
         try {
-            temporary.outputStream().use { it.write(bytes); it.fd.sync() }
-            if (!temporary.renameTo(destination)) {
-                if (destination.exists()) check(destination.delete()) { "تعذر حفظ إعدادات المساعد" }
-                check(temporary.renameTo(destination)) { "تعذر حفظ إعدادات المساعد" }
-            }
+            temporary.outputStream().use { stream -> stream.write(bytes); stream.fd.sync() }
+            // On the app's local filesystem rename replaces an existing destination atomically.
+            // If it fails, leave the old destination untouched and report failure.
+            check(temporary.renameTo(destination)) { "تعذر حفظ إعدادات المساعد" }
         } finally {
             temporary.delete()
         }
     }
 
-    private fun validateEndpointForStorage(endpoint: String) {
-        require(endpoint.isEmpty() || AssistantEndpoint.isValid(endpoint)) { "أدخل عنوان HTTPS صالحًا" }
-    }
-
     private companion object {
         const val MAX_MODEL_LENGTH = 200
+        const val MAX_ENDPOINT_LENGTH = 2048
         const val MAX_KEY_LENGTH = 4096
+        val SUPPORTED_PROVIDERS = setOf(
+            AssistantProviderIds.OPENAI_COMPATIBLE,
+            AssistantProviderIds.GEMINI,
+        )
     }
 }
 

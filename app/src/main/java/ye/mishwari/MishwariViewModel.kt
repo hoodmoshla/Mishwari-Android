@@ -47,6 +47,8 @@ class MishwariViewModel @JvmOverloads constructor(
     val assistantSuggestions = _assistantSuggestions.asStateFlow()
     private val _assistantResult = MutableStateFlow<String?>(null)
     val assistantResult = _assistantResult.asStateFlow()
+    private val _bulkSaveBusy = MutableStateFlow(false)
+    val bulkSaveBusy = _bulkSaveBusy.asStateFlow()
     private var approvedAssistantPayload: String? = null
     private val consumedAssistantProposalIds = mutableSetOf<String>()
 
@@ -81,9 +83,14 @@ class MishwariViewModel @JvmOverloads constructor(
         }
     }
 
-    fun saveAssistantConfig(endpoint: String, model: String, key: String?, enabled: Boolean) =
-        assistantTask("حُفظت إعدادات المساعد. عند تغيير العنوان يُحذف المفتاح ويُوقف المساعد؛ أدخل المفتاح وفعّله من جديد.") {
-            withContext(Dispatchers.IO) { assistantStore.save(endpoint.trim(), model.trim(), key, enabled) }
+    fun saveAssistantConfig(
+        endpoint: String,
+        model: String,
+        key: String?,
+        enabled: Boolean,
+        provider: String = AssistantProviderIds.OPENAI_COMPATIBLE,
+    ) = assistantTask("حُفظت إعدادات المساعد. لن تُرسل بيانات حتى تختار طلبات محددة وتؤكد الإرسال.") {
+            withContext(Dispatchers.IO) { assistantStore.save(endpoint.trim(), model.trim(), key, enabled, provider) }
             clearAssistantResult()
         }
 
@@ -99,6 +106,29 @@ class MishwariViewModel @JvmOverloads constructor(
             assistantProvider.complete(config.endpoint, config.model, key, "أجب بكلمة واحدة فقط: جاهز")
         }
     }
+
+    /** Tests draft credentials without persisting them or forwarding any user-owned content. */
+    fun testAssistantConnection(
+        endpoint: String,
+        model: String,
+        key: String?,
+        provider: String,
+        onSuccess: () -> Unit = {},
+    ) =
+        assistantTask("نجح الاتصال بالمزود والنموذج المحددين") {
+            withContext(Dispatchers.IO) {
+                require(provider in setOf(AssistantProviderIds.OPENAI_COMPATIBLE, AssistantProviderIds.GEMINI)) {
+                    "اختر مزودًا مدعومًا"
+                }
+                val config = assistantStore.load()
+                val sameIdentity = endpoint == config.endpoint && provider == config.provider
+                val credential: String = key?.takeIf { it.isNotBlank() }
+                    ?: (if (sameIdentity) assistantStore.readKey() else null)
+                    ?: throw IllegalArgumentException("أدخل مفتاح API لاختبار هذا الإعداد")
+                assistantProvider.complete(endpoint, model, credential, "أجب بكلمة واحدة فقط: جاهز")
+            }
+            onSuccess()
+        }
 
     fun prepareAssistantPayload(mode: String, input: String, selectedErrands: List<Errand>, destinationId: String?): String =
         AssistantPayload.prepare(mode, input, selectedErrands, destinationId, places.value)
@@ -196,9 +226,35 @@ class MishwariViewModel @JvmOverloads constructor(
             }
         }
     }
+    fun saveErrandsBatch(errands: List<Errand>, onSaved: () -> Unit = {}) {
+        if (_bulkSaveBusy.value) return
+        _bulkSaveBusy.value = true
+        viewModelScope.launch {
+            error.value = null
+            try {
+                withContext(Dispatchers.IO) { repository.saveErrandsBatch(errands) }
+                onSaved()
+                _message.emit("حُفظت ${errands.size} طلبات دفعة واحدة")
+                runCatching { GeoScheduler.schedule(getApplication()) }.onFailure {
+                    error.value = "حُفظت الطلبات، لكن تعذّر تحديث تنبيهات الوصول. أعد فتح التطبيق وراجع إعدادات التنبيهات."
+                }
+            } catch (e: Exception) {
+                if (e is kotlinx.coroutines.CancellationException) throw e
+                error.value = "تعذّر حفظ الدفعة: ${e.localizedMessage ?: "تحقق من الطلبات وحاول مجددًا"}"
+            } finally {
+                _bulkSaveBusy.value = false
+            }
+        }
+    }
+    fun reopenCompletedAtPlace(placeId: String) = action("أُعيد فتح الطلبات المكتملة المرتبطة بالمكان") {
+        repository.reopenCompletedAtPlace(placeId)
+    }
     fun save(e: Errand, onSaved: () -> Unit = {}) {
         val protected = draftPhotoPaths.toSet()
         action(onSuccess = onSaved) { repository.saveErrand(e, getApplication(), protected) }
+    }
+    fun toggleErrandCompletion(errandId: String) = action("تم تحديث حالة الطلب") {
+        repository.toggleErrandCompletion(errandId)
     }
     fun remove(e: Errand) {
         val protected = draftPhotoPaths.toSet()

@@ -84,11 +84,12 @@ class DatabaseUpgradeSafetyTest {
         }
 
         val current = Room.databaseBuilder(context, MishwariDatabase::class.java, databaseName)
+            .addMigrations(MishwariDatabase.MIGRATION_1_2)
             .allowMainThreadQueries()
             .build()
         try {
                 val dao = current.dao()
-                assertEquals(1, current.openHelper.readableDatabase.version)
+                assertEquals(2, current.openHelper.readableDatabase.version)
                 assertEquals(listOf(Place(id = "fixture-place", name = "مكان المستخدم")), dao.allPlaces())
                 assertEquals(
                     listOf(Errand(
@@ -103,6 +104,7 @@ class DatabaseUpgradeSafetyTest {
                     )),
                     dao.allErrands()
                 )
+                assertEquals("", dao.allErrands().single().actualPrice)
                 assertEquals(listOf(AppSetting("theme", "dark")), dao.allSettings())
         } finally {
             current.close()

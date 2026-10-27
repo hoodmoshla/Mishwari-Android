@@ -67,6 +67,22 @@ class EditorsRobolectricTest {
         compose.onNodeWithText("دون وجهة / إلغاء الاختيار").performClick()
         compose.runOnIdle { assertEquals(null, selected) }
     }
+
+    @Test
+    fun globalPlaceSearchNormalizesArabicHamzaAndDiacritics() {
+        val place = Place(id = "place-search-normalized", name = "مَأْرِب", kind = "governorate")
+        var selected by mutableStateOf<String?>(null)
+        compose.setContent {
+            MishwariTheme { PlaceSelector("الوجهة", selected, listOf(place), { selected = it }, allowNone = true) }
+        }
+
+        compose.onNodeWithText("الوجهة: دون وجهة").performClick()
+        compose.onNodeWithText("ابحث في جميع الأماكن").performTextInput("مارب")
+        compose.onNodeWithText("مَأْرِب").assertIsDisplayed().performClick()
+
+        compose.runOnIdle { assertEquals(place.id, selected) }
+    }
+
     @Test
     fun collapsedOptionalFieldsArePreservedOnSave() {
         val original = Errand(title = "طلب بتفاصيل", description = "وصف محفوظ", quantity = "٢",

@@ -59,14 +59,14 @@ class RepositorySafetyRobolectricTest {
     }
 
     @Test
-    fun schemaV1DatabaseReopensWithRowsIntactAndUnsupportedDowngradeDoesNotDropThem() = runBlocking {
+    fun schemaV2DatabaseReopensWithRowsIntactAndUnsupportedDowngradeDoesNotDropThem() = runBlocking {
         val (name, db) = openDatabase()
         val place = Place(id = "v1-place", name = "مخزن محفوظ")
         val errand = Errand(id = "v1-errand", title = "طلب محفوظ", placeId = place.id, photoPath = "/legacy/photo.img")
         db.dao().upsertPlace(place)
         db.dao().upsertErrand(errand)
         db.dao().putSetting(AppSetting("theme", "dark"))
-        assertEquals(1, db.openHelper.readableDatabase.version)
+        assertEquals(2, db.openHelper.readableDatabase.version)
         db.close()
         opened.removeAll { it.first == name }
 
@@ -79,9 +79,9 @@ class RepositorySafetyRobolectricTest {
         reopened.close()
         opened.removeAll { it.first == name }
 
-        // Mark the existing v1 file as a future version: the v1 app has no supported downgrade.
+        // Mark the existing v2 file as a future version: the v2 app has no supported downgrade.
         SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READWRITE)
-            .use { it.version = 2 }
+            .use { it.version = 3 }
         val unsupported = Room.databaseBuilder(context, MishwariDatabase::class.java, name)
             .allowMainThreadQueries().build()
         val failure = runCatching { unsupported.openHelper.writableDatabase }.exceptionOrNull()
@@ -89,7 +89,7 @@ class RepositorySafetyRobolectricTest {
         assertNotNull("Opening a newer unsupported schema must be rejected, not destructively reset", failure)
 
         SQLiteDatabase.openDatabase(context.getDatabasePath(name).path, null, SQLiteDatabase.OPEN_READONLY).use { raw ->
-            assertEquals(2, raw.version)
+            assertEquals(3, raw.version)
             raw.rawQuery("SELECT id FROM places WHERE id = 'v1-place'", null).use { cursor -> assertTrue(cursor.moveToFirst()) }
             raw.rawQuery("SELECT id FROM errands WHERE id = 'v1-errand'", null).use { cursor -> assertTrue(cursor.moveToFirst()) }
             raw.rawQuery("SELECT value FROM app_settings WHERE `key` = 'theme'", null).use { cursor ->
@@ -107,7 +107,7 @@ class RepositorySafetyRobolectricTest {
         source.savePlace(place)
         val shared = photo(byteArrayOf(1, 2, 3, 4))
         val second = photo(byteArrayOf(5, 6, 7))
-        source.saveErrand(Errand(id = "photo-a", title = "صورة أولى", placeId = place.id, photoPath = shared.absolutePath))
+        source.saveErrand(Errand(id = "photo-a", title = "صورة أولى", placeId = place.id, photoPath = shared.absolutePath, actualPrice = "33.50"))
         source.saveErrand(Errand(id = "photo-b", title = "الصورة المشتركة", placeId = place.id, photoPath = shared.absolutePath))
         source.saveErrand(Errand(id = "photo-c", title = "صورة ثانية", placeId = place.id, photoPath = second.absolutePath))
 
@@ -116,6 +116,8 @@ class RepositorySafetyRobolectricTest {
         assertEquals(3, rows.length())
         assertTrue((0 until rows.length()).all { rows.getJSONObject(it).has("photoBase64") })
         assertTrue((0 until rows.length()).none { rows.getJSONObject(it).has("photoPath") })
+        val backedUpPhotoA = (0 until rows.length()).map(rows::getJSONObject).single { it.getString("id") == "photo-a" }
+        assertEquals("33.50", backedUpPhotoA.getString("actualPrice"))
 
         val (_, targetDb) = openDatabase()
         val target = Repository(targetDb)
@@ -128,6 +130,7 @@ class RepositorySafetyRobolectricTest {
         assertArrayEquals(shared.readBytes(), importedA.readBytes())
         assertArrayEquals(shared.readBytes(), importedB.readBytes())
         assertArrayEquals(second.readBytes(), importedC.readBytes())
+        assertEquals("33.50", imported.getValue("photo-a").actualPrice)
         assertFalse("Each imported request receives its own managed file", importedA.canonicalPath == importedB.canonicalPath)
     }
 
@@ -145,8 +148,10 @@ class RepositorySafetyRobolectricTest {
         val restored = db.dao().allErrands().associateBy { it.id }
         assertEquals(localPhoto.path, restored.getValue("legacy-match").photoPath)
         assertEquals("عنوان النسخة القديمة", restored.getValue("legacy-match").title)
+        assertEquals("", restored.getValue("legacy-match").actualPrice)
         assertTrue(localPhoto.exists())
         assertNull(restored.getValue("legacy-new").photoPath)
+        assertEquals("", restored.getValue("legacy-new").actualPrice)
     }
 
     @Test

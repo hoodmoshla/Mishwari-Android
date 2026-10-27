@@ -162,7 +162,7 @@ class AssistantProviderJvmTest {
 
     @Test
     fun unauthorizedAndRateLimitErrorsNeverExposeSecretsOrRawBody() {
-        for (status in listOf(401, 429)) {
+        for (status in listOf(401, 403, 429)) {
             withServer({
                 FakeHttpResponse(status = status, body = "provider echoed $FAKE_KEY RAW_PROVIDER_DETAIL")
             }) { base ->
@@ -312,22 +312,99 @@ class AssistantStoreAndParserTest {
         store.save("https://one.example/v1/chat/completions", "model-a", "fake-secret-one", enabled = true)
         assertTrue(store.load().enabled)
         assertEquals("fake-secret-one", store.readKey())
+        assertEquals(AssistantProviderIds.OPENAI_COMPATIBLE, store.load().provider)
         assertFalse(String(java.io.File(directory, "api-key.enc").readBytes(), StandardCharsets.UTF_8)
             .contains("fake-secret-one"))
 
         store.save("https://two.example/custom/path", "model-b", "fake-secret-two", enabled = true)
         assertEquals("https://two.example/custom/path", store.load().endpoint)
-        assertFalse(store.load().enabled)
-        assertFalse(store.load().hasKey)
-        assertNull(store.readKey())
-
-        store.save("https://two.example/custom/path", "model-b", "fake-secret-two", enabled = true)
         assertTrue(store.load().enabled)
+        assertTrue(store.load().hasKey)
         assertEquals("fake-secret-two", store.readKey())
+        val restartedStore = AssistantStore(context, TestCipher)
+        assertEquals("fake-secret-two", restartedStore.readKey())
+        restartedStore.save("https://two.example/custom/path", "model-b", "fake-replacement-key", enabled = true)
+        assertEquals("fake-replacement-key", restartedStore.readKey())
         store.deleteKey()
         assertFalse(store.load().enabled)
         assertFalse(store.load().hasKey)
         assertNull(store.readKey())
+    }
+
+    @Test
+    fun legacyConfigWithoutProviderLoadsAsOpenAiCompatible() {
+        val context = RuntimeEnvironment.getApplication() as Context
+        val directory = java.io.File(context.noBackupFilesDir, "assistant")
+        directory.deleteRecursively()
+        directory.mkdirs()
+        java.io.File(directory, "config.json").writeText(
+            """{"endpoint":"https://legacy.example/v1/chat/completions","model":"legacy-model","enabled":false}""",
+        )
+
+        val config = AssistantStore(context, TestCipher).load()
+        assertEquals(AssistantProviderIds.OPENAI_COMPATIBLE, config.provider)
+        assertEquals("https://legacy.example/v1/chat/completions", config.endpoint)
+        assertFalse(config.enabled)
+    }
+
+    @Test
+    fun selectedProviderIsPersistedAndNewCredentialIsSavedInSameProviderChange() {
+        val context = RuntimeEnvironment.getApplication() as Context
+        java.io.File(context.noBackupFilesDir, "assistant").deleteRecursively()
+        val store = AssistantStore(context, TestCipher)
+        store.save("https://openai.example/v1", "model-a", "fake-openai-key", enabled = true)
+
+        store.save(
+            "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+            "gemini-3.8-flash",
+            "fake-gemini-key",
+            enabled = true,
+            provider = AssistantProviderIds.GEMINI,
+        )
+
+        assertEquals(AssistantProviderIds.GEMINI, store.load().provider)
+        assertEquals("fake-gemini-key", store.readKey())
+        assertTrue(store.load().enabled)
+    }
+
+    @Test
+    fun endpointChangeWithoutNewKeyDisablesAndDeletesPreviousCredential() {
+        val context = RuntimeEnvironment.getApplication() as Context
+        java.io.File(context.noBackupFilesDir, "assistant").deleteRecursively()
+        val store = AssistantStore(context, TestCipher)
+        store.save("https://one.example/v1", "model-a", "fake-old-key", enabled = true)
+
+        store.save("https://two.example/v1", "model-b", null, enabled = true)
+
+        assertEquals("https://two.example/v1", store.load().endpoint)
+        assertFalse(store.load().enabled)
+        assertFalse(store.load().hasKey)
+        assertNull(store.readKey())
+    }
+
+    @Test
+    fun rejectedProviderEndpointModelOrKeyDoesNotDamagePreviousConfiguration() {
+        val context = RuntimeEnvironment.getApplication() as Context
+        java.io.File(context.noBackupFilesDir, "assistant").deleteRecursively()
+        val store = AssistantStore(context, TestCipher)
+        store.save("https://valid.example/v1", "valid-model", "fake-preserved-key", enabled = true)
+        val original = store.load()
+
+        assertThrows(IllegalArgumentException::class.java) {
+            store.save("https://invalid.example/v1", "next-model", "new-key", true, "unsupported")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            store.save("http://invalid.example/v1", "next-model", "new-key", true)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            store.save("https://valid.example/v1", "m".repeat(201), null, true)
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            store.save("https://valid.example/v1", "next-model", "bad\nkey", true)
+        }
+
+        assertEquals(original, store.load())
+        assertEquals("fake-preserved-key", store.readKey())
     }
 
     @Test
