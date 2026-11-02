@@ -113,7 +113,7 @@ class RedesignScreenshotInstrumentedTest {
 
     private fun seedFixtureRows() = runBlocking {
         val dao = MishwariDatabase.get(context).dao()
-        listOf("travel_place", "theme_mode").forEach { key -> savedSettings[key] = dao.getSetting(key)?.takeUnless { it == PLACE_ID } }
+        listOf("travel_place", "theme_mode").forEach { key -> savedSettings[key] = dao.getSetting(key) }
         dao.putSetting(AppSetting("travel_place", PLACE_ID))
         dao.putSetting(AppSetting("theme_mode", "light"))
         dao.upsertPlace(
@@ -216,9 +216,7 @@ class RedesignScreenshotInstrumentedTest {
         val bitmap = requireNotNull(InstrumentationRegistry.getInstrumentation().uiAutomation.takeScreenshot()) {
             "UiAutomation.takeScreenshot() returned no frame for $fileName"
         }
-        val directory = requireNotNull(context.getExternalFilesDir("screenshots")) {
-            "External app files directory is unavailable"
-        }
+        val directory = File(context.cacheDir, "redesign-screenshots")
         check(directory.isDirectory || directory.mkdirs()) { "Could not create screenshot directory: $directory" }
         val output = File(directory, fileName)
         try {
