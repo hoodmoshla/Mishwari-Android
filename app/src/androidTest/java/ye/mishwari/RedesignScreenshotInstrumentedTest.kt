@@ -232,9 +232,12 @@ class RedesignScreenshotInstrumentedTest {
             val bytes = ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
             assertTrue("Could not read screenshot bytes for CI: $fileName", bytes.size > PNG_SIGNATURE.size)
             assertTrue("Invalid PNG bytes returned for CI: $fileName", bytes.copyOfRange(0, PNG_SIGNATURE.size).contentEquals(PNG_SIGNATURE))
-            val chunks = Base64.encodeToString(bytes, Base64.NO_WRAP).chunked(2_500)
+            val chunks = Base64.encodeToString(bytes, Base64.NO_WRAP).chunked(1_500)
             Log.i(SCREENSHOT_LOG_TAG, "BEGIN:$fileName:${bytes.size}:${chunks.size}")
-            chunks.forEachIndexed { index, chunk -> Log.i(SCREENSHOT_LOG_TAG, "DATA:$fileName:$index:$chunk") }
+            chunks.forEachIndexed { index, chunk ->
+                Log.i(SCREENSHOT_LOG_TAG, "DATA:$fileName:$index:$chunk")
+                android.os.SystemClock.sleep(20)
+            }
             Log.i(SCREENSHOT_LOG_TAG, "END:$fileName")
         } finally {
             bitmap.recycle()
