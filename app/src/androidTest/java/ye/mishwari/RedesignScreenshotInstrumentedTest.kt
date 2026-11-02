@@ -16,6 +16,8 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import android.os.ParcelFileDescriptor
+import android.util.Base64
+import android.util.Log
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -225,10 +227,15 @@ class RedesignScreenshotInstrumentedTest {
                 assertTrue("Could not encode screenshot $fileName", bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))
             }
             assertTrue("Screenshot is empty: $output", output.isFile && output.length() > 0L)
-            val command = "run-as ye.mishwari cat cache/redesign-screenshots/$fileName > /data/local/tmp/mishwari-redesign-$fileName; echo \$?"
+            val command = "run-as ye.mishwari cat cache/redesign-screenshots/$fileName"
             val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command)
-            val exitCode = ParcelFileDescriptor.AutoCloseInputStream(descriptor).bufferedReader().use { it.readText().trim() }
-            assertTrue("Could not stage screenshot $fileName for CI retrieval (run-as exit=$exitCode)", exitCode == "0")
+            val bytes = ParcelFileDescriptor.AutoCloseInputStream(descriptor).use { it.readBytes() }
+            assertTrue("Could not read screenshot bytes for CI: $fileName", bytes.size > PNG_SIGNATURE.size)
+            assertTrue("Invalid PNG bytes returned for CI: $fileName", bytes.copyOfRange(0, PNG_SIGNATURE.size).contentEquals(PNG_SIGNATURE))
+            val chunks = Base64.encodeToString(bytes, Base64.NO_WRAP).chunked(2_500)
+            Log.i(SCREENSHOT_LOG_TAG, "BEGIN:$fileName:${bytes.size}:${chunks.size}")
+            chunks.forEachIndexed { index, chunk -> Log.i(SCREENSHOT_LOG_TAG, "DATA:$fileName:$index:$chunk") }
+            Log.i(SCREENSHOT_LOG_TAG, "END:$fileName")
         } finally {
             bitmap.recycle()
         }
@@ -241,5 +248,7 @@ class RedesignScreenshotInstrumentedTest {
         const val ERRAND_MEDICINE_ID = "redesign-screenshot-fixture-medicine"
         const val ERRAND_COMPLETED_ID = "redesign-screenshot-fixture-completed"
         const val FIXTURE_MARKER = "redesign-screenshot-instrumented-test-fixture"
+        const val SCREENSHOT_LOG_TAG = "MishwariShot"
+        val PNG_SIGNATURE = byteArrayOf(0x89.toByte(), 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a)
     }
 }
