@@ -24,7 +24,10 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import ye.mishwari.data.AppSetting
+import ye.mishwari.data.Errand
 import ye.mishwari.data.MishwariDatabase
+import ye.mishwari.data.Place
 import ye.mishwari.ui.MishwariRoot
 
 @RunWith(RobolectricTestRunner::class)
@@ -40,6 +43,7 @@ class UiRobolectricTest {
         val dao = MishwariDatabase.get(application).dao()
         dao.allErrands().forEach { dao.deleteErrand(it.id) }
         clearPlacesChildrenFirst(dao)
+        dao.putSetting(AppSetting("travel_place", ""))
     }
 
     @After
@@ -216,6 +220,39 @@ class UiRobolectricTest {
             androidx.work.WorkManager.getInstance(application)
                 .getWorkInfosForUniqueWork("mishwari-geo-reconcile").get().isNotEmpty()
         }
+    }
+
+    @Test
+    fun travelReadinessUsesEligibleDescendantsWithoutManualMonitoring() {
+        androidx.work.testing.WorkManagerTestInitHelper.initializeTestWorkManager(application)
+        clearAppDatabase()
+        runBlocking {
+            val dao = MishwariDatabase.get(application).dao()
+            dao.upsertPlaces(listOf(
+                Place(id = "trip-readiness-root", name = "محافظة بلا إحداثيات", kind = "governorate"),
+                Place(
+                    id = "trip-readiness-child",
+                    name = "سوق تابع غير مراقب يدويًا",
+                    parentId = "trip-readiness-root",
+                    latitude = 15.5,
+                    longitude = 44.2,
+                    monitored = false,
+                ),
+            ))
+            dao.upsertErrand(Errand(id = "trip-readiness-task", title = "طلب نقطة الرحلة", placeId = "trip-readiness-child"))
+            dao.putSetting(AppSetting("travel_place", "trip-readiness-root"))
+        }
+        val model = MishwariViewModel(application)
+        compose.activity.setContent {
+            MishwariRoot(model, 0, null, {}, {}, {}, {}, {}, {}, {}, {}, {})
+        }
+
+        compose.onNodeWithTag("navigation_2").performClick()
+        compose.waitUntil(10_000) {
+            compose.onAllNodesWithText("توجد 1 نقطة صالحة", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
+        compose.onNodeWithText("المراقبة متوقفة", substring = true).assertDoesNotExist()
+        compose.onNodeWithText("لا توجد إحداثيات صالحة", substring = true).assertDoesNotExist()
     }
 
     private fun assertTrueDatabaseIsEmpty() = runBlocking {

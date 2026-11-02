@@ -251,14 +251,14 @@ fun MishwariRoot(
                             LazyColumn(Modifier.fillMaxSize().testTag("travelList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                                 item { Text("جهّز مشوارك", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("اختر الوجهة، راجع طلباتك، ثم فعّل المشوار. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium) }
                                 if (destination != null) item { Card { Column(Modifier.padding(12.dp)) { Text("مشوار نشط: ${destination.name}", fontWeight = FontWeight.Bold); TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء المشوار") } } } }
-                                item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true) }
+                                item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true, showAlertReadiness = false) }
                                 item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium); if (chosen.isNotBlank()) Text("طلبات ${places.find { it.id == chosen }?.name.orEmpty()} والأماكن التابعة لها · ${relevant.count { it.priority == 2 }} مهمة", style = MaterialTheme.typography.bodySmall) }
                                 item {
                                     OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text("حالة GPS وتنبيهات الوصول", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
                                         Text(when {
                                             chosen.isBlank() -> "اختر وجهة أولاً لعرض نقاط الوصول الممكنة."
-                                            tripAlertCandidates.isEmpty() -> "غير جاهزة: لا يوجد طلب نشط مرتبط بمكان مراقَب ذي إحداثيات صالحة. أضف الإحداثيات وفعّل مراقبة الوصول من شاشة الأماكن."
+                                            tripAlertCandidates.isEmpty() -> "غير جاهزة: لا يوجد طلب نشط مرتبط بمكان ذي إحداثيات صالحة داخل هذه الوجهة. أضف إحداثيات للمكان من شاشة الأماكن."
                                             !permissionState.locationEnabled -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن موقع الهاتف مغلق."
                                             !permissionState.notificationsReady() -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن إشعارات الوصول غير مفعلة."
                                             else -> "توجد ${tripAlertCandidates.size} نقطة صالحة؛ راجع أذونات الموقع والخلفية أدناه قبل الاعتماد على التنبيه."
@@ -278,7 +278,7 @@ fun MishwariRoot(
                                     Button(onClick = { model.setting("travel_place", chosen) }, enabled = chosen.isNotBlank() && chosen != trip, modifier = Modifier.fillMaxWidth()) { Text("تجهيز المشوار والتنبيهات") }
                                 }
                                 if (tripAlertCandidates.isNotEmpty()) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
-                                else item { Text("القائمة تعمل دون أذونات. التنبيه يتطلب إحداثيات صالحة ومراقبة المكان وإذن الموقع والإشعارات.", style = MaterialTheme.typography.bodySmall) }
+                                else item { Text("القائمة تعمل دون أذونات. التنبيه يتطلب طلبًا غير منجز مرتبطًا بمكان ذي إحداثيات صالحة داخل الوجهة، مع إذن الموقع والإشعارات.", style = MaterialTheme.typography.bodySmall) }
                             }
                         }
                         3 -> AssistantScreen(
