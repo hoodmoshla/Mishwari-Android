@@ -170,7 +170,8 @@ class AssistantSettingsRobolectricTest {
         compose.onNodeWithTag("assistantSettingsSave").performScrollTo().performClick()
         compose.waitUntil(10_000) {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
-            requireNotNull(model).assistantConfig.value.hasKey
+            !requireNotNull(model).assistantBusy.value &&
+                requireNotNull(model).assistantMessage.value?.contains("حُفظت إعدادات المساعد") == true
         }
         assertEquals(GEMINI_ENDPOINT, store.load().endpoint)
         assertEquals(GEMINI_MODEL, store.load().model)
