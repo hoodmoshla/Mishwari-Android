@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
@@ -109,145 +110,196 @@ fun BulkErrandInputDialog(
                     .imePadding()
                     .navigationBarsPadding()
                     .padding(horizontal = 12.dp),
-                shape = RoundedCornerShape(24.dp)
+                shape = RoundedCornerShape(28.dp),
+                color = MaterialTheme.colorScheme.surface,
+                tonalElevation = 6.dp
             ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        "إدخال طلبات متعددة",
-                        style = MaterialTheme.typography.headlineSmall,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        "كل سطر يصبح مسودة مشتريات مستقلة. تتم المعالجة محليًا فقط؛ لا يُحفظ شيء حتى تضغط حفظ الدفعة.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    OutlinedTextField(
-                        value = text,
-                        onValueChange = { text = it.replace("\r\n", "\n").replace('\r', '\n') },
-                        modifier = Modifier.fillMaxWidth(),
-                        enabled = enabled,
-                        label = { Text("أدخل عنوانًا في كل سطر") },
-                        placeholder = { Text("مثال: حليب\nخبز\nدواء للصداع") },
-                        minLines = 3,
-                        maxLines = 5,
-                        keyboardOptions = KeyboardOptions.Default,
-                        supportingText = { Text("${lines.size}/$MAX_BULK_ERRANDS طلبًا · الحد الأقصى للعنوان 200 حرف") }
-                    )
-
-                    if (enabled) {
-                        PlaceSelector(
-                            label = "المكان (اختياري)",
-                            selected = selectedPlaceId,
-                            places = places,
-                            change = { selectedPlaceId = it },
-                            allowNone = true,
-                            showAlertReadiness = false
-                        )
-                    } else {
-                        Text("المكان: ${places.firstOrNull { it.id == selectedPlaceId }?.name ?: "دون وجهة"}")
-                    }
-
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("الأولوية للجميع", modifier = Modifier.weight(1f))
-                        Column {
-                            OutlinedButton(
-                                onClick = { priorityMenuExpanded = true },
-                                enabled = enabled
-                            ) {
-                                Text(listOf("منخفضة", "عادية", "عالية")[priority])
-                            }
-                            DropdownMenu(
-                                expanded = priorityMenuExpanded,
-                                onDismissRequest = { priorityMenuExpanded = false }
-                            ) {
-                                listOf("منخفضة", "عادية", "عالية").forEachIndexed { value, label ->
-                                    DropdownMenuItem(
-                                        text = { Text(label) },
-                                        onClick = {
-                                            priority = value
-                                            priorityMenuExpanded = false
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
                     ) {
-                        Text("المعاينة والتعديل", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Spacer(Modifier.weight(1f))
-                        Text("${lines.size} طلب", style = MaterialTheme.typography.labelLarge)
-                    }
-                    if (validationMessage != null) {
                         Text(
-                            validationMessage,
-                            color = if (lines.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall
+                            "إدخال طلبات متعددة",
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 18.dp),
+                            style = MaterialTheme.typography.headlineSmall,
+                            fontWeight = FontWeight.Bold
                         )
                     }
                     LazyColumn(
-                        modifier = Modifier.weight(1f, fill = true),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        modifier = Modifier.weight(1f).fillMaxWidth(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 18.dp, vertical = 14.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        items(lines, key = { it.first }) { (sourceLineIndex, title) ->
-                            Row(
+                        item {
+                            Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                                shape = RoundedCornerShape(20.dp),
+                                color = MaterialTheme.colorScheme.primaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            ) {
+                                Text(
+                                    "كل سطر يصبح مسودة مشتريات مستقلة. تتم المعالجة محليًا فقط؛ لا يُحفظ شيء حتى تضغط حفظ الدفعة.",
+                                    modifier = Modifier.padding(16.dp),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                        item {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(22.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLow
                             ) {
                                 OutlinedTextField(
-                                    value = title,
-                                    onValueChange = { editedTitle ->
-                                        val sourceLines = normalizedText.split('\n').toMutableList()
-                                        if (sourceLineIndex in sourceLines.indices) {
-                                            sourceLines[sourceLineIndex] = editedTitle
-                                            text = sourceLines.joinToString("\n")
-                                        }
-                                    },
-                                    modifier = Modifier.weight(1f),
+                                    value = text,
+                                    onValueChange = { text = it.replace("\r\n", "\n").replace('\r', '\n') },
+                                    modifier = Modifier.fillMaxWidth().padding(12.dp),
                                     enabled = enabled,
-                                    label = { Text("طلب ${lines.indexOfFirst { it.first == sourceLineIndex } + 1}") },
-                                    singleLine = true,
-                                    supportingText = if (title.length > MAX_ERRAND_TITLE_LENGTH) {
-                                        { Text("${title.length}/$MAX_ERRAND_TITLE_LENGTH", color = MaterialTheme.colorScheme.error) }
-                                    } else null
+                                    label = { Text("أدخل عنوانًا في كل سطر") },
+                                    placeholder = { Text("مثال: حليب\nخبز\nدواء للصداع") },
+                                    minLines = 3,
+                                    maxLines = 5,
+                                    keyboardOptions = KeyboardOptions.Default,
+                                    supportingText = { Text("${lines.size}/$MAX_BULK_ERRANDS طلبًا · الحد الأقصى للعنوان 200 حرف") }
                                 )
-                                TextButton(
-                                    onClick = {
-                                        val sourceLines = normalizedText.split('\n').toMutableList()
-                                        if (sourceLineIndex in sourceLines.indices) {
-                                            sourceLines.removeAt(sourceLineIndex)
-                                            text = sourceLines.joinToString("\n")
+                            }
+                        }
+                        item {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(22.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLow
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                    if (enabled) {
+                                        PlaceSelector(
+                                            label = "المكان (اختياري)",
+                                            selected = selectedPlaceId,
+                                            places = places,
+                                            change = { selectedPlaceId = it },
+                                            allowNone = true,
+                                            showAlertReadiness = false
+                                        )
+                                    } else {
+                                        Text("المكان: ${places.firstOrNull { it.id == selectedPlaceId }?.name ?: "دون وجهة"}")
+                                    }
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Text("الأولوية للجميع", modifier = Modifier.weight(1f))
+                                        Column {
+                                            OutlinedButton(
+                                                onClick = { priorityMenuExpanded = true },
+                                                enabled = enabled
+                                            ) {
+                                                Text(listOf("منخفضة", "عادية", "عالية")[priority])
+                                            }
+                                            DropdownMenu(
+                                                expanded = priorityMenuExpanded,
+                                                onDismissRequest = { priorityMenuExpanded = false }
+                                            ) {
+                                                listOf("منخفضة", "عادية", "عالية").forEachIndexed { value, label ->
+                                                    DropdownMenuItem(
+                                                        text = { Text(label) },
+                                                        onClick = {
+                                                            priority = value
+                                                            priorityMenuExpanded = false
+                                                        }
+                                                    )
+                                                }
+                                            }
                                         }
-                                    },
-                                    enabled = enabled
+                                    }
+                                }
+                            }
+                        }
+                        item {
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(18.dp),
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Text("حذف")
+                                    Text("المعاينة والتعديل", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                                    Spacer(Modifier.weight(1f))
+                                    Text("${lines.size} طلب", style = MaterialTheme.typography.labelLarge)
+                                }
+                            }
+                        }
+                        if (validationMessage != null) {
+                            item {
+                                Text(
+                                    validationMessage,
+                                    color = if (lines.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                        items(lines, key = { it.first }) { (sourceLineIndex, title) ->
+                            Surface(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(20.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerLow
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = title,
+                                        onValueChange = { editedTitle ->
+                                            val sourceLines = normalizedText.split('\n').toMutableList()
+                                            if (sourceLineIndex in sourceLines.indices) {
+                                                sourceLines[sourceLineIndex] = editedTitle
+                                                text = sourceLines.joinToString("\n")
+                                            }
+                                        },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        enabled = enabled,
+                                        label = { Text("طلب ${lines.indexOfFirst { it.first == sourceLineIndex } + 1}") },
+                                        singleLine = true,
+                                        supportingText = if (title.length > MAX_ERRAND_TITLE_LENGTH) {
+                                            { Text("${title.length}/$MAX_ERRAND_TITLE_LENGTH", color = MaterialTheme.colorScheme.error) }
+                                        } else null
+                                    )
+                                    TextButton(
+                                        onClick = {
+                                            val sourceLines = normalizedText.split('\n').toMutableList()
+                                            if (sourceLineIndex in sourceLines.indices) {
+                                                sourceLines.removeAt(sourceLineIndex)
+                                                text = sourceLines.joinToString("\n")
+                                            }
+                                        },
+                                        enabled = enabled,
+                                        modifier = Modifier.align(Alignment.End)
+                                    ) {
+                                        Text("حذف")
+                                    }
                                 }
                             }
                         }
                     }
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        TextButton(onClick = onDismiss) { Text("إلغاء") }
-                        Spacer(Modifier.width(8.dp))
-                        Button(
-                            enabled = canSave,
-                            onClick = {
-                                val drafts = parseBulkErrands(normalizedText, selectedPlaceId, priority)
-                                onSave(drafts)
-                            }
+                    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("حفظ الدفعة")
+                            TextButton(onClick = onDismiss) { Text("إلغاء") }
+                            Spacer(Modifier.width(8.dp))
+                            Button(
+                                enabled = canSave,
+                                onClick = {
+                                    val drafts = parseBulkErrands(normalizedText, selectedPlaceId, priority)
+                                    onSave(drafts)
+                                }
+                            ) {
+                                Text("حفظ الدفعة")
+                            }
                         }
                     }
                 }

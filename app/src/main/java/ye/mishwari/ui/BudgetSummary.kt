@@ -1,6 +1,7 @@
 package ye.mishwari.ui
 
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -115,7 +116,7 @@ private fun parseNumericPrice(raw: String): BigDecimal? {
 fun BudgetSummary(errands: List<Errand>, modifier: Modifier = Modifier) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val totals = remember(errands) { calculateBudgetTotals(errands) }
-    Card(modifier.fillMaxWidth()) {
+    Card(modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
                 Text(if (expanded) "إخفاء ملخص الميزانية" else "إظهار ملخص الميزانية الاختياري")

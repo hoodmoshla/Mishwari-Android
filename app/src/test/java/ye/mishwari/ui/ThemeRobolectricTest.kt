@@ -11,11 +11,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -27,6 +29,12 @@ import org.robolectric.annotation.Config
 class ThemeRobolectricTest {
     @get:Rule
     val compose = createAndroidComposeRule<ComponentActivity>()
+
+    @Test
+    fun primaryActionWhiteLabelMeetsNormalTextContrast() {
+        val contrast = 1.05 / (MishwariBrightGreen.luminance() + 0.05)
+        assertTrue("White action label contrast must be at least 4.5:1; got $contrast", contrast >= 4.5)
+    }
 
     @Test
     fun followsSystemLightModeAndProvidesSemanticTheme() {
@@ -41,7 +49,22 @@ class ThemeRobolectricTest {
 
         compose.onNodeWithTag("themeLight").assertIsDisplayed()
         compose.onNodeWithText("اختبار الثيم").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(Color(0xFF176B5B), primary) }
+        compose.runOnIdle { assertEquals(Color(0xFF086B46), primary) }
+    }
+
+    @Test
+    fun explicitDarkPreferenceOverridesLightSystemTheme() {
+        var primary = Color.Unspecified
+        compose.activity.setContent {
+            MishwariTheme(themeMode = "dark") {
+                val currentPrimary = MaterialTheme.colorScheme.primary
+                SideEffect { primary = currentPrimary }
+                Text("وضع داكن مختار")
+            }
+        }
+        compose.onNodeWithTag("themeDark").assertIsDisplayed()
+        compose.onNodeWithText("وضع داكن مختار").assertIsDisplayed()
+        compose.runOnIdle { assertEquals(Color(0xFFA0DDB8), primary) }
     }
     @Test
     fun reactsToSystemAppearanceChangeWithoutReopeningScreen() {
@@ -89,6 +112,6 @@ class ThemeDarkRobolectricTest {
 
         compose.onNodeWithTag("themeDark").assertIsDisplayed()
         compose.onNodeWithText("اختبار الوضع الداكن").assertIsDisplayed()
-        compose.runOnIdle { assertEquals(Color(0xFF8DD5BF), primary) }
+        compose.runOnIdle { assertEquals(Color(0xFFA0DDB8), primary) }
     }
 }

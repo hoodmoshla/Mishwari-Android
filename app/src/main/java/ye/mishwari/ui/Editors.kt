@@ -60,20 +60,62 @@ internal fun Editor(
     Dialog(onDismissRequest = dismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             Modifier.fillMaxWidth().widthIn(max = 560.dp).fillMaxHeight(0.94f).imePadding().navigationBarsPadding().padding(horizontal = 12.dp),
-            shape = RoundedCornerShape(24.dp)
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
         ) {
-            Column {
-                Text(title, Modifier.padding(horizontal = 20.dp, vertical = 16.dp), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Column(Modifier.fillMaxSize()) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
+                ) {
+                    Text(title, Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 18.dp), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                }
                 Column(
                     Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp), content = content
+                    verticalArrangement = Arrangement.spacedBy(14.dp), content = content
                 )
-                Row(Modifier.fillMaxWidth().navigationBarsPadding().padding(12.dp), horizontalArrangement = Arrangement.End) {
-                    TextButton(onClick = dismiss) { Text("إلغاء") }
-                    Button(onClick = save, enabled = enabled) { Text("حفظ") }
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerLow) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+                        horizontalArrangement = Arrangement.End,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(onClick = dismiss) { Text("إلغاء") }
+                        Spacer(Modifier.width(8.dp))
+                        Button(onClick = save, enabled = enabled) { Text("حفظ") }
+                    }
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun EditorSection(content: @Composable ColumnScope.() -> Unit) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLow
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            content = content
+        )
+    }
+}
+
+@Composable
+private fun EditorIntro(text: String) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        color = MaterialTheme.colorScheme.primaryContainer,
+        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+    ) {
+        Text(text, Modifier.padding(horizontal = 16.dp, vertical = 14.dp), style = MaterialTheme.typography.bodyMedium)
     }
 }
 
@@ -283,30 +325,36 @@ internal fun ErrandEditor(original: Errand, places: List<Place>, dismiss: () -> 
     Editor(if (original.title.isBlank()) "إضافة طلب" else "تعديل الطلب", dismiss, {
         save(original.copy(title = title.trim(), description = description.trim(), placeId = place, category = category, quantity = quantity, expectedPrice = price, actualPrice = actualPrice, notes = notes, priority = priority, dueDate = normalizedDue, photoPath = photo, status = status))
     }, title.isNotBlank() && validDate) {
-        Text("أدخل الاسم والوجهة؛ بقية التفاصيل اختيارية.", style = MaterialTheme.typography.bodySmall)
-        Field("اسم الغرض أو المهمة *", title, { title = it })
-        PlaceSelector("الوجهة", place, places, { place = it })
-        TextButton(onClick = addPlace, modifier = Modifier.fillMaxWidth()) { Text("إضافة مكان غير موجود في الدليل") }
+        EditorIntro("أدخل الاسم والوجهة؛ بقية التفاصيل اختيارية.")
+        EditorSection {
+            Text("البيانات الأساسية", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            Field("اسم الغرض أو المهمة *", title, { title = it })
+            PlaceSelector("الوجهة", place, places, { place = it })
+            TextButton(onClick = addPlace, modifier = Modifier.fillMaxWidth()) { Text("إضافة مكان غير موجود في الدليل") }
+        }
         TextButton(onClick = { detailsExpanded = !detailsExpanded }, modifier = Modifier.fillMaxWidth()) {
             Text(if (detailsExpanded) "إخفاء التفاصيل الاختيارية" else "إظهار التفاصيل الاختيارية")
         }
         if (detailsExpanded) {
-            Field("الوصف (اختياري)", description, { description = it }, single = false)
-            Choice("الفئة", category, categories, { category = it })
-            Field("الكمية", quantity, { quantity = it })
-            Field("السعر المتوقع", price, { price = it })
-            Field("السعر الفعلي (اختياري)", actualPrice, { actualPrice = it })
-            Choice("الأولوية", priority.toString(), listOf("0", "1", "2"), { priority = it.toInt() }, mapOf("0" to "منخفضة", "1" to "عادية", "2" to "عالية"))
-            Field("الاستحقاق: YYYY-MM-DD", due, { due = it })
-            if (!validDate) Text("اكتب تاريخًا صحيحًا مثل 2026-12-31؛ تُقبل الأرقام العربية أيضًا", color = MaterialTheme.colorScheme.error)
-            Choice("الحالة", status, statuses, { status = it })
-            Field("ملاحظات", notes, { notes = it }, single = false)
-            if (photo != null) {
-                PhotoPreview(photo!!)
-                TextButton(onClick = { photo = null }) { Text("إزالة إرفاق الصورة") }
+            EditorSection {
+                Text("تفاصيل الطلب", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                Field("الوصف (اختياري)", description, { description = it }, single = false)
+                Choice("الفئة", category, categories, { category = it })
+                Field("الكمية", quantity, { quantity = it })
+                Field("السعر المتوقع", price, { price = it })
+                Field("السعر الفعلي (اختياري)", actualPrice, { actualPrice = it })
+                Choice("الأولوية", priority.toString(), listOf("0", "1", "2"), { priority = it.toInt() }, mapOf("0" to "منخفضة", "1" to "عادية", "2" to "عالية"))
+                Field("الاستحقاق: YYYY-MM-DD", due, { due = it })
+                if (!validDate) Text("اكتب تاريخًا صحيحًا مثل 2026-12-31؛ تُقبل الأرقام العربية أيضًا", color = MaterialTheme.colorScheme.error)
+                Choice("الحالة", status, statuses, { status = it })
+                Field("ملاحظات", notes, { notes = it }, single = false)
+                if (photo != null) {
+                    PhotoPreview(photo!!)
+                    TextButton(onClick = { photo = null }) { Text("إزالة إرفاق الصورة") }
+                }
+                OutlinedButton(onClick = { selectPhoto { photo = it } }, modifier = Modifier.fillMaxWidth()) { Text(if (photo == null) "إرفاق صورة من الجهاز" else "تغيير الصورة") }
+                Text("لا تحتاج إذنًا للوصول إلى جميع صورك؛ تختار صورة واحدة فقط.", style = MaterialTheme.typography.bodySmall)
             }
-            OutlinedButton(onClick = { selectPhoto { photo = it } }, modifier = Modifier.fillMaxWidth()) { Text(if (photo == null) "إرفاق صورة من الجهاز" else "تغيير الصورة") }
-            Text("لا تحتاج إذنًا للوصول إلى جميع صورك؛ تختار صورة واحدة فقط.", style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -418,44 +466,54 @@ internal fun PlaceEditor(original: Place, places: List<Place>, dismiss: () -> Un
     Editor("${if (original.name.isBlank()) "إضافة" else "تعديل"} مكان", dismiss, {
         save(original.copy(name = name.trim(), parentId = parent, governorate = governorate.trim(), district = district.trim(), area = area.trim(), detail = detail.trim(), latitude = lat, longitude = lon, radiusMeters = r ?: 500f, monitored = monitored && validCoordinates))
     }, name.isNotBlank() && (noCoordinates || validCoordinates) && validRadius) {
-        Field("اسم السوق / المحل / المكان *", name, { name = it })
-        PlaceSelector("يتبع إداريًا", parent, places.filter { it.id !in subtree(original.id, places) }, { id ->
-            parent = id
-            val picked = ancestors[id]
-            if (picked != null) {
-                val chain = generateSequence(picked) { current -> current.parentId?.let(ancestors::get) }.toList()
-                val gov = chain.firstOrNull { it.kind == "governorate" }
-                val dist = chain.firstOrNull { it.kind == "district" }
-                governorate = gov?.name ?: picked.governorate
-                district = dist?.name ?: picked.district
-                if (picked.kind == "governorate") { governorate = picked.name; district = "" }
-                if (picked.kind == "district") district = picked.name
+        EditorIntro("أضف اسم المكان وحدد ارتباطه الإداري؛ الموقع والتنبيه إعدادات اختيارية.")
+        EditorSection {
+            Text("بيانات المكان", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            Field("اسم السوق / المحل / المكان *", name, { name = it })
+            PlaceSelector("يتبع إداريًا", parent, places.filter { it.id !in subtree(original.id, places) }, { id ->
+                parent = id
+                val picked = ancestors[id]
+                if (picked != null) {
+                    val chain = generateSequence(picked) { current -> current.parentId?.let(ancestors::get) }.toList()
+                    val gov = chain.firstOrNull { it.kind == "governorate" }
+                    val dist = chain.firstOrNull { it.kind == "district" }
+                    governorate = gov?.name ?: picked.governorate
+                    district = dist?.name ?: picked.district
+                    if (picked.kind == "governorate") { governorate = picked.name; district = "" }
+                    if (picked.kind == "district") district = picked.name
+                }
+            }, allowNone = true, showAlertReadiness = false)
+            TextButton(onClick = { locationExpanded = !locationExpanded }, modifier = Modifier.fillMaxWidth()) { Text(if (locationExpanded) "إخفاء تفاصيل الموقع" else "تفاصيل موقع إضافية") }
+            if (locationExpanded) {
+                Field("المحافظة (يمكن إدخالها يدويًا)", governorate, { governorate = it })
+                Field("المديرية", district, { district = it })
+                Field("المدينة / المنطقة", area, { area = it })
+                Field("تفاصيل الموقع", detail, { detail = it }, single = false)
             }
-        }, allowNone = true, showAlertReadiness = false)
-        TextButton(onClick = { locationExpanded = !locationExpanded }, modifier = Modifier.fillMaxWidth()) { Text(if (locationExpanded) "إخفاء تفاصيل الموقع" else "تفاصيل موقع إضافية") }
-        if (locationExpanded) {
-            Field("المحافظة (يمكن إدخالها يدويًا)", governorate, { governorate = it })
-            Field("المديرية", district, { district = it })
-            Field("المدينة / المنطقة", area, { area = it })
-            Field("تفاصيل الموقع", detail, { detail = it }, single = false)
         }
         TextButton(onClick = { alertExpanded = !alertExpanded }, modifier = Modifier.fillMaxWidth()) { Text(if (alertExpanded) "إخفاء إعدادات الموقع والتنبيه" else "إعدادات الموقع والتنبيه الاختيارية") }
-        AlertReadinessLine(original.copy(latitude = lat, longitude = lon, monitored = monitored && validCoordinates), rememberGeoRegistrationStatus())
+        EditorSection {
+            Text("جاهزية الموقع", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+            AlertReadinessLine(original.copy(latitude = lat, longitude = lon, monitored = monitored && validCoordinates), rememberGeoRegistrationStatus())
+        }
         if (alertExpanded) {
-            OutlinedButton(onClick = { map = true; capturedAccuracy = null }, modifier = Modifier.fillMaxWidth()) { Text("تحديد نقطة من خريطة OpenStreetMap") }
-            OutlinedButton(onClick = { requestCurrentLocation() }, modifier = Modifier.fillMaxWidth()) { Text("التقاط موقعي الحالي للمراجعة") }
-            Field("خط العرض — اختياري", latitude, { latitude = it; capturedAccuracy = null }, numeric = true)
-            Field("خط الطول — اختياري", longitude, { longitude = it; capturedAccuracy = null }, numeric = true)
-            if (capturedAccuracy != null) Text("${if (capturedApproximate) "دقة موقع تقريبي" else "دقة القراءة الجديدة"}: ±${capturedAccuracy!!.toInt()} متر تقريبًا. قد لا تكفي هذه الدقة لنطاق 100 متر ولا تضمن التنبيه.", style = MaterialTheme.typography.bodySmall)
-            if (captureMessage.isNotBlank()) Text(captureMessage, style = MaterialTheme.typography.bodySmall)
-            if (!noCoordinates && !validCoordinates) Text("أدخل الإحداثيين بصورة صحيحة، أو اترك كليهما فارغًا.", color = MaterialTheme.colorScheme.error)
-            Field("نصف قطر التنبيه بالمتر (100–20000)", radius, { radius = it }, numeric = true)
-            Text("500 متر بداية عملية. النطاقات الصغيرة ودقة GPS الضعيفة قد تؤخر التنبيه.", style = MaterialTheme.typography.bodySmall)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Switch(monitored && validCoordinates, { monitored = it }, enabled = validCoordinates, modifier = Modifier.semantics { contentDescription = "تفعيل مراقبة الوصول" })
-                Text("تفعيل مراقبة الوصول", Modifier.padding(start = 8.dp))
+            EditorSection {
+                Text("إعدادات الإحداثيات والتنبيه", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
+                OutlinedButton(onClick = { map = true; capturedAccuracy = null }, modifier = Modifier.fillMaxWidth()) { Text("تحديد نقطة من خريطة OpenStreetMap") }
+                OutlinedButton(onClick = { requestCurrentLocation() }, modifier = Modifier.fillMaxWidth()) { Text("التقاط موقعي الحالي للمراجعة") }
+                Field("خط العرض — اختياري", latitude, { latitude = it; capturedAccuracy = null }, numeric = true)
+                Field("خط الطول — اختياري", longitude, { longitude = it; capturedAccuracy = null }, numeric = true)
+                if (capturedAccuracy != null) Text("${if (capturedApproximate) "دقة موقع تقريبي" else "دقة القراءة الجديدة"}: ±${capturedAccuracy!!.toInt()} متر تقريبًا. قد لا تكفي هذه الدقة لنطاق 100 متر ولا تضمن التنبيه.", style = MaterialTheme.typography.bodySmall)
+                if (captureMessage.isNotBlank()) Text(captureMessage, style = MaterialTheme.typography.bodySmall)
+                if (!noCoordinates && !validCoordinates) Text("أدخل الإحداثيين بصورة صحيحة، أو اترك كليهما فارغًا.", color = MaterialTheme.colorScheme.error)
+                Field("نصف قطر التنبيه بالمتر (100–20000)", radius, { radius = it }, numeric = true)
+                Text("500 متر بداية عملية. النطاقات الصغيرة ودقة GPS الضعيفة قد تؤخر التنبيه.", style = MaterialTheme.typography.bodySmall)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Switch(monitored && validCoordinates, { monitored = it }, enabled = validCoordinates, modifier = Modifier.semantics { contentDescription = "تفعيل مراقبة الوصول" })
+                    Text("تفعيل مراقبة الوصول", Modifier.padding(start = 8.dp))
+                }
+                Text("من دون إحداثيات يبقى المكان صالحًا لتنظيم الطلبات فقط.", style = MaterialTheme.typography.bodySmall)
             }
-            Text("من دون إحداثيات يبقى المكان صالحًا لتنظيم الطلبات فقط.", style = MaterialTheme.typography.bodySmall)
         }
     }
     if (map) MapPicker(lat, lon, { a, b -> latitude = a.toString(); longitude = b.toString(); map = false }, { map = false })

@@ -15,6 +15,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -46,7 +47,7 @@ private const val DEFAULT_GEMINI_MODEL = "gemini-3.8-flash"
 
 /** Central assistant configuration. Credentials are never loaded into Compose state from storage. */
 @Composable
-fun AssistantSettingsSection(model: MishwariViewModel, modifier: Modifier = Modifier) {
+fun AssistantSettingsSection(model: MishwariViewModel, modifier: Modifier = Modifier, initiallyExpanded: Boolean = true) {
     val config by model.assistantConfig.collectAsStateWithLifecycle()
     val busy by model.assistantBusy.collectAsStateWithLifecycle()
     val message by model.assistantMessage.collectAsStateWithLifecycle()
@@ -60,6 +61,7 @@ fun AssistantSettingsSection(model: MishwariViewModel, modifier: Modifier = Modi
     var testSucceeded by remember { mutableStateOf(false) }
     var showReplaceConfirmation by remember { mutableStateOf(false) }
     var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable(initiallyExpanded) { mutableStateOf(initiallyExpanded) }
 
     LaunchedEffect(config.endpoint, config.model, config.enabled, config.provider) {
         provider = config.provider
@@ -98,12 +100,19 @@ fun AssistantSettingsSection(model: MishwariViewModel, modifier: Modifier = Modi
         invalidateTest()
     }
 
-    Card(modifier.fillMaxWidth().testTag("assistantSettingsSection")) {
+    Card(modifier.fillMaxWidth().testTag("assistantSettingsSection"), shape = MaterialTheme.shapes.large, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         Column(
             Modifier.fillMaxWidth().padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text("الذكاء الاصطناعي", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
+                FeatureBadge(3, MaterialTheme.colorScheme.secondary)
+                Spacer(Modifier.width(10.dp))
+                Text("الذكاء الاصطناعي", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(if (expanded) "إخفاء" else "إدارة")
+            }
+            if (!expanded) Text(if (config.hasKey) "إعداد المزوّد محفوظ، ومفتاح API مشفّر على جهازك" else "المزوّد، مفتاح API، والنموذج", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            if (expanded) {
             Text(
                 "اختياري. لا تُرسل بياناتك عند فتح الإعدادات أو حفظها. قد تترتب على استخدام API تكلفة لدى مزود الخدمة؛ راجع أسعاره وسياسة الخصوصية.",
                 style = MaterialTheme.typography.bodySmall,
@@ -234,6 +243,7 @@ fun AssistantSettingsSection(model: MishwariViewModel, modifier: Modifier = Modi
                     enabled = !busy,
                     modifier = Modifier.testTag("assistantSettingsDeleteKey"),
                 ) { Text("حذف المفتاح المحفوظ") }
+            }
             }
         }
     }

@@ -59,7 +59,7 @@ class DirectorySettingsRobolectricTest {
         compose.onNodeWithTag("navigation_4").performClick()
         compose.onNodeWithTag("assistantSettingsSection").assertIsDisplayed()
         compose.onNodeWithText("استيراد تحديث دليل من JSON").assertDoesNotExist()
-        compose.onNodeWithText("الأذونات والخصوصية").performScrollTo().performClick()
+        compose.onNodeWithText("دليل اليمن").performScrollTo().performClick()
         compose.onNodeWithText("استيراد تحديث دليل من JSON").performScrollTo().assertIsDisplayed()
     }
 }

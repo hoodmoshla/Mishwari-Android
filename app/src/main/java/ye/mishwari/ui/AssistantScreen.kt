@@ -33,11 +33,11 @@ import java.net.URI
 
 private data class AssistantMode(val id: String, val title: String, val hint: String)
 private val assistantModes = listOf(
-    AssistantMode("capture", "نص طبيعي", "اكتب ما تريد من المساعد"),
-    AssistantMode("priorities", "الأولويات والمواعيد", "ما الذي تريد ترتيبه أو السؤال عنه؟"),
-    AssistantMode("group", "تجميع الطلبات", "كيف تريد تجميع طلباتك؟"),
-    AssistantMode("trip", "قائمة الوجهة", "اختر وجهة، ويمكنك إضافة توجيه اختياري"),
-    AssistantMode("order", "اقتراح الترتيب", "ما القيود أو التفضيلات التي تريد مراعاتها؟"),
+    AssistantMode("capture", "تحويل قائمة إلى طلبات", "ألصق قائمة أو اكتب ما تريد تحويله"),
+    AssistantMode("priorities", "ترتيب الأولويات", "ما الذي تريد ترتيبه أو السؤال عنه؟"),
+    AssistantMode("group", "تجميع حسب المكان", "كيف تريد تجميع طلباتك؟"),
+    AssistantMode("trip", "اقتراح مشوار", "اختر وجهة، ويمكنك إضافة توجيه اختياري"),
+    AssistantMode("order", "ترتيب الطلبات", "ما القيود أو التفضيلات التي تريد مراعاتها؟"),
 )
 
 /**
@@ -59,6 +59,11 @@ fun AssistantScreen(
     val message by model.assistantMessage.collectAsStateWithLifecycle()
     val suggestions by model.assistantSuggestions.collectAsStateWithLifecycle()
     val result by model.assistantResult.collectAsStateWithLifecycle()
+    val providerLabel = when {
+        config.provider.contains("gemini", ignoreCase = true) -> "Gemini"
+        config.provider.contains("openai", ignoreCase = true) -> "OpenAI-compatible"
+        else -> config.provider.ifBlank { "لم يُحدد مزوّد" }
+    }
 
     var endpoint by rememberSaveable { mutableStateOf("") }
     var modelName by rememberSaveable { mutableStateOf("") }
@@ -104,16 +109,27 @@ fun AssistantScreen(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Text("مساعد المشوار الذكي", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            Text("اختياري ومعطّل افتراضيًا. لا يُرسل شيء عند فتح الشاشة أو حفظ الإعدادات.", style = MaterialTheme.typography.bodyMedium)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                colors = androidx.compose.material3.CardDefaults.cardColors(containerColor = androidx.compose.ui.graphics.Color(0xFF075B40)),
+            ) {
+                Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("مساعد المشوار الذكي", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White)
+                    Text("مرحبًا! كيف أساعدك اليوم؟", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, color = androidx.compose.ui.graphics.Color.White)
+                    Text("اختياري ومعطّل افتراضيًا. لا يُرسل شيء عند فتح الشاشة أو حفظ الإعدادات.", style = MaterialTheme.typography.bodySmall, color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f))
+                }
+            }
         }
         if (!showConfiguration) item {
             OutlinedCard(Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("المزوّد: $providerLabel", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     Text(
-                        if (config.enabled && config.hasKey) "المساعد جاهز؛ اختر ما تريد إرساله وراجع الحمولة قبل الإرسال."
-                        else "المساعد غير مهيأ بعد. أضف المزود والمفتاح من إعدادات الذكاء الاصطناعي.",
+                        if (config.enabled && config.hasKey) "الإعداد محفوظ؛ لم يُفحص الاتصال هنا بعد. اختر مهمة ثم راجع البيانات قبل الإرسال."
+                        else "غير متصل بعد. أضف المزوّد والمفتاح من إعدادات الذكاء الاصطناعي.",
                         style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     TextButton(onClick = openAiSettings, enabled = !busy) { Text("إعدادات الذكاء الاصطناعي") }
                 }
@@ -160,7 +176,7 @@ fun AssistantScreen(
             }
         }
         item {
-            Text("ما الذي تريد فعله؟", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            Text("مهام سريعة", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
             Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 assistantModes.forEach { option ->
                     FilterChip(selected = mode == option.id, onClick = { mode = option.id }, label = { Text(option.title) }, modifier = Modifier.testTag("assistantMode_${option.id}"))
@@ -180,7 +196,7 @@ fun AssistantScreen(
             }
         }
         item {
-            OutlinedTextField(prompt, { prompt = it.take(InputIntents.MAX_DRAFT_LENGTH) }, label = { Text(assistantModes.first { it.id == mode }.hint) }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth().testTag("assistantPrompt"))
+            OutlinedTextField(prompt, { prompt = it.take(InputIntents.MAX_DRAFT_LENGTH) }, label = { Text(assistantModes.first { it.id == mode }.hint) }, minLines = 3, maxLines = 6, shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth().testTag("assistantPrompt"))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 OutlinedButton(onClick = { explainSpeech = true }, enabled = !busy, modifier = Modifier.testTag("assistantVoice")) { Text("إملاء صوتي") }
                 Spacer(Modifier.width(8.dp))
@@ -247,7 +263,14 @@ fun AssistantScreen(
                     Text(suggestion.description)
                     Text("أولوية ${suggestion.priority.assistantPriorityLabel()} مقترحة · ${suggestion.dueDate.ifBlank { "بلا موعد مقترح" }} · ${places.firstOrNull { it.id == suggestion.placeId }?.let(::placeLabel) ?: "بلا وجهة"}", style = MaterialTheme.typography.bodySmall)
                     Text("هذه توصية غير مؤكدة وليست ترتيب مسار أو تغييرًا للبيانات.", style = MaterialTheme.typography.bodySmall)
-                    OutlinedButton(onClick = { editingSuggestion = suggestion }, enabled = !busy, modifier = Modifier.testTag("assistantEditSuggestion")) { Text("مراجعة وتعديل") }
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = { editingSuggestion = suggestion }, enabled = !busy, modifier = Modifier.weight(1f).testTag("assistantEditSuggestion")) { Text("تعديل") }
+                        Button(
+                            onClick = { model.acceptReviewedAssistantSuggestion(suggestion, suggestion) {} },
+                            enabled = !busy,
+                            modifier = Modifier.weight(1f).testTag("assistantApproveSuggestion"),
+                        ) { Text("موافقة وتطبيق") }
+                    }
                 }
             }
         }

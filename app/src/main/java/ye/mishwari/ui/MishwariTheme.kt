@@ -1,102 +1,110 @@
 package ye.mishwari.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
-import androidx.compose.material3.Typography
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.LineHeightStyle
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+
+internal val MishwariBrightGreen = Color(0xFF07823F)
+internal val MishwariOrange = Color(0xFFF0A329)
+internal val MishwariBlue = Color(0xFF2F6CB4)
+internal val MishwariLavender = Color(0xFF7257A8)
 
 private val MishwariLightColors = lightColorScheme(
-    primary = Color(0xFF176B5B),
+    primary = Color(0xFF086B46),
     onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFB8F0DE),
-    onPrimaryContainer = Color(0xFF002117),
-    inversePrimary = Color(0xFF8DD5BF),
-    secondary = Color(0xFF52665F),
+    primaryContainer = Color(0xFFD7F2E0),
+    onPrimaryContainer = Color(0xFF082317),
+    inversePrimary = Color(0xFFA0DDB8),
+    secondary = Color(0xFF9A5200),
     onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFD5E8DF),
-    onSecondaryContainer = Color(0xFF0F1F19),
-    tertiary = Color(0xFF625B78),
+    secondaryContainer = Color(0xFFFFE6C8),
+    onSecondaryContainer = Color(0xFF321A00),
+    tertiary = Color(0xFF62519A),
     onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFE8DDF8),
-    onTertiaryContainer = Color(0xFF1E1732),
-    background = Color(0xFFF7F8F5),
-    onBackground = Color(0xFF191D1A),
-    surface = Color(0xFFFCFDF9),
-    onSurface = Color(0xFF191D1A),
-    surfaceVariant = Color(0xFFE5E9E4),
-    onSurfaceVariant = Color(0xFF414843),
-    inverseSurface = Color(0xFF2E332F),
-    inverseOnSurface = Color(0xFFF0F2ED),
-    error = Color(0xFFBA1A1A),
+    tertiaryContainer = Color(0xFFECE6FF),
+    onTertiaryContainer = Color(0xFF211744),
+    background = Color(0xFFF5F7F3),
+    onBackground = Color(0xFF171D19),
+    surface = Color(0xFFFFFEFA),
+    onSurface = Color(0xFF171D19),
+    surfaceVariant = Color(0xFFE5ECE6),
+    onSurfaceVariant = Color(0xFF414A43),
+    inverseSurface = Color(0xFF2C342E),
+    inverseOnSurface = Color(0xFFF0F3EF),
+    error = Color(0xFFB3261E),
     onError = Color(0xFFFFFFFF),
     errorContainer = Color(0xFFFFDAD6),
     onErrorContainer = Color(0xFF410002),
-    outline = Color(0xFF717A73),
-    outlineVariant = Color(0xFFC4CCC5),
+    outline = Color(0xFF727C74),
+    outlineVariant = Color(0xFFC5CEC7),
     scrim = Color(0xFF000000),
-    surfaceTint = Color(0xFF176B5B),
-    surfaceDim = Color(0xFFD9DDD8),
-    surfaceBright = Color(0xFFFCFDF9),
+    surfaceTint = Color(0xFF086B46),
+    surfaceDim = Color(0xFFD9E0D9),
+    surfaceBright = Color(0xFFFFFEFA),
     surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF3F5F1),
-    surfaceContainer = Color(0xFFEDEFEA),
-    surfaceContainerHigh = Color(0xFFE7EAE5),
-    surfaceContainerHighest = Color(0xFFE1E5DF),
+    surfaceContainerLow = Color(0xFFF3F6F1),
+    surfaceContainer = Color(0xFFEDF1EC),
+    surfaceContainerHigh = Color(0xFFE7ECE7),
+    surfaceContainerHighest = Color(0xFFE1E7E1),
 )
 
 private val MishwariDarkColors = darkColorScheme(
-    primary = Color(0xFF8DD5BF),
-    onPrimary = Color(0xFF00382D),
-    primaryContainer = Color(0xFF005142),
-    onPrimaryContainer = Color(0xFFB8F0DE),
-    inversePrimary = Color(0xFF176B5B),
-    secondary = Color(0xFFB9CCC3),
-    onSecondary = Color(0xFF24352E),
-    secondaryContainer = Color(0xFF3A4B44),
-    onSecondaryContainer = Color(0xFFD5E8DF),
-    tertiary = Color(0xFFCEC1E4),
-    onTertiary = Color(0xFF342D49),
-    tertiaryContainer = Color(0xFF4A4260),
-    onTertiaryContainer = Color(0xFFE8DDF8),
-    background = Color(0xFF111512),
-    onBackground = Color(0xFFE1E4DE),
-    surface = Color(0xFF151A17),
-    onSurface = Color(0xFFE1E4DE),
-    surfaceVariant = Color(0xFF414843),
-    onSurfaceVariant = Color(0xFFC1C9C1),
-    inverseSurface = Color(0xFFE1E4DE),
-    inverseOnSurface = Color(0xFF2E332F),
+    primary = Color(0xFFA0DDB8),
+    onPrimary = Color(0xFF003823),
+    primaryContainer = Color(0xFF005234),
+    onPrimaryContainer = Color(0xFFD7F2E0),
+    inversePrimary = Color(0xFF086B46),
+    secondary = Color(0xFFFFBD76),
+    onSecondary = Color(0xFF512900),
+    secondaryContainer = Color(0xFF733B00),
+    onSecondaryContainer = Color(0xFFFFDDB7),
+    tertiary = Color(0xFFD0C4FF),
+    onTertiary = Color(0xFF35275F),
+    tertiaryContainer = Color(0xFF4C3D76),
+    onTertiaryContainer = Color(0xFFECE6FF),
+    background = Color(0xFF101712),
+    onBackground = Color(0xFFE1E7E1),
+    surface = Color(0xFF151C17),
+    onSurface = Color(0xFFE1E7E1),
+    surfaceVariant = Color(0xFF3E4941),
+    onSurfaceVariant = Color(0xFFC0CBC2),
+    inverseSurface = Color(0xFFE1E7E1),
+    inverseOnSurface = Color(0xFF2C342E),
     error = Color(0xFFFFB4AB),
     onError = Color(0xFF690005),
     errorContainer = Color(0xFF93000A),
     onErrorContainer = Color(0xFFFFDAD6),
-    outline = Color(0xFF8B938C),
-    outlineVariant = Color(0xFF414843),
+    outline = Color(0xFF8A968D),
+    outlineVariant = Color(0xFF3E4941),
     scrim = Color(0xFF000000),
-    surfaceTint = Color(0xFF8DD5BF),
-    surfaceDim = Color(0xFF101411),
-    surfaceBright = Color(0xFF363B37),
-    surfaceContainerLowest = Color(0xFF0C100D),
-    surfaceContainerLow = Color(0xFF191E1B),
-    surfaceContainer = Color(0xFF1D221F),
-    surfaceContainerHigh = Color(0xFF272C29),
-    surfaceContainerHighest = Color(0xFF323733),
+    surfaceTint = Color(0xFFA0DDB8),
+    surfaceDim = Color(0xFF101712),
+    surfaceBright = Color(0xFF353D37),
+    surfaceContainerLowest = Color(0xFF0B120D),
+    surfaceContainerLow = Color(0xFF19211B),
+    surfaceContainer = Color(0xFF1D251F),
+    surfaceContainerHigh = Color(0xFF273029),
+    surfaceContainerHighest = Color(0xFF323B34),
 )
 
 private val MishwariTypography = Typography(
@@ -105,8 +113,8 @@ private val MishwariTypography = Typography(
     displaySmall = arabicStyle(36, 44, FontWeight.Normal),
     headlineLarge = arabicStyle(32, 40, FontWeight.Normal),
     headlineMedium = arabicStyle(28, 36, FontWeight.Normal),
-    headlineSmall = arabicStyle(24, 32, FontWeight.Medium),
-    titleLarge = arabicStyle(22, 30, FontWeight.Medium),
+    headlineSmall = arabicStyle(24, 32, FontWeight.SemiBold),
+    titleLarge = arabicStyle(22, 30, FontWeight.SemiBold),
     titleMedium = arabicStyle(16, 26, FontWeight.Medium),
     titleSmall = arabicStyle(14, 22, FontWeight.Medium),
     bodyLarge = arabicStyle(16, 28, FontWeight.Normal),
@@ -115,6 +123,12 @@ private val MishwariTypography = Typography(
     labelLarge = arabicStyle(14, 22, FontWeight.Medium),
     labelMedium = arabicStyle(12, 20, FontWeight.Medium),
     labelSmall = arabicStyle(11, 18, FontWeight.Medium),
+)
+
+private val MishwariShapes = Shapes(
+    small = RoundedCornerShape(12.dp),
+    medium = RoundedCornerShape(20.dp),
+    large = RoundedCornerShape(26.dp),
 )
 
 private fun arabicStyle(sizeSp: Int, lineHeightSp: Int, weight: FontWeight) = TextStyle(
@@ -129,16 +143,22 @@ private fun arabicStyle(sizeSp: Int, lineHeightSp: Int, weight: FontWeight) = Te
     ),
 )
 
-/** Applies the system-selected Mishwari palette; callers cannot override the color mode. */
+/** Applies Mishwari's green identity and follows either the system or an explicit user choice. */
 @Composable
-internal fun MishwariTheme(content: @Composable () -> Unit) {
-    val darkTheme = isSystemInDarkTheme()
+internal fun MishwariTheme(themeMode: String? = null, content: @Composable () -> Unit) {
+    val systemDark = isSystemInDarkTheme()
+    val darkTheme = when (themeMode) {
+        "dark" -> true
+        "light" -> false
+        else -> systemDark
+    }
     val colors = if (darkTheme) MishwariDarkColors else MishwariLightColors
 
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
         MaterialTheme(
             colorScheme = colors,
             typography = MishwariTypography,
+            shapes = MishwariShapes,
         ) {
             Surface(
                 modifier = Modifier.fillMaxSize().testTag(if (darkTheme) "themeDark" else "themeLight"),

@@ -31,6 +31,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ye.mishwari.MishwariViewModel
 import ye.mishwari.GeoEnvironmentSignature
 import ye.mishwari.data.*
+import ye.mishwari.location.CurrentLocationRequest
+import ye.mishwari.location.LocationCaptureFailure
+import ye.mishwari.location.LocationCaptureResult
 
 internal val categories = listOf("مشتريات", "قطع غيار", "أدوية", "معاملات", "استلام", "صيانة", "أخرى")
 internal val statuses = listOf("جديد", "مخطط له", "مكتمل", "مؤجل", "ملغى")
@@ -89,8 +92,11 @@ fun MishwariRoot(
         settings["travel_place"]?.takeIf { it.isNotBlank() }
     )
     val alertsNeeded = alertPlaces.isNotEmpty()
+    var tripCurrentLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    var tripLocationMessage by rememberSaveable { mutableStateOf("موقعك لا يُقرأ تلقائيًا؛ اطلب تحديثه عند الحاجة.") }
+    var tripLocationRequested by rememberSaveable { mutableStateOf(false) }
     CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-        MishwariTheme {
+        MishwariTheme(themeMode = settings["theme_mode"]) {
             val snackbar = remember { SnackbarHostState() }
             LaunchedEffect(model) { model.messages.collect { snackbar.showSnackbar(it) } }
             var tab by rememberSaveable { mutableIntStateOf(0) }
@@ -105,7 +111,40 @@ fun MishwariRoot(
             var importing by remember { mutableStateOf(false) }
             var voiceExplanation by rememberSaveable { mutableStateOf(false) }
             var bulkInputOpen by remember { mutableStateOf(false) }
+            var showAssistantConfiguration by rememberSaveable { mutableStateOf(false) }
             var reopeningPlace by remember { mutableStateOf<Place?>(null) }
+            LaunchedEffect(tab) {
+                if (tab != 2) {
+                    tripCurrentLocation = null
+                    tripLocationRequested = false
+                    tripLocationMessage = "موقعك لا يُقرأ تلقائيًا؛ اطلب تحديثه عند الحاجة."
+                }
+            }
+            DisposableEffect(tab, permissionRevision, tripLocationRequested) {
+                var locationRequest: CurrentLocationRequest? = null
+                if (tab == 2 && tripLocationRequested && (permissionState.fineLocationGranted || permissionState.coarseLocationGranted)) {
+                    tripLocationMessage = "جارٍ طلب قراءة موقع حديثة لمرة واحدة…"
+                    locationRequest = CurrentLocationRequest(context, { result ->
+                        when (result) {
+                            is LocationCaptureResult.Success -> {
+                                tripCurrentLocation = result.latitude to result.longitude
+                                tripLocationMessage = "تم تحديث الموقع الآن؛ هذه قراءة أمامية مؤقتة وليست تتبعًا مستمرًا."
+                            }
+                            is LocationCaptureResult.Failure -> {
+                                tripCurrentLocation = null
+                                tripLocationMessage = when (result.reason) {
+                                    LocationCaptureFailure.PERMISSION_REQUIRED -> "إذن الموقع غير متاح؛ لا يمكن عرض موقع حالي."
+                                    LocationCaptureFailure.PROVIDER_DISABLED -> "خدمات الموقع متوقفة؛ فعّل الموقع ثم حاول مجددًا."
+                                    LocationCaptureFailure.TIMEOUT -> "لم تصل قراءة حديثة ضمن المهلة؛ لم نعرض موقعًا قديمًا."
+                                    LocationCaptureFailure.UNAVAILABLE -> "تعذر الحصول على قراءة موقع من هذا الجهاز."
+                                }
+                            }
+                        }
+                        tripLocationRequested = false
+                    }).start()
+                }
+                onDispose { locationRequest?.cancel() }
+            }
             LaunchedEffect(incomingDraft, editingErrand, editingPlace) {
                 if (incomingDraft != null && editingErrand == null && editingPlace == null) {
                     val text = incomingDraft.trim()
@@ -119,25 +158,66 @@ fun MishwariRoot(
             }
             LaunchedEffect(deepLinkPlace) { if (deepLinkPlace != null) { placeFilter = deepLinkPlace; tab = 1; filter = "غير المنجزة"; consumeDeepLink() } }
             Scaffold(
-                topBar = { TopAppBar(
-                    title = { Text(when (tab) { 0 -> "الرئيسية"; 1 -> "طلباتي"; 2 -> "المشوار"; 3 -> "المساعد الذكي"; 5 -> "الأماكن"; else -> "الإعدادات" }, fontWeight = FontWeight.Bold) },
-                    navigationIcon = { if (tab == 5) TextButton(onClick = { tab = 4 }) { Text("رجوع") } },
-                    actions = { if (tab == 0 || tab == 1) TextButton(onClick = { voiceExplanation = true }) { Text("إضافة بالصوت") } },
-                ) },
+                topBar = {
+                    TopAppBar(
+                        title = {
+                            Row(horizontalArrangement = Arrangement.spacedBy(9.dp), verticalAlignment = Alignment.CenterVertically) {
+                            if (tab == 0) MishwariBrandMark()
+                            Text(
+                                when (tab) { 0 -> "مشواري"; 1 -> "طلباتي"; 2 -> "المشوار"; 3 -> "المساعد الذكي"; 5 -> "الأماكن"; else -> "الإعدادات" },
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                            )
+                            }
+                        },
+                        navigationIcon = {
+                            if (tab == 5) TextButton(onClick = { tab = 4 }) { Text("رجوع", color = Color.White) }
+                            else if (tab == 0) IconButton(onClick = { tab = 4 }) { Text("☰", color = Color.White, style = MaterialTheme.typography.titleLarge) }
+                        },
+                        actions = {
+                            if (tab == 0 || tab == 1) TextButton(onClick = { voiceExplanation = true }) {
+                                Text("إضافة بالصوت", color = Color.White, style = MaterialTheme.typography.labelLarge)
+                            }
+                        },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = Color(0xFF075B40),
+                            titleContentColor = Color.White,
+                            navigationIconContentColor = Color.White,
+                            actionIconContentColor = Color.White,
+                        ),
+                    )
+                },
                 snackbarHost = { SnackbarHost(snackbar) },
                 bottomBar = {
-                    NavigationBar {
+                    NavigationBar(containerColor = MaterialTheme.colorScheme.surface, tonalElevation = 4.dp) {
                         val selectedTab = if (tab == 5) 4 else tab
                         listOf("الرئيسية", "طلباتي", "المشوار", "المساعد الذكي", "الإعدادات").forEachIndexed { i, label ->
-                            NavigationBarItem(selected = selectedTab == i, onClick = { tab = i }, icon = { NavigationIcon(i) }, label = { Text(label) }, modifier = Modifier.testTag("navigation_$i"))
+                            NavigationBarItem(
+                                selected = selectedTab == i,
+                                onClick = { if (i == 4) showAssistantConfiguration = false; tab = i },
+                                icon = { NavigationIcon(i) },
+                                label = { Text(label) },
+                                colors = NavigationBarItemDefaults.colors(
+                                    selectedIconColor = MaterialTheme.colorScheme.primary,
+                                    selectedTextColor = MaterialTheme.colorScheme.primary,
+                                    indicatorColor = MaterialTheme.colorScheme.primaryContainer,
+                                    unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                ),
+                                modifier = Modifier.testTag("navigation_$i"),
+                            )
                         }
                     }
                 },
                 floatingActionButton = {
-                    if (tab == 0 || tab == 1 || tab == 5) ExtendedFloatingActionButton(
+                    if (tab == 1 || tab == 5) ExtendedFloatingActionButton(
                         onClick = { if (tab == 5) editingPlace = Place(name = "") else editingErrand = Errand(title = "", placeId = placeFilter) },
-                    ) { Text(if (tab == 5) "+ إضافة مكان" else "+ إضافة طلب") }
-                }
+                        containerColor = MishwariBrightGreen,
+                        contentColor = Color.White,
+                    ) { Text(if (tab == 5) "+ إضافة مكان" else "+ إضافة طلب", fontWeight = FontWeight.Bold) }
+                },
             ) { padding ->
                 Box(Modifier.fillMaxSize().padding(padding)) {
                     if (!dataReady) Column(Modifier.align(Alignment.Center).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -148,37 +228,64 @@ fun MishwariRoot(
                             errands = errands,
                             places = places,
                             activeTripId = settings["travel_place"]?.takeIf { it.isNotBlank() },
+                            tripReadiness = when {
+                                alertPlaces.isEmpty() -> "لا توجد نقطة تنبيه صالحة"
+                                !permissionState.locationEnabled -> "موقع الهاتف مغلق"
+                                !permissionState.fineLocationGranted -> "إذن الموقع الدقيق مطلوب"
+                                !permissionState.notificationsReady() -> "الإشعارات غير مفعلة"
+                                !permissionState.backgroundLocationGranted -> "تنبيه الخلفية غير جاهز"
+                                else -> geoStatusText(settings["geo_status"])
+                            },
                             onOpenRequests = { tab = 1; filter = "غير المنجزة"; placeFilter = null },
                             onOpenTrip = { tab = 2 },
                             onOpenPlaces = { tab = 5 },
                             onOpenAssistant = { tab = 3 },
                             onAddRequest = { placeFilter = null; editingErrand = Errand(title = "") },
-                            onOpenPlace = { id -> tab = 1; placeFilter = id; filter = "غير المنجزة" },
+                            onAddPlace = { editingPlace = Place(name = "") },
+                            onBulkInput = { bulkInputOpen = true },
+                            onOpenPlace = { id -> tab = 1; placeFilter = id.takeIf { it.isNotBlank() }; filter = "غير المنجزة" },
                         )
                         1 -> {
+                            var advancedFilters by rememberSaveable { mutableStateOf(false) }
                             val shown = errands.filter { e ->
                                 val p = places.find { it.id == e.placeId }
                                 val withinPlace = placeFilter == null || e.placeId in subtree(placeFilter!!, places)
                                 val matchStatus = when (filter) { "غير المنجزة" -> active(e); "الكل" -> true; else -> e.status == filter }
                                 withinPlace && matchStatus && listOf(e.title, e.description, e.notes, e.category, e.quantity, e.expectedPrice, e.actualPrice, p?.let(::placeLabel).orEmpty()).any { matchesArabicSearch(it, query) }
                             }.sortedWith(errandDisplayOrder)
-                            LazyColumn(Modifier.fillMaxSize().testTag("errandList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                item { OutlinedTextField(query, { query = it }, label = { Text("ابحث عن طلب أو وجهة") }, singleLine = true, modifier = Modifier.fillMaxWidth(), trailingIcon = { if (query.isNotEmpty()) TextButton(onClick = { query = "" }) { Text("مسح") } }) }
+                            LazyColumn(Modifier.fillMaxSize().testTag("errandList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 100.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                item { OutlinedTextField(query, { query = it }, label = { Text("ابحث عن طلب أو وجهة") }, singleLine = true, shape = MaterialTheme.shapes.large, leadingIcon = { Text("⌕", style = MaterialTheme.typography.titleLarge, color = MaterialTheme.colorScheme.primary) }, modifier = Modifier.fillMaxWidth(), trailingIcon = { if (query.isNotEmpty()) TextButton(onClick = { query = "" }) { Text("مسح") } }) }
                                 item {
-                                    Text("${errands.count(::active)} غير منجزة · ${errands.count { it.priority == 2 && active(it) }} مهمة · ${errands.count { it.status == "مكتمل" }} مكتملة", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        SummaryPill("${errands.count(::active)} معلّقة", MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.primary, Modifier.weight(1f))
+                                        SummaryPill("${errands.count { it.priority == 2 && active(it) }} عاجلة", Color(0xFFFFE8D8), Color(0xFF9A3E12), Modifier.weight(1f))
+                                        SummaryPill("${errands.count { it.status == "مكتمل" }} مكتملة", MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.tertiary, Modifier.weight(1f))
+                                    }
                                 }
                                 item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedButton(onClick = { bulkInputOpen = true }, modifier = Modifier.weight(1f)) { Text("إدخال قائمة متعددة الأسطر") }
                                     OutlinedButton(onClick = { tab = 3 }, modifier = Modifier.weight(1f)) { Text("المساعد الذكي") }
                                 } }
-                                item { BudgetSummary(errands) }
                                 if (!settings["travel_place"].isNullOrBlank()) item { AssistChip(onClick = { tab = 2 }, label = { Text("مشوار نشط: ${places.find { it.id == settings["travel_place"] }?.name ?: "راجع الوجهة"}") }) }
-                                item { Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) { (listOf("غير المنجزة", "الكل") + statuses).forEach { value -> FilterChip(selected = filter == value, onClick = { filter = value }, label = { Text(value) }) } } }
+                                item {
+                                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        FilterChip(selected = filter == "الكل", onClick = { filter = "الكل" }, label = { Text("الكل") })
+                                        FilterChip(selected = filter == "غير المنجزة", onClick = { filter = "غير المنجزة" }, label = { Text("معلّق") })
+                                        FilterChip(selected = filter == "مكتمل", onClick = { filter = "مكتمل" }, label = { Text("مكتمل") })
+                                        FilterChip(selected = advancedFilters, onClick = { advancedFilters = !advancedFilters }, label = { Text("حالات أخرى") })
+                                    }
+                                }
+                                if (advancedFilters) item {
+                                    Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        statuses.filter { it != "مكتمل" }.forEach { value -> FilterChip(selected = filter == value, onClick = { filter = value }, label = { Text(value) }) }
+                                    }
+                                }
                                 if (placeFilter != null) item { AssistChip(onClick = { placeFilter = null }, label = { Text("الوجهة: ${places.find { it.id == placeFilter }?.name ?: "غير متاحة"} — عرض الجميع ×") }) }
                                 if (shown.isEmpty()) item {
                                     EmptyState("لا توجد طلبات هنا", if (errands.isEmpty()) "ابدأ بطلب واحد؛ يمكنك اختيار وجهته الآن أو لاحقًا. قوائمك تعمل دون إنترنت." else "لا توجد نتائج مطابقة. جرّب كلمة أخرى أو اعرض كل الطلبات.", if (errands.isEmpty()) "إضافة أول طلب" else "مسح البحث والمرشّحات", { if (errands.isEmpty()) editingErrand = Errand(title = "", placeId = placeFilter) else { query = ""; filter = "الكل"; placeFilter = null } })
                                 }
                                 items(shown, key = { it.id }) { e -> ErrandCard(e, places.find { it.id == e.placeId }, { model.toggleErrandCompletion(e.id) }, { editingErrand = e }, { deletingErrand = e }) }
+                                item { BudgetSummary(errands) }
                             }
                         }
                         5 -> {
@@ -248,11 +355,57 @@ fun MishwariRoot(
                             val tripAlertCandidates = if (chosen.isBlank()) emptyList() else ye.mishwari.geo.GeoPolicy.select(
                                 ye.mishwari.geo.GeoPolicy.fromData(places, errands, chosen), chosen
                             )
+                            val chosenTarget = places.find { it.id == chosen }?.takeIf { place ->
+                                place.latitude?.let { it.isFinite() && it in -90.0..90.0 } == true &&
+                                    place.longitude?.let { it.isFinite() && it in -180.0..180.0 } == true
+                            }
+                            val mapTargets = tripAlertCandidates.mapNotNull { candidate -> places.find { it.id == candidate.id } }
+                                .ifEmpty { listOfNotNull(chosenTarget) }
                             LazyColumn(Modifier.fillMaxSize().testTag("travelList"), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                                item { Text("جهّز مشوارك", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("اختر الوجهة، راجع طلباتك، ثم فعّل المشوار. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium) }
-                                if (destination != null) item { Card { Column(Modifier.padding(12.dp)) { Text("مشوار نشط: ${destination.name}", fontWeight = FontWeight.Bold); TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء المشوار") } } } }
-                                item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true, showAlertReadiness = false) }
-                                item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium); if (chosen.isNotBlank()) Text("طلبات ${places.find { it.id == chosen }?.name.orEmpty()} والأماكن التابعة لها · ${relevant.count { it.priority == 2 }} مهمة", style = MaterialTheme.typography.bodySmall) }
+                                item {
+                                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                        Text("مشوارك على الخريطة", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                                        Text("اختر الوجهة، راجع نقاط الوصول والطلبات، ثم فعّل المشوار. لا نسجّل مسارك.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                                if (destination != null) item {
+                                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+                                        Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween) {
+                                            Column(Modifier.weight(1f)) {
+                                                Text("مشوار نشط", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                                                Text(destination.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                            }
+                                            TextButton(onClick = { model.setting("travel_place", "") }) { Text("إنهاء المشوار") }
+                                        }
+                                    }
+                                }
+                                item {
+                                    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface), elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)) {
+                                        Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                                Text("المكان ونقاط الوصول", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                                Text("${tripAlertCandidates.size} نطاق", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                                            }
+                                            TripMapPreview(mapTargets, tripCurrentLocation, tripAlertCandidates.map { it.id }.toSet(), Modifier.fillMaxWidth().height(228.dp))
+                                            Text(tripLocationMessage, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            Text("عند عرض موقعك، تُطلب بلاطات OpenStreetMap المحيطة به؛ قد يطّلع مزوّد البلاطات على عنوان IP ومنطقة الخريطة التقريبية، وليس على طلباتك. النقطة قراءة واحدة ولا تتحرك تلقائيًا.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                            OutlinedButton(
+                                                onClick = {
+                                                    tripLocationRequested = true
+                                                    if (permissionState.fineLocationGranted || permissionState.coarseLocationGranted) {
+                                                        tripLocationMessage = "جارٍ طلب قراءة موقع حديثة لمرة واحدة…"
+                                                    } else {
+                                                        permissionExplanation = "foreground"
+                                                    }
+                                                },
+                                                modifier = Modifier.fillMaxWidth(),
+                                            ) { Text(if (permissionState.fineLocationGranted || permissionState.coarseLocationGranted) "تحديث موقعي على الخريطة" else "السماح بالموقع ثم التحديث") }
+                                            if (!permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل خدمات موقع الهاتف") }
+                                        }
+                                    }
+                                }
+                                item { Text("١ · اختر الوجهة", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); PlaceSelector("وجهة المشوار", chosen.ifBlank { null }, places, { chosen = it.orEmpty() }, allowNone = true, showAlertReadiness = false) }
+                                item { Text("٢ · راجع الطلبات · ${relevant.size}", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); if (chosen.isNotBlank()) Text("طلبات ${places.find { it.id == chosen }?.name.orEmpty()} والأماكن التابعة لها · ${relevant.count { it.priority == 2 }} مهمة", style = MaterialTheme.typography.bodySmall) }
                                 item {
                                     OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                         Text("حالة GPS وتنبيهات الوصول", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
@@ -287,38 +440,58 @@ fun MishwariRoot(
                             places = places,
                             requestVoice = requestVoice,
                             showConfiguration = false,
-                            openAiSettings = { tab = 4 },
+                            openAiSettings = { showAssistantConfiguration = true; tab = 4 },
                         )
                         4 -> Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Text("الإعدادات والخصوصية", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-                            AssistantSettingsSection(model, Modifier.fillMaxWidth())
+                            Text("الإعدادات", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+                            Text("إدارة المساعد والأماكن والخصوصية والمظهر من مكان واحد.", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            AssistantSettingsSection(model, Modifier.fillMaxWidth(), initiallyExpanded = showAssistantConfiguration)
                             OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Text("الأماكن", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                    FeatureBadge(6, MaterialTheme.colorScheme.secondary)
+                                    Text("الأماكن والموقع", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                                }
                                 Text("افصل أماكنك المحفوظة عن دليل المحافظات والمديريات، وأدر إحداثيات التنبيه من شاشة واحدة.", style = MaterialTheme.typography.bodySmall)
                                 OutlinedButton(onClick = { tab = 5 }, modifier = Modifier.fillMaxWidth()) { Text("إدارة الأماكن والدليل") }
                             } }
+                            SettingsSection("المظهر والوضع الليلي", initiallyExpanded = true) {
+                                Text("اختر مظهر التطبيق أو اتركه يتبع إعداد الهاتف.", style = MaterialTheme.typography.bodySmall)
+                                Row(Modifier.horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    FilterChip(selected = settings["theme_mode"].isNullOrBlank() || settings["theme_mode"] == "system", onClick = { model.setting("theme_mode", "system") }, label = { Text("حسب الجهاز") })
+                                    FilterChip(selected = settings["theme_mode"] == "light", onClick = { model.setting("theme_mode", "light") }, label = { Text("فاتح") })
+                                    FilterChip(selected = settings["theme_mode"] == "dark", onClick = { model.setting("theme_mode", "dark") }, label = { Text("داكن") })
+                                }
+                            }
                             PermissionSummary(permissionState)
                             Text("الأذونات اختيارية؛ قوائمك تعمل دونها.", style = MaterialTheme.typography.bodySmall)
-                            SettingsSection("نسخة احتياطية محلية") {
+                            SettingsSection("نسخة احتياطية محلية", badge = "على جهازك") {
                                 Text("ملف JSON غير مشفّر، وقد يحتوي بيانات الطلبات وأسماء الأماكن وإحداثيات GPS وصور الطلبات. احفظه بأمان؛ الاستيراد يدمج ولا يحذف سجلات غير موجودة فيه.", modifier = Modifier.testTag("backupDisclosure"), style = MaterialTheme.typography.bodySmall)
                                 OutlinedButton(onClick = exportBackup, modifier = Modifier.fillMaxWidth()) { Text("تصدير نسخة احتياطية") }
                                 OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("استيراد نسخة احتياطية") }
                             }
                             SettingsSection("الأذونات والخصوصية", badge = "متقدم") {
-                            if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "غير مسموح؛ لن تتاح الميزات التي تحتاج موقعك.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
-                            if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
-                            if (alertsNeeded && permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
-                            if (alertsNeeded && !permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
-                            TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
-                            Text(if (alertsNeeded) "حالة التنبيهات: ${geoStatusText(settings["geo_status"])}" else "لا توجد نقاط تنبيه مطلوبة حاليًا.", style = MaterialTheme.typography.bodyMedium)
-                            OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
-                            Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
-                            Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play ومزود الموقع الشبكي. قد لا تتولد أحداث وصول دون اتصال بيانات موثوق. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
-                            Text("الدليل المضمن أُضيف تلقائيًا ويعمل دون إنترنت؛ 22 محافظة و335 مديرية من OCHA / HDX (COD-AB)، المصدر الأصلي CSO، بترخيص CC BY-IGO 3.0. تاريخ المراجعة 2024-12-23؛ ليس تأكيدًا لحداثته حتى 2026. لا يتضمن إحداثيات أو حدودًا. التفاصيل: docs/directory.md.", style = MaterialTheme.typography.bodySmall)
-                            TextButton(onClick = importDirectory) { Text("استيراد تحديث دليل من JSON") }
-                            Text("الخرائط: MapLibre Native / © OpenStreetMap contributors. تحتاج اتصالًا؛ لا نرسل طلباتك إلى مزود البلاطات.", style = MaterialTheme.typography.bodySmall)
+                                if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "غير مسموح؛ لن تتاح الميزات التي تحتاج موقعك.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
+                                if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
+                                if (alertsNeeded && permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
+                                if (alertsNeeded && !permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
+                                TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
+                                Text(if (alertsNeeded) "حالة التنبيهات: ${geoStatusText(settings["geo_status"])}" else "لا توجد نقاط تنبيه مطلوبة حاليًا.", style = MaterialTheme.typography.bodyMedium)
+                                OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
+                                Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
+                                Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play ومزود الموقع الشبكي. قد لا تتولد أحداث وصول دون اتصال بيانات موثوق. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
                             }
-                            Text("طلباتي للمشوار ${ye.mishwari.BuildConfig.VERSION_NAME} · إصدار اختبار أولي. اختبر الوصول والخلفية على هاتفك قبل الاعتماد على التنبيهات لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
+                            SettingsSection("دليل اليمن") {
+                                Text("الدليل المضمن يعمل دون إنترنت ويضم 22 محافظة و335 مديرية من OCHA / HDX (COD-AB)، المصدر الأصلي CSO، بترخيص CC BY-IGO 3.0. تاريخ المراجعة 2024-12-23؛ لا يؤكد حداثته حتى 2026، ولا يتضمن إحداثيات أو حدودًا. التفاصيل في docs/directory.md.", style = MaterialTheme.typography.bodySmall)
+                                TextButton(onClick = importDirectory) { Text("استيراد تحديث دليل من JSON") }
+                            }
+                            SettingsSection("إعدادات عامة") {
+                                Text("الخرائط: MapLibre Native وOpenStreetMap؛ تحتاج اتصالًا بالإنترنت، ولا نرسل طلباتك إلى مزود البلاطات.", style = MaterialTheme.typography.bodySmall)
+                                Text("الطلب الصوتي يفتح خدمة التعرف على الكلام في الهاتف، ويظل النص مسودة حتى تراجعه.", style = MaterialTheme.typography.bodySmall)
+                            }
+                            SettingsSection("حول التطبيق") {
+                                Text("مشواري · إصدار ${ye.mishwari.BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Bold)
+                                Text("إصدار اختبار أولي. اختبر الوصول والتنبيهات في الخلفية على هاتفك قبل الاعتماد عليها لمهام مهمة.", style = MaterialTheme.typography.bodySmall)
+                            }
                             Spacer(Modifier.height(24.dp))
                         }
                     }
@@ -343,7 +516,7 @@ fun MishwariRoot(
                     { reopeningPlace = null; model.reopenCompletedAtPlace(place.id) },
                 )
             }
-            permissionExplanation?.let { kind -> PermissionExplanation(kind, { permissionExplanation = null }) {
+            permissionExplanation?.let { kind -> PermissionExplanation(kind, { permissionExplanation = null; if (kind == "foreground") tripLocationRequested = false }) {
                 permissionExplanation = null
                 when (kind) {
                     "foreground" -> if (!permissionState.fineLocationGranted) requestLocation()
@@ -362,11 +535,21 @@ fun MishwariRoot(
     }
 }
 
+@Composable private fun SummaryPill(text: String, background: Color, foreground: Color, modifier: Modifier = Modifier) {
+    Surface(modifier, color = background, shape = RoundedCornerShape(16.dp)) {
+        Text(text, Modifier.padding(horizontal = 9.dp, vertical = 7.dp), color = foreground, style = MaterialTheme.typography.labelMedium, fontWeight = FontWeight.SemiBold)
+    }
+}
+
 @Composable private fun SettingsSection(title: String, initiallyExpanded: Boolean = false, badge: String? = null, content: @Composable ColumnScope.() -> Unit) {
     var expanded by rememberSaveable { mutableStateOf(initiallyExpanded) }
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    val icon = when (title) { "نسخة احتياطية محلية" -> 5; "الأذونات والخصوصية" -> 6; "دليل اليمن" -> 2; "المظهر" -> 8; "حول التطبيق" -> 9; else -> 4 }
+    val accent = when (icon) { 5 -> MaterialTheme.colorScheme.tertiary; 6, 8 -> MaterialTheme.colorScheme.secondary; 9 -> MaterialTheme.colorScheme.tertiary; else -> MaterialTheme.colorScheme.primary }
+    OutlinedCard(Modifier.fillMaxWidth(), colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface)) {
         TextButton(onClick = { expanded = !expanded }, modifier = Modifier.fillMaxWidth()) {
-            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+            FeatureBadge(icon, accent)
+            Spacer(Modifier.width(10.dp))
+            Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
             if (badge != null) Text(badge, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(if (expanded) "إخفاء" else "عرض")
         }
@@ -375,7 +558,7 @@ fun MishwariRoot(
 }
 
 @Composable private fun EmptyState(title: String, body: String, actionLabel: String? = null, action: (() -> Unit)? = null) {
-    OutlinedCard(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    OutlinedCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(22.dp)) { Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         Text(body, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (action != null && actionLabel != null) TextButton(onClick = action) { Text(actionLabel) }
@@ -446,10 +629,30 @@ internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when
 }
 
 @Composable private fun ErrandCard(e: Errand, place: Place?, complete: () -> Unit, edit: () -> Unit, delete: () -> Unit) {
-    Card(Modifier.fillMaxWidth()) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) { Text(e.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold); Checkbox(e.status == "مكتمل", { complete() }, modifier = Modifier.testTag("errandCheckbox_${e.id}").semantics { contentDescription = if (e.status == "مكتمل") "إعادة فتح الطلب: ${e.title}" else "إكمال الطلب: ${e.title}" }) }
-        Text(place?.let(::placeLabel) ?: "دون وجهة", style = MaterialTheme.typography.bodyMedium)
-        Text("${e.category} · ${e.status} · ${listOf("منخفضة", "عادية", "عالية").getOrElse(e.priority) { "عادية" }}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+    val priorityLabel = listOf("منخفضة", "عادية", "عالية").getOrElse(e.priority) { "عادية" }
+    val priorityColor = when (e.priority) {
+        2 -> MaterialTheme.colorScheme.error
+        1 -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.primary
+    }
+    Card(
+        Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(22.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+    ) { Column(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(e.title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                Text(place?.let(::placeLabel) ?: "دون وجهة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Checkbox(e.status == "مكتمل", { complete() }, modifier = Modifier.testTag("errandCheckbox_${e.id}").semantics { contentDescription = if (e.status == "مكتمل") "إعادة فتح الطلب: ${e.title}" else "إكمال الطلب: ${e.title}" })
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp), verticalAlignment = Alignment.CenterVertically) {
+            SummaryPill(priorityLabel, priorityColor.copy(alpha = 0.12f), priorityColor)
+            SummaryPill(e.status, MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(e.category, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
         var details by rememberSaveable(e.id) { mutableStateOf(false) }
         if (details) {
         if (e.description.isNotBlank()) Text(e.description)

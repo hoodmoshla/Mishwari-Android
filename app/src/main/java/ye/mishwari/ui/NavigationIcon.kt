@@ -1,12 +1,20 @@
 package ye.mishwari.ui
 
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -67,23 +75,15 @@ internal fun NavigationIcon(index: Int) {
                 line(15f, 4f, 15f, 3f)
             }
             2 -> {
-                val plane = Path().apply {
-                    moveTo(21f * sx, 4f * sy)
-                    cubicTo(20.4f * sx, 3.4f * sy, 19.4f * sx, 3.5f * sy, 18.6f * sx, 4.1f * sy)
-                    lineTo(13f * sx, 9f * sy)
-                    lineTo(6.2f * sx, 6.8f * sy)
-                    lineTo(4f * sx, 8.8f * sy)
-                    lineTo(10.2f * sx, 11.8f * sy)
-                    lineTo(7.8f * sx, 16.2f * sy)
-                    lineTo(4.8f * sx, 15.7f * sy)
-                    lineTo(3f * sx, 17.5f * sy)
-                    lineTo(8f * sx, 20f * sy)
-                    lineTo(12.3f * sx, 13.5f * sy)
-                    lineTo(17.8f * sx, 9f * sy)
-                    cubicTo(20.5f * sx, 6.7f * sy, 22f * sx, 5f * sy, 21f * sx, 4f * sy)
+                val map = Path().apply {
+                    moveTo(3f * sx, 5f * sy); lineTo(9f * sx, 3f * sy)
+                    lineTo(15f * sx, 5f * sy); lineTo(21f * sx, 3f * sy)
+                    lineTo(21f * sx, 19f * sy); lineTo(15f * sx, 21f * sy)
+                    lineTo(9f * sx, 19f * sy); lineTo(3f * sx, 21f * sy)
                     close()
                 }
-                drawPath(plane, color, style = Stroke(width = 1.6f * sx, cap = StrokeCap.Round))
+                drawPath(map, color, style = Stroke(width = 1.8f * sx, cap = StrokeCap.Round))
+                line(9f, 3f, 9f, 19f); line(15f, 5f, 15f, 21f)
             }
             3 -> {
                 drawRoundRect(color, topLeft = p(3f, 4f), size = androidx.compose.ui.geometry.Size(18f * sx, 14f * sy), cornerRadius = CornerRadius(4f * sx, 4f * sy), style = Stroke(width = 1.8f * sx))
@@ -94,13 +94,78 @@ internal fun NavigationIcon(index: Int) {
                 circle(16f, 11f, 0.7f)
             }
             4 -> {
-                line(4f, 6f, 20f, 6f)
-                line(4f, 12f, 20f, 12f)
-                line(4f, 18f, 20f, 18f)
-                drawCircle(color, 3f * sx, p(9f, 6f))
-                drawCircle(color, 3f * sx, p(15f, 12f))
-                drawCircle(color, 3f * sx, p(9f, 18f))
+                circle(12f, 12f, 6.8f); circle(12f, 12f, 2.6f)
+                repeat(8) { n ->
+                    val a = n * Math.PI / 4.0
+                    line(12f + 7f * kotlin.math.cos(a).toFloat(), 12f + 7f * kotlin.math.sin(a).toFloat(), 12f + 9.2f * kotlin.math.cos(a).toFloat(), 12f + 9.2f * kotlin.math.sin(a).toFloat(), 2.8f)
+                }
+            }
+            5 -> {
+                val cloud = Path().apply {
+                    moveTo(6f * sx, 18f * sy)
+                    cubicTo(0f * sx, 18f * sy, 1f * sx, 9f * sy, 7f * sx, 10f * sy)
+                    cubicTo(7f * sx, 2f * sy, 19f * sx, 2f * sy, 19f * sx, 11f * sy)
+                    cubicTo(25f * sx, 11f * sy, 24f * sx, 18f * sy, 19f * sx, 18f * sy)
+                    close()
+                }
+                drawPath(cloud, color, style = Stroke(1.8f * sx))
+                line(12f, 11f, 12f, 21f); line(9f, 18f, 12f, 21f); line(15f, 18f, 12f, 21f)
+            }
+            6 -> {
+                val pin = Path().apply {
+                    moveTo(12f * sx, 22f * sy)
+                    cubicTo(9f * sx, 18f * sy, 4f * sx, 13f * sy, 4f * sx, 9f * sy)
+                    cubicTo(4f * sx, -1f * sy, 20f * sx, -1f * sy, 20f * sx, 9f * sy)
+                    cubicTo(20f * sx, 13f * sy, 15f * sx, 18f * sy, 12f * sx, 22f * sy)
+                    close()
+                }
+                drawPath(pin, color, style = Stroke(1.8f * sx)); circle(12f, 9f, 2.5f)
+            }
+            8 -> {
+                val moon = Path().apply {
+                    moveTo(16f * sx, 3f * sy)
+                    cubicTo(1f * sx, -1f * sy, -2f * sx, 22f * sy, 13f * sx, 22f * sy)
+                    cubicTo(18f * sx, 22f * sy, 21f * sx, 19f * sy, 22f * sx, 15f * sy)
+                    cubicTo(11f * sx, 19f * sy, 8f * sx, 7f * sy, 16f * sx, 3f * sy)
+                    close()
+                }
+                drawPath(moon, color, style = Stroke(1.8f * sx))
+            }
+            9 -> {
+                circle(12f, 12f, 9f); line(12f, 11f, 12f, 17f)
+                drawCircle(color, 1.1f * sx, p(12f, 7f))
             }
         }
+    }
+}
+
+@Composable
+internal fun FeatureBadge(index: Int, accent: Color, modifier: Modifier = Modifier) {
+    Surface(modifier, shape = RoundedCornerShape(14.dp), color = accent.copy(alpha = 0.12f)) {
+        CompositionLocalProvider(LocalContentColor provides accent) {
+            Box(Modifier.padding(10.dp)) { NavigationIcon(index) }
+        }
+    }
+}
+
+@Composable
+internal fun MishwariBrandMark(modifier: Modifier = Modifier) {
+    Canvas(modifier.size(32.dp)) {
+        val w = size.width
+        val h = size.height
+        drawOval(Color(0xFFFFC42B), Offset(w * .22f, h * .84f), Size(w * .56f, h * .13f))
+        val pin = Path().apply {
+            moveTo(w * .5f, h * .9f)
+            cubicTo(w * .38f, h * .73f, w * .09f, h * .49f, w * .09f, h * .33f)
+            cubicTo(w * .09f, -h * .08f, w * .91f, -h * .08f, w * .91f, h * .33f)
+            cubicTo(w * .91f, h * .51f, w * .62f, h * .75f, w * .5f, h * .9f)
+            close()
+        }
+        drawPath(pin, Brush.linearGradient(listOf(Color(0xFFFF9C13), Color(0xFF008F51)), Offset(w, 0f), Offset(0f, h)))
+        drawCircle(Color.White, w * .28f, Offset(w * .5f, h * .33f))
+        val cart = Path().apply { moveTo(w * .29f, h * .23f); lineTo(w * .36f, h * .23f); lineTo(w * .41f, h * .43f); lineTo(w * .65f, h * .43f); lineTo(w * .7f, h * .28f); lineTo(w * .39f, h * .28f) }
+        drawPath(cart, Color(0xFF075B40), style = Stroke(w * .035f, cap = StrokeCap.Round))
+        drawCircle(Color(0xFF075B40), w * .035f, Offset(w * .44f, h * .5f))
+        drawCircle(Color(0xFF075B40), w * .035f, Offset(w * .62f, h * .5f))
     }
 }

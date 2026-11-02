@@ -51,7 +51,7 @@ class RootUxRobolectricTest {
     private val application: Application
         get() = ApplicationProvider.getApplicationContext()
 
-    private val errandIds = setOf("root-ux-active", "root-ux-second", "root-ux-done", "root-ux-trip", "root-ux-reopen-target", "root-ux-reopen-unlinked")
+    private val errandIds = setOf("root-ux-active", "root-ux-second", "root-ux-done", "root-ux-trip", "root-ux-reopen-target", "root-ux-reopen-unlinked", "root-ux-home-unlinked")
     private val placeIds = setOf("root-ux-governorate", "root-ux-district", "root-ux-coordinate-directory", "root-ux-trip-place", "root-ux-reopen-place")
     private val tempTitles = setOf("مهمة واجهة اختبار", "طلب بحث أول", "طلب بحث ثان", "طلب بحث مكتمل", "طلب رحلة اختبار", "مهمة واجهة صغيرة", "حليب دفعة اختبار", "خبز دفعة اختبار", "طلب إعادة فتح اختبار", "طلب غير مرتبط اختبار")
     private val tempPlaceNames = setOf("محافظة واجهة اختبار", "مديرية واجهة اختبار", "مديرية ذات إحداثيات", "وجهة رحلة اختبار", "سوق واجهة مخصص", "سوق إعادة اختبار")
@@ -82,12 +82,25 @@ class RootUxRobolectricTest {
     private fun openRequests() = compose.onNodeWithTag("navigation_1").performClick()
 
     @Test
+    fun homeUnlinkedPriorityOpensRequestsWithoutAnEmptyPlaceFilter() {
+        runBlocking {
+            MishwariDatabase.get(application).dao().upsertErrand(Errand(id = "root-ux-home-unlinked", title = "طلب رئيسية بلا وجهة", priority = 2))
+        }
+        showRoot(MishwariViewModel(application))
+        compose.waitUntil(10_000) { compose.onAllNodesWithText("طلب رئيسية بلا وجهة").fetchSemanticsNodes().isNotEmpty() }
+        compose.onNodeWithText("طلب رئيسية بلا وجهة").performScrollTo().performClick()
+        compose.onNodeWithTag("errandList").performScrollToNode(hasText("طلب رئيسية بلا وجهة"))
+        compose.onNodeWithText("طلب رئيسية بلا وجهة").assertIsDisplayed()
+    }
+
+    @Test
     fun homeAndAssistantUseTheCentralAiSettingsSection() {
         showRoot(MishwariViewModel(application))
         compose.onNodeWithText("أهلاً بك في مشواري").assertIsDisplayed()
         compose.onNodeWithTag("navigation_4").performClick()
         compose.onNodeWithTag("assistantSettingsSection").assertIsDisplayed()
-        compose.onNodeWithTag("assistantSettingsKey").assertIsDisplayed()
+        compose.onNodeWithText("الذكاء الاصطناعي").performClick()
+        compose.onNodeWithTag("assistantSettingsKey").performScrollTo().assertIsDisplayed()
 
         compose.onNodeWithTag("navigation_3").performClick()
         compose.onNodeWithTag("assistantScreen").assertIsDisplayed()
@@ -261,6 +274,7 @@ class RootUxRobolectricTest {
         }
         showRoot(MishwariViewModel(application))
         compose.onNodeWithTag("navigation_2").performClick()
+        compose.onNodeWithTag("travelList").performScrollToNode(hasText("وجهة المشوار: دون وجهة"))
         compose.onNodeWithText("وجهة المشوار: دون وجهة").performScrollTo().performClick()
         compose.onNodeWithText("ابحث في جميع الأماكن").performTextInput("وجهة رحلة اختبار")
         compose.onAllNodesWithText("وجهة رحلة اختبار").onLast().performClick()

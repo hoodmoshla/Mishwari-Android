@@ -10,6 +10,8 @@ import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextReplacement
@@ -248,6 +250,7 @@ class UiRobolectricTest {
         }
 
         compose.onNodeWithTag("navigation_2").performClick()
+        compose.onNodeWithTag("travelList").performScrollToNode(hasText("حالة GPS وتنبيهات الوصول"))
         compose.waitUntil(10_000) {
             compose.onAllNodesWithText("توجد 1 نقطة صالحة", substring = true).fetchSemanticsNodes().isNotEmpty()
         }

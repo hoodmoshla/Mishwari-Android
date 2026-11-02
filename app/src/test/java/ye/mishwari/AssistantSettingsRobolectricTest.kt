@@ -68,7 +68,9 @@ class AssistantSettingsRobolectricTest {
         )
         model = MishwariViewModel(application, store)
 
-        compose.activity.setContent { AssistantSettingsSection(model = requireNotNull(model)) }
+        compose.activity.setContent {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) { AssistantSettingsSection(model = requireNotNull(model)) }
+        }
 
         compose.waitUntil(10_000) {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
@@ -76,7 +78,7 @@ class AssistantSettingsRobolectricTest {
         }
         compose.onNodeWithText("الذكاء الاصطناعي").assertIsDisplayed()
         compose.onNodeWithTag("assistantSavedKeyStatus").assertTextContains("المفتاح محفوظ")
-        compose.onNodeWithTag("assistantSettingsKey").assertIsDisplayed()
+        compose.onNodeWithTag("assistantSettingsKey").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText(FAKE_SAVED_KEY).assertDoesNotExist()
         compose.runOnIdle { assertFalse(requireNotNull(model).assistantConfig.value.toString().contains(FAKE_SAVED_KEY)) }
     }
@@ -92,16 +94,18 @@ class AssistantSettingsRobolectricTest {
             }
         }
         model = MishwariViewModel(application, store, failingProvider)
-        compose.activity.setContent { AssistantSettingsSection(model = requireNotNull(model)) }
+        compose.activity.setContent {
+            Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState())) { AssistantSettingsSection(model = requireNotNull(model)) }
+        }
         compose.waitUntil(10_000) {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             requireNotNull(model).assistantConfig.value.hasKey
         }
 
-        compose.onNodeWithTag("assistantSettingsEndpoint").performTextReplacement(NEW_ENDPOINT)
-        compose.onNodeWithTag("assistantSettingsModel").performTextReplacement("new-model")
-        compose.onNodeWithTag("assistantSettingsKey").performTextInput("synthetic-new-key")
-        compose.onNodeWithTag("assistantSettingsTest").performClick()
+        compose.onNodeWithTag("assistantSettingsEndpoint").performScrollTo().performTextReplacement(NEW_ENDPOINT)
+        compose.onNodeWithTag("assistantSettingsModel").performScrollTo().performTextReplacement("new-model")
+        compose.onNodeWithTag("assistantSettingsKey").performScrollTo().performTextInput("synthetic-new-key")
+        compose.onNodeWithTag("assistantSettingsTest").performScrollTo().assertIsDisplayed().assertIsEnabled().performClick()
         compose.waitUntil(10_000) {
             org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             !requireNotNull(model).assistantBusy.value && requireNotNull(model).assistantMessage.value != null
@@ -111,7 +115,7 @@ class AssistantSettingsRobolectricTest {
         assertEquals(OLD_KEY, store.readKey())
         assertTrue(store.load().enabled)
 
-        compose.onNodeWithTag("assistantSettingsSave").performClick()
+        compose.onNodeWithTag("assistantSettingsSave").performScrollTo().performClick()
         compose.onNodeWithText("متابعة الاستبدال").assertIsDisplayed()
         compose.onNodeWithText("إلغاء").performClick()
         assertEquals(OLD_ENDPOINT, store.load().endpoint)
