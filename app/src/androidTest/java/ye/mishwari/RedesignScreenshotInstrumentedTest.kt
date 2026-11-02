@@ -15,6 +15,7 @@ import androidx.compose.ui.test.performScrollToNode
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
+import android.os.ParcelFileDescriptor
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.assertTrue
@@ -224,6 +225,10 @@ class RedesignScreenshotInstrumentedTest {
                 assertTrue("Could not encode screenshot $fileName", bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream))
             }
             assertTrue("Screenshot is empty: $output", output.isFile && output.length() > 0L)
+            val command = "run-as ye.mishwari cat cache/redesign-screenshots/$fileName > /data/local/tmp/mishwari-redesign-$fileName; echo \$?"
+            val descriptor = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand(command)
+            val exitCode = ParcelFileDescriptor.AutoCloseInputStream(descriptor).bufferedReader().use { it.readText().trim() }
+            assertTrue("Could not stage screenshot $fileName for CI retrieval (run-as exit=$exitCode)", exitCode == "0")
         } finally {
             bitmap.recycle()
         }
