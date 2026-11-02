@@ -9,12 +9,7 @@ if [ "$buffer_status" -ne 0 ]; then
   echo 'Could not enlarge the emulator log buffer for screenshot transfer.'
   exit "$buffer_status"
 fi
-adb logcat -c
-clear_status=$?
-if [ "$clear_status" -ne 0 ]; then
-  echo 'Could not clear old emulator logs before device tests.'
-  exit "$clear_status"
-fi
+# Each CI job starts a fresh emulator, so the log buffer does not need clearing.
 rm -rf app/build/outputs/ui-screenshots
 mkdir -p app/build/outputs/ui-screenshots
 
