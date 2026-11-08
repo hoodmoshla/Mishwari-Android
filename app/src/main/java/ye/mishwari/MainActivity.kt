@@ -106,10 +106,15 @@ class MainActivity : ComponentActivity() {
     }
     private val model: MishwariViewModel by viewModels()
     private var permissionRevision by mutableIntStateOf(0)
+    private var notificationSetupPending = false
     private var permissionState by mutableStateOf<PermissionState?>(null)
     private var selectedPlace by mutableStateOf<String?>(null)
     private var incomingDraft by mutableStateOf<String?>(null)
     private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
+        if (Manifest.permission.POST_NOTIFICATIONS in it) {
+            notificationSetupPending = false
+            if (it[Manifest.permission.POST_NOTIFICATIONS] == true) createGeoNotificationChannelIfMissing()
+        }
         permissionRevision++
         refreshPermissionState()
         val denied = it.filterValues { granted -> !granted }.keys
@@ -162,6 +167,12 @@ class MainActivity : ComponentActivity() {
     }
     override fun onResume() {
         super.onResume()
+        if (notificationSetupPending) {
+            notificationSetupPending = false
+            if (PermissionState.capture(this, ::shouldShowRequestPermissionRationale).notifications == PermissionStatus.GRANTED) {
+                createGeoNotificationChannelIfMissing()
+            }
+        }
         permissionRevision++
         refreshPermissionState()
         scheduleGeoForEnvironmentChange()
@@ -253,6 +264,7 @@ class MainActivity : ComponentActivity() {
     private fun requestNotificationAccess() {
         val state = PermissionState.capture(this, ::shouldShowRequestPermissionRationale)
         if (Build.VERSION.SDK_INT >= 33 && state.notifications != PermissionStatus.GRANTED) {
+            notificationSetupPending = true
             if (state.notifications == PermissionStatus.PERMANENTLY_DENIED) {
                 openNotificationSettings(false)
                 return
@@ -261,16 +273,25 @@ class MainActivity : ComponentActivity() {
             permissions.launch(arrayOf(Manifest.permission.POST_NOTIFICATIONS))
             return
         }
-        val manager = getSystemService(NotificationManager::class.java)
-        if (Build.VERSION.SDK_INT >= 26 && manager?.getNotificationChannel(GEO_CHANNEL_ID) == null) {
-            manager?.createNotificationChannel(NotificationChannel(GEO_CHANNEL_ID, "تنبيهات الأماكن", NotificationManager.IMPORTANCE_DEFAULT))
+        if (createGeoNotificationChannelIfMissing()) {
+            permissionRevision++
+            refreshPermissionState()
+            scheduleGeoForEnvironmentChange()
         }
+        val manager = getSystemService(NotificationManager::class.java)
         val channelClosed = Build.VERSION.SDK_INT >= 26 &&
             manager?.getNotificationChannel(GEO_CHANNEL_ID)?.importance == NotificationManager.IMPORTANCE_NONE
         val appNotificationsClosed = Build.VERSION.SDK_INT >= 24 && manager?.areNotificationsEnabled() == false
         if (channelClosed || appNotificationsClosed) {
             openNotificationSettings(channelClosed)
         }
+    }
+    private fun createGeoNotificationChannelIfMissing(): Boolean {
+        if (Build.VERSION.SDK_INT < 26) return false
+        val manager = getSystemService(NotificationManager::class.java) ?: return false
+        if (manager.getNotificationChannel(GEO_CHANNEL_ID) != null) return false
+        manager.createNotificationChannel(NotificationChannel(GEO_CHANNEL_ID, "تنبيهات الأماكن", NotificationManager.IMPORTANCE_DEFAULT))
+        return true
     }
     private fun showPermissionDenial(permission: String) {
         val label = when (permission) {

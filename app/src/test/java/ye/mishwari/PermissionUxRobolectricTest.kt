@@ -34,6 +34,8 @@ import ye.mishwari.data.Place
 import ye.mishwari.ui.MishwariRoot
 import ye.mishwari.ui.errandDisplayOrder
 import ye.mishwari.ui.nextAlertPermission
+import ye.mishwari.ui.notificationsReady
+import ye.mishwari.ui.shouldShowTripAlertReadiness
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class, qualifiers = "w320dp-h640dp")
@@ -122,8 +124,7 @@ class PermissionUxRobolectricTest {
     private fun openSettings() {
         compose.onNodeWithTag("navigation_4").performClick()
         compose.waitUntil(10_000) {
-            compose.onAllNodesWithTag("permissionSummary").fetchSemanticsNodes().isNotEmpty() ||
-                compose.onAllNodesWithText("الموقع اختياري · غير مسموح").fetchSemanticsNodes().isNotEmpty()
+            compose.onAllNodesWithText("نسخة احتياطية محلية").fetchSemanticsNodes().isNotEmpty()
         }
     }
 
@@ -132,36 +133,32 @@ class PermissionUxRobolectricTest {
     }
 
     @Test
-    fun settingsStartCollapsedShowSummaryAndDoNotRequestPermissionsOnOpen() {
+    fun settingsHidePermissionControlsWithoutArrivalAlertsAndKeepListsAvailable() {
         var locationRequests = 0
         var notificationRequests = 0
         val revision = mutableIntStateOf(0)
         showRoot(revision, { locationRequests++ }, { notificationRequests++ })
         openSettings()
 
-        compose.onNodeWithTag("permissionSummary").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("الموقع اختياري · غير مسموح").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithTag("permissionSummary").assertDoesNotExist()
+        compose.onNodeWithText("الأذونات والخصوصية").assertDoesNotExist()
+        compose.onNodeWithTag("permissionReady").assertDoesNotExist()
         compose.onNodeWithText("مراجعة إذن الموقع").assertDoesNotExist()
         compose.onNodeWithText("مراجعة الإشعارات").assertDoesNotExist()
         compose.onNodeWithText("إعادة تهيئة تنبيهات الوصول").assertDoesNotExist()
         assertEquals(0, locationRequests)
         assertEquals(0, notificationRequests)
 
-        openPermissionSection()
-        compose.onNodeWithText("مراجعة إذن الموقع").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("مراجعة الإشعارات").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("إعداد تنبيهات الخلفية").assertDoesNotExist()
-
-        // A fine-location grant alone must not reveal background setup without a real alert candidate.
         shadowOf(application).grantPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
         compose.runOnIdle { revision.intValue++ }
-        compose.waitUntil(5_000) {
-            compose.onAllNodesWithText("مراجعة إذن الموقع").fetchSemanticsNodes().isEmpty()
-        }
+        compose.waitUntil(5_000) { compose.onAllNodesWithTag("permissionSummary").fetchSemanticsNodes().isEmpty() }
+        compose.onNodeWithText("الأذونات والخصوصية").assertDoesNotExist()
         compose.onNodeWithText("إعداد تنبيهات الخلفية").assertDoesNotExist()
-        compose.onNodeWithTag("permissionSummary").performScrollTo().assertIsDisplayed()
         assertEquals(0, locationRequests)
         assertEquals(0, notificationRequests)
+
+        compose.onNodeWithTag("navigation_1").performClick()
+        compose.onNodeWithText("ابحث عن طلب أو وجهة").assertIsDisplayed()
     }
 
     @Test
@@ -199,7 +196,44 @@ class PermissionUxRobolectricTest {
     }
 
     @Test
+    fun grantedAlertRequirementsShowQuietStatusAndRevocationRestoresRepairActions() {
+        addAlertCandidate()
+        shadowOf(application).grantPermissions(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION,
+            Manifest.permission.ACCESS_BACKGROUND_LOCATION,
+            Manifest.permission.POST_NOTIFICATIONS,
+        )
+        val manager = application.getSystemService(android.app.NotificationManager::class.java)
+        manager.createNotificationChannel(
+            android.app.NotificationChannel(
+                "mishwari_geo_alerts",
+                "test",
+                android.app.NotificationManager.IMPORTANCE_DEFAULT,
+            ),
+        )
+        shadowOf(manager).setNotificationsEnabled(true)
+        shadowOf(application.getSystemService(android.location.LocationManager::class.java)).setLocationEnabled(true)
+
+        val revision = mutableIntStateOf(0)
+        showRoot(revision)
+        openSettings()
+        compose.onNodeWithTag("permissionReady").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("الأذونات والخصوصية").assertDoesNotExist()
+
+        shadowOf(application).denyPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        compose.runOnIdle { revision.intValue++ }
+        compose.waitUntil(5_000) {
+            compose.onAllNodesWithText("الأذونات والخصوصية").fetchSemanticsNodes().isNotEmpty()
+        }
+        openPermissionSection()
+        compose.onNodeWithText("مراجعة الإشعارات").performScrollTo().assertIsDisplayed()
+        compose.onNodeWithText("إعداد تنبيهات الخلفية").assertDoesNotExist()
+    }
+
+    @Test
     fun permissionExplanationWaitsForConfirmationAndNotNowKeepsListsAccessible() {
+        addAlertCandidate()
         var locationRequests = 0
         val revision = mutableIntStateOf(0)
         showRoot(revision, requestLocation = { locationRequests++ })
@@ -250,6 +284,17 @@ class PermissionUxRobolectricTest {
         assertEquals("notifications", nextAlertPermission(state(fine = true)))
         assertEquals("background", nextAlertPermission(state(fine = true, notifications = true)))
         assertEquals(null, nextAlertPermission(state(fine = true, notifications = true, background = true)))
+
+        val ready = state(fine = true, notifications = true, background = true)
+        assertTrue(ready.notificationsReady())
+        assertFalse(ready.copy(geoChannelImportance = -1).notificationsReady())
+        assertFalse(ready.copy(geoChannelImportance = android.app.NotificationManager.IMPORTANCE_NONE).notificationsReady())
+        assertFalse(ready.copy(appNotificationsEnabled = false).notificationsReady())
+
+        assertFalse(shouldShowTripAlertReadiness("", "new-destination", true))
+        assertFalse(shouldShowTripAlertReadiness("active-destination", "new-destination", true))
+        assertFalse(shouldShowTripAlertReadiness("active-destination", "active-destination", false))
+        assertTrue(shouldShowTripAlertReadiness("active-destination", "active-destination", true))
     }
 
     @Test

@@ -64,7 +64,7 @@ internal data class PermissionState(
             val manager = context.getSystemService(NotificationManager::class.java)
             val appNotificationsEnabled = Build.VERSION.SDK_INT < 24 || manager?.areNotificationsEnabled() != false
             val geoChannelEnabled = Build.VERSION.SDK_INT < 26 ||
-                manager?.getNotificationChannel(GEO_CHANNEL_ID)?.importance != NotificationManager.IMPORTANCE_NONE
+                manager?.getNotificationChannel(GEO_CHANNEL_ID)?.importance?.let { it != NotificationManager.IMPORTANCE_NONE } == true
             val systemLocationEnabled = runCatching {
                 val locationManager = context.getSystemService(LocationManager::class.java)
                 if (Build.VERSION.SDK_INT >= 28) locationManager?.isLocationEnabled == true

@@ -4,6 +4,9 @@ import android.content.ComponentCallbacks2
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,6 +57,26 @@ import org.maplibre.android.maps.Style
 import java.util.Locale
 import ye.mishwari.data.Place
 
+@Composable
+internal fun ReplaceableAndroidView(view: View, modifier: Modifier = Modifier) {
+    AndroidView(
+        factory = { context ->
+            FrameLayout(context).apply {
+                addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+            }
+        },
+        update = { container -> replaceAndroidViewChild(container, view) },
+        modifier = modifier,
+    )
+}
+
+internal fun replaceAndroidViewChild(container: FrameLayout, view: View) {
+    if (container.childCount != 1 || container.getChildAt(0) !== view) {
+        container.removeAllViews()
+        container.addView(view, FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT))
+    }
+}
+
 /**
  * An OSM-backed point picker. MapLibre requests only tiles needed for the visible map;
  * this screen does not download tiles in bulk or promise offline availability.
@@ -72,19 +95,21 @@ fun MapPicker(
 
     val initialPoint = validPoint(initialLatitude, initialLongitude)
     var selectedPoint by remember(initialLatitude, initialLongitude) { mutableStateOf(initialPoint) }
-    var mapFailed by remember { mutableStateOf(false) }
+    val loadController = remember { MapLoadController() }
+    val mapAttempt = loadController.attempt
 
     // Consume MapView's saved bundle before creating the native view. A provider below
     // writes it back into the host's SavedStateRegistry during Activity state saving.
     val restoredMapState = remember(savedStateRegistry) {
         savedStateRegistry.consumeRestoredStateForKey(MAP_VIEW_STATE_KEY)
     }
-    val mapViewResult = remember(context, restoredMapState) {
+    val mapViewResult = remember(context, restoredMapState, mapAttempt) {
         runCatching {
             MapLibreOsmInitialization.initialize(context.applicationContext)
             MapView(context).apply {
-                onCreate(restoredMapState)
-                addOnDidFailLoadingMapListener { mapFailed = true }
+                onCreate(if (mapAttempt == 0) restoredMapState else null)
+                addOnDidFailLoadingMapListener { reason -> loadController.mapFailed(mapAttempt, reason) }
+                addOnDidFinishLoadingMapListener { loadController.mapLoaded(mapAttempt) }
                 getMapAsync { map ->
                     val startPoint = initialPoint ?: YEMEN_OVERVIEW
                     map.cameraPosition = CameraPosition.Builder()
@@ -107,6 +132,7 @@ fun MapPicker(
                     }
                     map.setStyle(Style.Builder().fromJson(OSM_RASTER_STYLE)) {
                         styleReady = true
+                        loadController.styleLoaded(mapAttempt)
                         selectedPoint?.let(::showSelection)
                     }
                 }
@@ -115,6 +141,15 @@ fun MapPicker(
     }
     val mapView = mapViewResult.getOrNull()
 
+    DisposableEffect(loadController) {
+        onDispose { loadController.dispose() }
+    }
+    LaunchedEffect(loadController, mapView, mapAttempt) {
+        if (mapView == null) {
+            loadController.mapFailed(mapAttempt, mapViewResult.exceptionOrNull()?.localizedMessage)
+        }
+    }
+
     DisposableEffect(lifecycleOwner, mapView, savedStateRegistry, context) {
         if (mapView == null) {
             onDispose { }
@@ -122,16 +157,23 @@ fun MapPicker(
         var started = false
         var resumed = false
         var destroyed = false
+        fun startIfNeeded() {
+            if (!started && !destroyed) {
+                mapView.onStart()
+                started = true
+            }
+        }
+        fun resumeIfNeeded() {
+            startIfNeeded()
+            if (!resumed && !destroyed) {
+                mapView.onResume()
+                resumed = true
+            }
+        }
         val observer = LifecycleEventObserver { _, event ->
             when (event) {
-                Lifecycle.Event.ON_START -> {
-                    mapView.onStart()
-                    started = true
-                }
-                Lifecycle.Event.ON_RESUME -> {
-                    mapView.onResume()
-                    resumed = true
-                }
+                Lifecycle.Event.ON_START -> startIfNeeded()
+                Lifecycle.Event.ON_RESUME -> resumeIfNeeded()
                 Lifecycle.Event.ON_PAUSE -> if (resumed) {
                     mapView.onPause()
                     resumed = false
@@ -163,6 +205,8 @@ fun MapPicker(
         }
 
         lifecycleOwner.lifecycle.addObserver(observer)
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) startIfNeeded()
+        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) resumeIfNeeded()
         savedStateRegistry.registerSavedStateProvider(MAP_VIEW_STATE_KEY, savedStateProvider)
         context.applicationContext.registerComponentCallbacks(callbacks)
 
@@ -205,24 +249,43 @@ fun MapPicker(
 
                     Box(Modifier.fillMaxWidth().weight(1f)) {
                         if (mapView != null) {
-                            AndroidView(
-                                factory = { mapView },
-                                modifier = Modifier.fillMaxSize(),
-                            )
+                            ReplaceableAndroidView(mapView, modifier = Modifier.fillMaxSize())
                         }
 
-                        if (mapFailed || mapView == null) {
+                        if (mapView != null && (loadController.phase == MapLoadPhase.LOADING_STYLE || loadController.phase == MapLoadPhase.LOADING_TILES)) {
+                            Surface(
+                                modifier = Modifier.align(Alignment.TopCenter).padding(12.dp),
+                                color = MaterialTheme.colorScheme.surface.copy(alpha = 0.96f),
+                                shape = MaterialTheme.shapes.small,
+                            ) {
+                                Text(
+                                    if (loadController.phase == MapLoadPhase.LOADING_STYLE) "جارٍ تهيئة عرض الخريطة…" else "تم تحميل النمط؛ جارٍ انتظار تحميل بلاطات OpenStreetMap…",
+                                    modifier = Modifier.padding(12.dp),
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
+                        }
+
+                        if (mapView == null || loadController.phase == MapLoadPhase.FAILED || loadController.phase == MapLoadPhase.TIMED_OUT) {
                             Surface(
                                 modifier = Modifier.align(Alignment.TopCenter).padding(12.dp),
                                 color = MaterialTheme.colorScheme.errorContainer,
                                 contentColor = MaterialTheme.colorScheme.onErrorContainer,
                                 shape = MaterialTheme.shapes.small,
                             ) {
-                                Text(
-                                    "تعذّر تحميل الخريطة. تحقق من اتصال الإنترنت أو استخدم الإدخال اليدوي للموقع.",
-                                    modifier = Modifier.padding(12.dp),
-                                    style = MaterialTheme.typography.bodySmall,
-                                )
+                                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text(
+                                        when {
+                                            mapView == null -> "تعذّر إنشاء عرض الخريطة. يمكنك إعادة المحاولة أو إدخال الإحداثيات يدويًا."
+                                            loadController.phase == MapLoadPhase.FAILED -> "أبلغ MapLibre عن فشل تحميل الخريطة. تحقق من الاتصال أو استخدم الإحداثيات يدويًا."
+                                            loadController.timedOutAfterStyle -> "حُمّل نمط الخريطة، لكن لم يؤكد MapLibre اكتمال تحميل الخريطة والبلاطات خلال المهلة."
+                                            else -> "لم يكتمل تهيئة الخريطة خلال المهلة. يمكنك المتابعة بالإحداثيات اليدوية."
+                                        },
+                                        style = MaterialTheme.typography.bodySmall,
+                                    )
+                                    loadController.failureDetail?.let { Text("تفصيل MapLibre: $it", style = MaterialTheme.typography.labelSmall) }
+                                    TextButton(onClick = loadController::retry) { Text("إعادة المحاولة") }
+                                }
                             }
                         }
 

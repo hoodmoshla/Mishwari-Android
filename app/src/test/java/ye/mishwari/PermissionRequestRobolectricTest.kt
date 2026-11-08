@@ -13,6 +13,7 @@ import org.junit.Assert.assertArrayEquals
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertTrue
 import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -134,6 +135,30 @@ class PermissionRequestRobolectricTest : PermissionRequestTestBase() {
     }
 
     @Test
+    fun runtimeNotificationGrantCreatesChannelWithoutASecondTap() {
+        PermissionRequestTestSupport.reset()
+        val activity = PermissionRequestTestSupport.activity()
+
+        PermissionRequestTestSupport.invoke(activity, "requestNotificationAccess")
+
+        assertArrayEquals(
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS),
+            PermissionRequestTestSupport.requestedPermissions(activity),
+        )
+        assertNull(activity.getSystemService(NotificationManager::class.java)
+            .getNotificationChannel(PermissionState.GEO_CHANNEL_ID))
+
+        shadowOf(PermissionRequestTestSupport.app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        PermissionRequestTestSupport.invoke(activity, "onResume")
+
+        val channel = activity.getSystemService(NotificationManager::class.java)
+            .getNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+        assertNotNull(channel)
+        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel!!.importance)
+        assertTrue(PermissionState.capture(activity).geoChannelEnabled)
+    }
+
+    @Test
     fun locationCallbackCapturesCurrentPermissionStateAfterRevocation() {
         PermissionRequestTestSupport.reset()
         shadowOf(PermissionRequestTestSupport.app).grantPermissions(Manifest.permission.ACCESS_FINE_LOCATION)
@@ -185,6 +210,27 @@ class PermissionRequestSdk29RobolectricTest : PermissionRequestTestBase() {
             arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION),
             PermissionRequestTestSupport.requestedPermissions(activity),
         )
+        PermissionRequestTestSupport.noActivityStarted(activity)
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [32], application = Application::class)
+class PermissionRequestSdk32RobolectricTest : PermissionRequestTestBase() {
+    @Test
+    fun explicitNotificationSetupCreatesMissingChannelWithoutRuntimePermission() {
+        PermissionRequestTestSupport.reset()
+        val activity = PermissionRequestTestSupport.activity()
+
+        PermissionRequestTestSupport.invoke(activity, "requestNotificationAccess")
+
+        val channel = activity.getSystemService(NotificationManager::class.java)
+            .getNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+        assertNotNull(channel)
+        assertEquals(NotificationManager.IMPORTANCE_DEFAULT, channel!!.importance)
+        assertEquals(PermissionStatus.NOT_APPLICABLE, PermissionState.capture(activity).notifications)
+        assertTrue(PermissionState.capture(activity).geoChannelEnabled)
+        assertNull(shadowOf(activity).lastRequestedPermission)
         PermissionRequestTestSupport.noActivityStarted(activity)
     }
 }

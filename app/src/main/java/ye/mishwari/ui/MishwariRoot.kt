@@ -412,6 +412,7 @@ fun MishwariRoot(
                                         Text(when {
                                             chosen.isBlank() -> "اختر وجهة أولاً لعرض نقاط الوصول الممكنة."
                                             tripAlertCandidates.isEmpty() -> "غير جاهزة: لا يوجد طلب نشط مرتبط بمكان ذي إحداثيات صالحة داخل هذه الوجهة. أضف إحداثيات للمكان من شاشة الأماكن."
+                                            chosen != trip -> "بعد تجهيز المشوار فقط ستظهر متطلبات إذن تنبيه الوصول، مع شرح قبل أي طلب."
                                             !permissionState.locationEnabled -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن موقع الهاتف مغلق."
                                             !permissionState.notificationsReady() -> "توجد ${tripAlertCandidates.size} نقطة صالحة، لكن إشعارات الوصول غير مفعلة."
                                             else -> "توجد ${tripAlertCandidates.size} نقطة صالحة؛ راجع أذونات الموقع والخلفية أدناه قبل الاعتماد على التنبيه."
@@ -430,8 +431,8 @@ fun MishwariRoot(
                                     Text("يُفعّل المشوار نقاط الطلبات المرتبطة بالوجهة فقط. أسماء المحافظات والمديريات وحدها ليست نقاط وصول.", style = MaterialTheme.typography.bodySmall)
                                     Button(onClick = { model.setting("travel_place", chosen) }, enabled = chosen.isNotBlank() && chosen != trip, modifier = Modifier.fillMaxWidth()) { Text("تجهيز المشوار والتنبيهات") }
                                 }
-                                if (tripAlertCandidates.isNotEmpty()) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
-                                else item { Text("القائمة تعمل دون أذونات. التنبيه يتطلب طلبًا غير منجز مرتبطًا بمكان ذي إحداثيات صالحة داخل الوجهة، مع إذن الموقع والإشعارات.", style = MaterialTheme.typography.bodySmall) }
+                                if (shouldShowTripAlertReadiness(trip, chosen, tripAlertCandidates.isNotEmpty())) item { AlertReadiness(permissionState, { permissionExplanation = it }, openLocationSettings) }
+                                else item { Text(if (chosen != trip && tripAlertCandidates.isNotEmpty()) "جهّز المشوار أولًا؛ ستظهر متطلبات الإذن بعد التفعيل مع شرح الحاجة إليها." else "القائمة تعمل دون أذونات. التنبيه يتطلب طلبًا غير منجز مرتبطًا بمكان ذي إحداثيات صالحة داخل الوجهة، مع إذن الموقع والإشعارات.", style = MaterialTheme.typography.bodySmall) }
                             }
                         }
                         3 -> AssistantScreen(
@@ -462,23 +463,43 @@ fun MishwariRoot(
                                     FilterChip(selected = settings["theme_mode"] == "dark", onClick = { model.setting("theme_mode", "dark") }, label = { Text("داكن") })
                                 }
                             }
-                            PermissionSummary(permissionState)
-                            Text("الأذونات اختيارية؛ قوائمك تعمل دونها.", style = MaterialTheme.typography.bodySmall)
+                            val permissionIssue = alertsNeeded && (
+                                !permissionState.fineLocationGranted ||
+                                    !permissionState.notificationsReady() ||
+                                    !permissionState.backgroundLocationGranted ||
+                                    !permissionState.locationEnabled
+                                )
+                            if (permissionIssue) {
+                                PermissionSummary(permissionState)
+                                Text(
+                                    "تظهر أدوات الإصلاح عند وجود تنبيه وصول متأثر فقط. تبقى القوائم متاحة دون هذه الأذونات.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                )
+                            }
                             SettingsSection("نسخة احتياطية محلية", badge = "على جهازك") {
                                 Text("ملف JSON غير مشفّر، وقد يحتوي بيانات الطلبات وأسماء الأماكن وإحداثيات GPS وصور الطلبات. احفظه بأمان؛ الاستيراد يدمج ولا يحذف سجلات غير موجودة فيه.", modifier = Modifier.testTag("backupDisclosure"), style = MaterialTheme.typography.bodySmall)
                                 OutlinedButton(onClick = exportBackup, modifier = Modifier.fillMaxWidth()) { Text("تصدير نسخة احتياطية") }
                                 OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("استيراد نسخة احتياطية") }
                             }
-                            SettingsSection("الأذونات والخصوصية", badge = "متقدم") {
-                                if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "غير مسموح؛ لن تتاح الميزات التي تحتاج موقعك.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
-                                if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
-                                if (alertsNeeded && permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "يمكنك المتابعة بالقوائم دون تنبيه عند إغلاق التطبيق.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
-                                if (alertsNeeded && !permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
-                                TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
-                                Text(if (alertsNeeded) "حالة التنبيهات: ${geoStatusText(settings["geo_status"])}" else "لا توجد نقاط تنبيه مطلوبة حاليًا.", style = MaterialTheme.typography.bodyMedium)
-                                OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
-                                Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
-                                Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play ومزود الموقع الشبكي. قد لا تتولد أحداث وصول دون اتصال بيانات موثوق. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
+                            if (permissionIssue) {
+                                SettingsSection("الأذونات والخصوصية", badge = "يلزم الانتباه") {
+                                    if (!permissionState.fineLocationGranted) PermissionAction("الموقع أثناء الاستخدام", if (permissionState.coarseLocationGranted) "الموقع التقريبي متاح؛ تنبيه الوصول يحتاج الدقة." else "إذن الموقع غير ممنوح؛ اختر السماح عند استخدام الميزة.", "مراجعة إذن الموقع") { permissionExplanation = "foreground" }
+                                    if (!permissionState.notificationsReady()) PermissionAction("الإشعارات غير مفعلة", "لن يظهر تنبيه الوصول حتى تسمح بها.", "مراجعة الإشعارات") { permissionExplanation = "notifications" }
+                                    if (permissionState.fineLocationGranted && !permissionState.backgroundLocationGranted) PermissionAction("تنبيهات الخلفية غير جاهزة", "لن تعمل تنبيهات الوصول عند إغلاق التطبيق حتى تسمح بالموقع طوال الوقت.", "إعداد تنبيهات الخلفية") { permissionExplanation = "background" }
+                                    if (!permissionState.locationEnabled) TextButton(onClick = openLocationSettings) { Text("تشغيل موقع الهاتف") }
+                                    TextButton(onClick = openAppSettings) { Text("أذونات التطبيق وإعدادات البطارية") }
+                                    Text("حالة التنبيهات: ${geoStatusText(settings["geo_status"])}", style = MaterialTheme.typography.bodyMedium)
+                                    OutlinedButton(onClick = model::refreshAlerts, modifier = Modifier.fillMaxWidth()) { Text("إعادة تهيئة تنبيهات الوصول") }
+                                    Text("استخدمها بعد توقف غير معتاد أو تغيير أذونات؛ يبقى فاصل منع التكرار 30 دقيقة.", style = MaterialTheme.typography.bodySmall)
+                                    Text("قد تتأخر التنبيهات بسبب توفير البطارية أو ضعف تحديد الموقع، وتعتمد على خدمات Google Play والاتصال. لا يوجد GPS مستمر ولا سجل لتحركاتك.", style = MaterialTheme.typography.bodySmall)
+                                }
+                            } else if (alertsNeeded) {
+                                Text(
+                                    "تنبيهات الوصول جاهزة. يمكنك متابعة استخدام القوائم كالمعتاد.",
+                                    modifier = Modifier.testTag("permissionReady"),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                             SettingsSection("دليل اليمن") {
                                 Text("الدليل المضمن يعمل دون إنترنت ويضم 22 محافظة و335 مديرية من OCHA / HDX (COD-AB)، المصدر الأصلي CSO، بترخيص CC BY-IGO 3.0. تاريخ المراجعة 2024-12-23؛ لا يؤكد حداثته حتى 2026، ولا يتضمن إحداثيات أو حدودًا. التفاصيل في docs/directory.md.", style = MaterialTheme.typography.bodySmall)
@@ -566,7 +587,7 @@ fun MishwariRoot(
 }
 @Composable private fun Confirm(title: String, body: String, dismiss: () -> Unit, confirm: () -> Unit) { AlertDialog(onDismissRequest = dismiss, title = { Text(title) }, text = { Text(body) }, confirmButton = { TextButton(onClick = confirm) { Text("متابعة") } }, dismissButton = { TextButton(onClick = dismiss) { Text("إلغاء") } }) }
 internal fun GeoEnvironmentSignature.notificationsReady() = notificationPermissionGranted && appNotificationsEnabled &&
-    geoChannelImportance != android.app.NotificationManager.IMPORTANCE_NONE
+    (android.os.Build.VERSION.SDK_INT < 26 || geoChannelImportance > android.app.NotificationManager.IMPORTANCE_NONE)
 
 internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when {
     !state.fineLocationGranted -> "foreground"
@@ -574,6 +595,9 @@ internal fun nextAlertPermission(state: GeoEnvironmentSignature): String? = when
     !state.backgroundLocationGranted -> "background"
     else -> null
 }
+
+internal fun shouldShowTripAlertReadiness(activeTripId: String, chosenTripId: String, hasCandidates: Boolean): Boolean =
+    hasCandidates && activeTripId.isNotBlank() && activeTripId == chosenTripId
 
 @Composable internal fun PermissionSummary(state: GeoEnvironmentSignature) {
     Surface(Modifier.fillMaxWidth().testTag("permissionSummary"), shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.surfaceVariant) {

@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import org.junit.After
+import org.junit.Before
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -15,6 +16,7 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
+import ye.mishwari.ui.notificationsReady
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = Application::class)
@@ -22,8 +24,13 @@ class PermissionStateRobolectricTest {
     private val app: Application get() = ApplicationProvider.getApplicationContext()
     private val manager: NotificationManager get() = app.getSystemService(NotificationManager::class.java)
 
+    @Before fun resetNotificationChannel() {
+        manager.deleteNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+    }
+
     @After fun clearAskedPreferences() {
         app.getSharedPreferences(PermissionState.ASKED_PREFERENCES, 0).edit().clear().commit()
+        manager.deleteNotificationChannel(PermissionState.GEO_CHANNEL_ID)
     }
 
     @Test fun permissionsMoveFromUnrequestedToGrantedDeniedAndRevoked() {
@@ -57,6 +64,7 @@ class PermissionStateRobolectricTest {
         assertEquals(PermissionStatus.NOT_REQUESTED, initial.backgroundLocation)
         assertEquals(PermissionStatus.NOT_REQUESTED, initial.notifications)
         assertFalse(initial.foregroundLocationGranted)
+        assertFalse(initial.geoChannelEnabled)
         assertEquals(AlertRequirement.FOREGROUND_LOCATION, initial.nextMissingAlertRequirement)
 
         shadowOf(app).grantPermissions(Manifest.permission.ACCESS_COARSE_LOCATION)
@@ -91,6 +99,29 @@ class PermissionStateRobolectricTest {
         assertEquals(PermissionStatus.PERMANENTLY_DENIED, PermissionState.capture(app).notifications)
     }
 
+    @Test fun missingAndDisabledChannelsAreNotReportedReady() {
+        manager.deleteNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+        assertFalse(PermissionState.capture(app).geoChannelEnabled)
+        val missingChannel = GeoEnvironmentSignature.capture(app).copy(
+            notificationPermissionGranted = true,
+            appNotificationsEnabled = true,
+        )
+        assertFalse(missingChannel.notificationsReady())
+
+        manager.createNotificationChannel(
+            NotificationChannel(PermissionState.GEO_CHANNEL_ID, "test", NotificationManager.IMPORTANCE_DEFAULT),
+        )
+        val enabled = GeoEnvironmentSignature.capture(app).copy(notificationPermissionGranted = true)
+        assertTrue(enabled.notificationsReady())
+
+        manager.deleteNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+        manager.createNotificationChannel(
+            NotificationChannel(PermissionState.GEO_CHANNEL_ID, "test", NotificationManager.IMPORTANCE_NONE),
+        )
+        assertFalse(GeoEnvironmentSignature.capture(app).copy(notificationPermissionGranted = true).notificationsReady())
+        assertFalse(enabled.copy(appNotificationsEnabled = false).notificationsReady())
+    }
+
 }
 
 @RunWith(RobolectricTestRunner::class)
@@ -102,6 +133,7 @@ class PermissionStateSdk26RobolectricTest {
         val state = PermissionState.capture(app)
         assertEquals(PermissionStatus.NOT_APPLICABLE, state.backgroundLocation)
         assertEquals(PermissionStatus.NOT_APPLICABLE, state.notifications)
+        assertFalse(state.geoChannelEnabled)
     }
 }
 
@@ -126,6 +158,28 @@ class PermissionStateSdk29RobolectricTest {
         val state = PermissionState.capture(app)
         assertEquals(PermissionStatus.NOT_REQUESTED, state.backgroundLocation)
         assertEquals(PermissionStatus.NOT_APPLICABLE, state.notifications)
+    }
+}
+
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [32], application = Application::class)
+class PermissionStateSdk32RobolectricTest {
+    private val app: Application get() = ApplicationProvider.getApplicationContext()
+
+    @Test fun sdk32HasNoPostNotificationsRuntimePermissionButNeedsAnEnabledChannel() {
+        val manager = app.getSystemService(NotificationManager::class.java)
+        manager.deleteNotificationChannel(PermissionState.GEO_CHANNEL_ID)
+        val state = PermissionState.capture(app)
+        assertEquals(PermissionStatus.NOT_APPLICABLE, state.notifications)
+        assertFalse(state.geoChannelEnabled)
+
+        val signature = GeoEnvironmentSignature.capture(app)
+        assertTrue(signature.notificationPermissionGranted)
+        assertFalse(signature.notificationsReady())
+        manager.createNotificationChannel(
+            NotificationChannel(PermissionState.GEO_CHANNEL_ID, "test", NotificationManager.IMPORTANCE_DEFAULT),
+        )
+        assertTrue(GeoEnvironmentSignature.capture(app).notificationsReady())
     }
 }
 
