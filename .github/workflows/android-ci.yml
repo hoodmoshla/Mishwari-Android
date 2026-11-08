@@ -116,7 +116,7 @@ jobs:
     needs: [verify-and-build, device-tests]
     if: >-
       github.repository == 'hoodmoshla/Mishwari-Android' &&
-      github.ref == 'refs/heads/codex/initial-implementation' &&
+      github.ref == 'refs/heads/codex/permissions-map-retry-20261108' &&
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -162,11 +162,11 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p ci-artifacts
-          cp app/build/outputs/apk/release/app-release.apk ci-artifacts/Mishwari-0.1.4-release.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.4-release.apk > ci-artifacts/apk-signature.txt
+          cp app/build/outputs/apk/release/app-release.apk ci-artifacts/Mishwari-0.1.5-release.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose --print-certs ci-artifacts/Mishwari-0.1.5-release.apk > ci-artifacts/apk-signature.txt
           python3 - <<'PY'
           import hashlib, json, os, pathlib, re
-          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.4-release.apk')
+          apk = pathlib.Path('ci-artifacts/Mishwari-0.1.5-release.apk')
           expected = pathlib.Path('signing/certificate-sha256.txt').read_text().strip().lower()
           report = pathlib.Path('ci-artifacts/apk-signature.txt').read_text()
           certs = re.findall(r'^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]+)$', report, re.MULTILINE)
@@ -189,7 +189,7 @@ jobs:
           pathlib.Path('ci-artifacts/build-provenance.json').write_text(json.dumps(provenance, indent=2) + '\n')
           PY
           cd ci-artifacts
-          sha256sum Mishwari-0.1.4-release.apk > SHA256SUMS.txt
+          sha256sum Mishwari-0.1.5-release.apk > SHA256SUMS.txt
       - name: Preserve Release lint reports and build log
         if: always()
         uses: actions/upload-artifact@v4
